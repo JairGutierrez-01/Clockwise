@@ -1,6 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for
+import os
 
 app = Flask(__name__)
+
+@app.context_processor
+def override_url_for():
+    def dated_url_for(endpoint, **values):
+        if endpoint == 'static':
+            filename = values.get('filename', None)
+            if filename:
+                file_path = os.path.join(app.static_folder, filename)
+                if os.path.exists(file_path):
+                    values['v'] = int(os.stat(file_path).st_mtime)
+        return url_for(endpoint, **values)
+    return dict(url_for=dated_url_for)
 
 @app.route("/")
 def home():
@@ -60,7 +73,7 @@ def enter_token():
 
 @app.route("/TimeTracking")
 def timeTracking():
-    return ("<h1>Time Tracking page</h1>")
+    return render_template('timeTracking.html')
 @app.route("/analysis")
 def analysis():
     return "<h1>Analysis page</h1>"
@@ -82,4 +95,6 @@ def logout():
     return "<h1>logout page</h1>"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    from livereload import Server
+    server = Server(app.wsgi_app)
+    server.serve(debug=True)

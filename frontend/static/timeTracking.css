@@ -1,0 +1,111 @@
+/* Base styles */
+:root {
+    --background-color: #fff;
+    --foreground-color: #000;
+    --tracker-background: #242e44;
+    --project-background: #000;
+    --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+}
+
+/* Dark mode overrides */
+body.dark-mode {
+    --background-color: #171717;
+    --foreground-color: #E0E0E0;
+    --tracker-background: #1F1F1F;
+    --project-background: #292929;
+    --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+/* Tracker */
+.tracker {
+    border-radius: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+}
+
+.time-tracking.container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.tracker-wrapper {
+    background-color: var(--tracker-background);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 40px 20px;
+    box-shadow: var(--card-shadow-light);
+
+}
+
+.tracker input {
+    padding: 10px;
+    width: 60%;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
+}
+.tracker .time {
+    font-weight: bold;
+    font-size: 20px;
+    margin: 0 15px;
+}
+.tracker button {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Latest Projects */
+h2 {
+    font-size: 20px;
+    margin-left: 100px;
+}
+.project-list {
+    width: 100%;
+    margin: 20px 0;
+    border-collapse: collapse;
+}
+
+.project-list th,
+.project-list td {
+    padding: 10px;
+    text-align: center;
+}
+.project {
+    color: #FFFFFF;
+    background-color: transparent;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+}
+
+.project-wrapper {
+    background-color: var(--tracker-background);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 40px 20px;
+    box-shadow: var(--card-shadow-light);
+}
+
+
+
+

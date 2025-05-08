@@ -1,3 +1,34 @@
+:root {
+    --background-color: #fff;
+    --foreground-color: #000;
+    --card-bg: #FFFFFF;
+    --projects-table-bg: #FFF9E5;
+    --calendar-bg: #DDF4F0;
+    --project-details-bg: #FBEDEB;
+    --reports-bg: #F0EFFF;
+    --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode {
+    --background-color: #121212;
+    --foreground-color: #E0E0E0;
+    --card-bg: #1F1F1F;
+    --projects-table-bg: #292929;
+    --calendar-bg: #2A2A2A;
+    --project-details-bg: #242424;
+    --reports-bg: #2E2E2E;
+    --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+}
+
+
+
 /* Dashboard Layout */
 .dashboard-wrapper {
   display: flex;
@@ -49,20 +80,16 @@
 .card {
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background-color: #FFFFFF;
-}
-body.dark-mode .card {
-  background-color: #173044;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--card-shadow-light);
+  background-color: var(--card-bg);
 }
 
 /* Projects Table Card */
 .projects-table {
-  background-color: #FFF9E5;
+  background-color: var(--projects-table-bg);
 }
 body.dark-mode .projects-table {
-  background-color: #234A5E;
+  background-color: var(--projects-table-bg);
 }
 .projects-table h3 {
   margin-bottom: 1rem;
@@ -78,18 +105,18 @@ body.dark-mode .projects-table {
   text-align: left;
 }
 .projects-table th {
-  color: #805500;
+  color: #ffffff;
 }
 .projects-table td {
-  color: #B27F00;
+  color: #ffffff;
 }
 
 /* Calendar Card */
 .calendar {
-  background-color: #DDF4F0;
+  background-color: var(--calendar-bg);
 }
 body.dark-mode .calendar {
-  background-color: #1F2D3A;
+  background-color: var(--calendar-bg);
 }
 .calendar h3 {
   margin-bottom: 1rem;
@@ -108,10 +135,10 @@ body.dark-mode .calendar {
 
 /* Project Details Card */
 .project-details {
-  background-color: #FBEDEB;
+  background-color: var(--project-details-bg);
 }
 body.dark-mode .project-details {
-  background-color: #102A43;
+  background-color: var(--project-details-bg);
 }
 .project-details h3 {
   font-size: 1.5rem;
@@ -143,10 +170,10 @@ body.dark-mode .project-details {
 
 /* Reports Card */
 .reports {
-  background-color: #F0EFFF;
+  background-color: var(--reports-bg);
 }
 body.dark-mode .reports {
-  background-color: #0F202E;
+  background-color: var(--reports-bg);
 }
 .reports h3 {
   font-size: 1.25rem;

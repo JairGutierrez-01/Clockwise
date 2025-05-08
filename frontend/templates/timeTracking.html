@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Tracking - ClockWise</title>
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='timeTracking.css') }}">
+</head>
+<body class="dark-mode">
+
+{% include 'navbar.html' %}
+<div class="time-tracking container">
+    <div class="tracker-wrapper">
+      <div class="tracker">
+        <input type="text" placeholder="Project Name ..." />
+        <div id="tracker-time" class="time-display">00:00:00</div>
+        <button id="tracker-btn" type="button">Start Tracking</button>
+      </div>
+    </div>
+
+
+  <h2 id="recent-projects-heading">Latest Projects</h2>
+  <div class="project-list">
+
+          <div class="project-wrapper">
+
+    <div class="project">
+      <div>Clockwise</div>
+      <div>18:00 - 19:43</div>
+      <div>01:43:22</div>
+  </div>
+                </div>
+
+          <div class="project-wrapper">
+
+    <div class="project">
+            <div>Lineare Algebra</div>
+            <div>20:00 - 21:43</div>
+            <div>01:43:22</div>
+        </div>
+        </div>
+
+
+</div>
+</div>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+<script src="{{ url_for('static', filename='timeTracking.js') }}"></script>
+
+</body>
+</html>
