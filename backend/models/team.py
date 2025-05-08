@@ -19,9 +19,4 @@ class Team(Base):
             return False
         return True
 
-# TODO: Link this model to API routes later:
-#     - Create a team
-#     - List user's teams
-#     - Edit/delete team (only by admin)
-#     - Manage team members (add/remove/set roles)
 

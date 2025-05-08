@@ -1,22 +1,21 @@
 from datetime import datetime
 from backend.database import Base
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
 
-# TODO: Define the Notification model (SQLAlchemy)
+class Notification(Base):
 
-# - Attributes:
-#     - id: primary key
-#     - user_id: foreign key to User (required)
-#     - project_id: foreign key to Project (optional)
-#     - message: string/text
-#     - created_at: datetime, auto-set
-#     - type: string (e.g. "info", "warning", "limit_reached")
+    __tablename__ = "notifications"
 
-# - Relationships:
-#     - user: backref to User
-#     - project: backref to Project
+#   Attributes
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    message = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    type = Column(String, nullable=False)
+    is_read = Column(Boolean, default=False)
 
-# TODO: Plan logic for automatic notifications (z.B. time limit exceeded)
-# TODO: Add API routes:
-#     - Get all notifications for a user
-#     - Mark notification as read
-#     - Delete notification
+#   Relationships
+    user = relationship("User", back_populates="notifications")
+    project = relationship("Project", back_populates="notifications")

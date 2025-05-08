@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.database import SessionLocal
-from backend.models import Team, UserTeam
+from backend.models.team import Team
+from backend.models.user_team import UserTeam
 
 team_bp = Blueprint('teams', __name__)
 
@@ -14,7 +15,7 @@ def create_team():
         name = data.get('name')
 
         if not name or not name.strip():
-            return jsonify({'Error': 'Team namerequired'}), 400
+            return jsonify({'Error': 'Team name is required'}), 400
 
         user_id = get_jwt_identity()
 
@@ -41,5 +42,4 @@ def create_team():
     - Uses try-except-finally to handle database errors safely.
     - Commits team creation and membership separately.
     - Always closes the session to avoid DB connection leaks.
-
 """
