@@ -10,7 +10,10 @@
 
 /* Dark mode overrides */
 body.dark-mode {
-    --background-color: #121212;
+    background: linear-gradient(to bottom, #081520 0%, #0B1C2C 30%, #12395f 70%, #1e4f85 100%);
+    background-attachment: fixed;
+    background-size: cover;
+    color: #E0E0E0;
     --foreground-color: #E0E0E0;
     --tracker-background: #1F1F1F;
     --project-background: #292929;
@@ -41,7 +44,7 @@ body {
 }
 
 .tracker-wrapper {
-    background-color: var(--tracker-background);
+    background-color: #173044;
     border-radius: 20px;
     padding: 20px;
     margin: 40px 20px;
@@ -55,6 +58,11 @@ body {
     border-radius: 20px;
     border: none;
     font-size: 16px;
+    background-color: #95A6B5;
+}
+.tracker input::placeholder {
+    color: #000000;
+    opacity: 60%;
 }
 .tracker .time {
     font-weight: bold;
@@ -62,7 +70,7 @@ body {
     margin: 0 15px;
 }
 .tracker button {
-    background-color: #fff;
+    background-color: #95A6B5;
     color: #000;
     border: none;
     padding: 10px 20px;
@@ -75,7 +83,7 @@ body {
 /* Latest Projects */
 h2 {
     font-size: 20px;
-    margin-left: 100px;
+    margin-left: 40px;
 }
 .project-list {
     width: 100%;
@@ -99,7 +107,7 @@ h2 {
 }
 
 .project-wrapper {
-    background-color: var(--tracker-background);
+    background-color: #173044;
     border-radius: 20px;
     padding: 20px;
     margin: 40px 20px;
