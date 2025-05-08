@@ -1,0 +1,53 @@
+from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from backend.database import Base
+
+class Project(Base):
+    """
+    Represents a project a user could be working on. 
+
+    Attributes:
+        project_id (int): Identifier of the project, also primary key.
+        name (str): The name of the project. 
+        description (str): The description of the project.
+        team_id (int): Foreign key of the team the project belongs to.  
+        category_id (int): Foreign key identifying the category of the project. 
+        time_limit_hours (int): Limit of how much time the user wants to spend on the project. 
+        current_hours (int): How many hours the user already spent on the project.
+        created_at (datetime): The timestamp when the project was created.  
+        due_date (datetime): Deadline for the project.
+        task (relationship): The tasks the project contains.
+        team (relationship): The team the project belongs to.
+        user (relationship): The user the project belongs to.
+        category (relationship): The category of the project. 
+
+    """
+
+    __tablename__ = "projects"
+
+    project_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    team_id = Column(Integer, ForeignKey("teams.team_id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("category.category_id"))
+    time_limit_hours = Column(Integer, nullable=False)
+    current_hours = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=datetime.now)
+    due_date = Column(DateTime, nullable=True)
+
+
+    task = relationship("Task", back_populates="project")
+    team = relationship("Team", back_populates="project")
+    user = relationship("User", back_populates="project")
+    category = relationship("Category", back_populates="project")
+
+
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the project object.
+
+        Returns:
+            str: A string representation of the project object.
+        """
+        return f"<Project(id={self.project_id}, name={self.name}, team={self.team_id} category={self.category_id}, limit={self.time_limit_hours}, current={self.current_hours})>"
