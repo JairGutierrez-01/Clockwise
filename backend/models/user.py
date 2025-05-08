@@ -43,3 +43,4 @@ class User(Base):
             str: A string representation of the user object.
         """
         return f"<User(id={self.user_id}, email={self.email}, password_hash={self.password_hash}, first_name={self.first_name}, last_name={self.last_name})>"
+
