@@ -40,6 +40,11 @@ html, body {
     font-weight: 500;
   }
 
+  .nav-items a.active {
+  color: #7AB8F5;
+  padding-bottom: 2px;
+}
+
   .login-btn {
     padding: 10px 20px;
     font-size: 16px;

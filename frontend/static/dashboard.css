@@ -1,5 +1,4 @@
 :root {
-    --background-color: #fff;
     --foreground-color: #000;
     --card-bg: #FFFFFF;
     --projects-table-bg: #FFF9E5;
@@ -12,7 +11,10 @@
 }
 
 body.dark-mode {
-    --background-color: #121212;
+    background: linear-gradient(to bottom, #081520 0%, #0B1C2C 30%, #12395f 70%, #1e4f85 100%);
+    background-attachment: fixed;
+    background-size: cover;
+    color: #E0E0E0;
     --foreground-color: #E0E0E0;
     --card-bg: #1F1F1F;
     --projects-table-bg: #292929;

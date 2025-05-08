@@ -44,12 +44,63 @@
 
   .nav-items a.active {
   color: #7AB8F5;
-  border-bottom: 2px solid #7AB8F5;
   padding-bottom: 2px;
 }
+
 body.light-mode .nav-items a.active {
   color: #2F2721;
-  border-bottom: 2px solid #2F2721;
+}
+
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.sun-moon-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
+
+#sun-icon, #moon-icon {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.toggle-button {
+  background-color: #102A43;
+  border-radius: 50px;
+  position: relative;
+  width: 50px;
+  height: 24px;
+  /* padding removed */
+  transition: background-color 0.3s ease;
+}
+
+.toggle-circle {
+  width: 20px;
+  height: 20px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+}
+
+body.light-mode .toggle-button {
+  background-color: #657085;
+}
+
+body.light-mode .toggle-circle {
+  transform: translateX(26px);
 }
 
 
@@ -76,7 +127,6 @@ body.light-mode .nav-items a.active {
   font-size: 20px;
   font-weight: 500;
   text-decoration: none;
-  padding: 0 12px;
   transition: color 0.3s ease;
 }
 
