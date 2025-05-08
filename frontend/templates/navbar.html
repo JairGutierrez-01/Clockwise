@@ -1,4 +1,4 @@
- <!-- NAVBAR -->
+<!-- NAVBAR -->
   <nav class="navbar">
     <div class="logo">
       <a href="{{ url_for('home') }}">ClockWise</a>
@@ -6,12 +6,13 @@
     <div class="nav-items">
       <a href="{{ url_for('timeTracking') }}" class="{% if request.path == '/TimeTracking' %}active{% endif %}">TimeTracking</a>
       <a href="{{ url_for('projects') }}" class="{% if request.path == '/projects' %}active{% endif %}">Projects</a>
-      <a href="{{ url_for('dashboard') }}" class="{% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+      <a href="{{ url_for('dashboard') if user_logged_in else url_for('login') }}"
+   class="{% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a>
       <a href="{{ url_for('analysis') }}" class="{% if request.path == '/analysis' %}active{% endif %}">Analysis</a>
       <a href="{{ url_for('teams') }}" class="{% if request.path == '/teams' %}active{% endif %}">Teams</a>
       <a href="{{ url_for('profile') }}" class="{% if request.path == '/profile' %}active{% endif %}">Profile</a>
-
-      <!-- Toggle -->
+        <a href="{{ url_for('home') }}" class="home-link">Home</a>
+        <!-- Toggle -->
       <div class="theme-toggle" onclick="toggleTheme()">
         <div class="sun-moon-icon">
           <!-- Sun -->
@@ -38,6 +39,12 @@
         </div>
       </div>
 
-      <a href="{{ url_for('login') }}" class="login-btn">Log In</a>
+
+
+{% if user_logged_in %}
+  <a href="{{ url_for('logout') }}" class="login-btn">Log Out</a>
+{% else %}
+  <a href="{{ url_for('login') }}" class="login-btn">Log In</a>
+{% endif %}
     </div>
   </nav>

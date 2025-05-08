@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import os
 
 app = Flask(__name__)
+app.secret_key = 'u89234h2v98vn34vvj2934hvjwef'  # Sicherer zufälliger Key um zu simulieren, dass ein user eingeloggt ist
 
 @app.context_processor
 def override_url_for():
@@ -32,6 +33,7 @@ def home():
 def login():
     if request.method == 'POST':
         # hier Login Daten prüfen
+        session['user_id'] = 'demo_user'  # <- Benutzer als eingeloggt markieren
         return redirect(url_for('dashboard'))
     return render_template('loginpage.html')
 
@@ -92,11 +94,15 @@ def profile():
 
 @app.route("/logout")
 def logout():
-    return "<h1>logout page</h1>"
+    session.pop('user_id', None)
+    return redirect(url_for('home'))
+
+@app.context_processor
+def inject_user_status():
+    return dict(user_logged_in=session.get('user_id') is not None)
 
 if __name__ == "__main__":
     #from livereload import Server
     #server = Server(app.wsgi_app)
     #server.serve(debug=True)
-    if __name__ == "__main__":
         app.run(debug=True)

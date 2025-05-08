@@ -17,6 +17,8 @@
       <a href="#track">Track</a>
       <a href="#analyze">Analyze</a>
       <a href="#plan">Plan</a>
+        <!-- Dashboard (conditional) -->
+<a href="{{ url_for('dashboard') if user_logged_in else url_for('login') }}">Dashboard</a>
 
       <!-- Toggle -->
       <div class="theme-toggle" onclick="toggleTheme()">
@@ -45,7 +47,11 @@
         </div>
       </div>
 
-      <a href="{{ url_for('login') }}" class="login-btn">Log In</a>
+     {% if user_logged_in %}
+  <a href="{{ url_for('logout') }}" class="login-btn">Log Out</a>
+{% else %}
+  <a href="{{ url_for('login') }}" class="login-btn">Log In</a>
+{% endif %}
     </div>
   </nav>
 

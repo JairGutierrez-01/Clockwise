@@ -54,7 +54,7 @@ body.light-mode .nav-items a.active {
 
 
 /* ======= Homepage-specific navbar ======= */
-  .navbar-home .login-btn {
+  .login-btn {
     padding: 14px 24px;
     font-size: 16px;
     font-weight: 700;
@@ -67,10 +67,22 @@ body.light-mode .nav-items a.active {
     transition: background-color 0.3s ease;
   }
 
-  .navbar-home .login-btn:hover {
+  .login-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
 
+  .home-link {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0 12px;
+  transition: color 0.3s ease;
+}
+
+.home-link:hover {
+  color: #7AB8F5;
+}
 
 /* ======= Loginpage specific navbar ======= */
   .navbar-login .nav-items a {
