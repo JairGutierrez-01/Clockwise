@@ -95,6 +95,8 @@ def logout():
     return "<h1>logout page</h1>"
 
 if __name__ == "__main__":
-    from livereload import Server
-    server = Server(app.wsgi_app)
-    server.serve(debug=True)
+    #from livereload import Server
+    #server = Server(app.wsgi_app)
+    #server.serve(debug=True)
+    if __name__ == "__main__":
+        app.run(debug=True)
