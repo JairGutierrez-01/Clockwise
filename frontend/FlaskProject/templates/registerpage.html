@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register - ClockWise</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='registerpage.css') }}">
+
+</head>
+<body class="dark-mode">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-login">
+    <div class="logo">ClockWise</div>
+    <div class="nav-items">
+      <a href="{{ url_for('home') }}">Home</a>
+    </div>
+  </nav>
+
+  <!-- Register Box -->
+  <div class="login-container">
+
+   <form class="login-box" method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data" onsubmit="return validatePasswords()">
+  <div class="form-columns">
+    <div class="form-column">
+      <input type="text" name="first_name" placeholder="First Name" required />
+      <input type="text" name="last_name" placeholder="Last Name" required />
+      <input type="text" name="username" placeholder="Username" required />
+    </div>
+    <div class="form-column">
+      <input type="email" name="email" placeholder="Email Address" required />
+      <input type="password" id="password" name="password" placeholder="Password" required />
+      <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm Password" required />
+    </div>
+  </div>
+
+  <div class="profile-upload">
+  <label for="profile_picture">Profile Picture (optional)</label>
+  <input type="file" name="profile_picture" id="profile_picture" accept="image/*" />
+</div>
+
+  <div id="error-message" class="error-message"></div>
+  <button type="submit">Register</button>
+  <a href="{{ url_for('login') }}" class="register-link">Already have an account?</a>
+</form>
+  </div>
+
+  <script>
+    function validatePasswords() {
+      const pw = document.getElementById("password").value;
+      const cpw = document.getElementById("confirmPassword").value;
+      const errorMsg = document.getElementById("error-message");
+
+      if (pw !== cpw) {
+        errorMsg.textContent = "Passwords do not match.";
+        return false;
+      }
+
+      errorMsg.textContent = "";
+      return true;
+    }
+  </script>
+
+</body>
+</html>

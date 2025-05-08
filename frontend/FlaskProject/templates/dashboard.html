@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - ClockWise</title>
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body class="dark-mode">
+
+  <!-- Include existing navbar -->
+  {% include 'navbar.html' %}
+
+  <div class="dashboard-wrapper">
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+      <div class="dashboard-columns">
+        <div class="left-column">
+          <!-- Projects Table -->
+          <div class="card projects-table">
+            <h3>Projects</h3>
+            <table>
+              <thead>
+                <tr><th>Project</th><th>Time</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>ClockWise</td><td>01:35:30</td></tr>
+                <tr><td>Marketing</td><td>00:30:45</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Project Details & Progress -->
+          <div class="card project-details">
+            <h3>ClockWise</h3>
+            <p>Total Time: <span id="total-time">02:06:15</span></p>
+            <p>Team Members:</p>
+            <div class="team-members">
+              <span class="member sp1">SP1</span>
+              <span class="member sp2">SP2</span>
+              <span class="member sp3">SP3</span>
+            </div>
+            <div class="progress-chart">
+              <!-- SVG or canvas for circular progress -->
+            </div>
+          </div>
+        </div>
+
+        <div class="right-column">
+          <!-- Calendar -->
+          <div class="card calendar">
+            <h3>Calendar</h3>
+            <!-- Placeholder calendar grid -->
+            <div class="calendar-grid">
+              <div>Sun</div>
+              <div>Mon</div>
+              <div>Tue</div>
+              <div>Wed</div>
+              <div>Thu</div>
+              <div>Fri</div>
+              <div>Sat</div>
+
+              <div></div><div></div><div></div><div>1</div><div>2</div><div>3</div><div>4</div>
+              <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
+              <div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
+              <div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
+              <div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div>31</div>
+            </div>
+          </div>
+          <!-- Reports Chart -->
+          <div class="card reports">
+            <h3>Reports</h3>
+            <canvas id="reportsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Dashboard-specific JavaScript -->
+  <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

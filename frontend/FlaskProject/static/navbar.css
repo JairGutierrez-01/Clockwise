@@ -1,0 +1,102 @@
+/* ======= General navbar layout ======= */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 5rem;
+    background-color: #0B1C2C;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 32px;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+  }
+
+  .logo a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.logo a:visited {
+  color: #ffffff;
+}
+
+  .nav-items {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .nav-items a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 20px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .nav-items a:hover {
+    color: #7AB8F5;
+  }
+
+  .nav-items a.active {
+  color: #7AB8F5;
+  border-bottom: 2px solid #7AB8F5;
+  padding-bottom: 2px;
+}
+body.light-mode .nav-items a.active {
+  color: #2F2721;
+  border-bottom: 2px solid #2F2721;
+}
+
+
+/* ======= Homepage-specific navbar ======= */
+  .navbar-home .login-btn {
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    border: 2px solid #ffffff;
+    background-color: transparent;
+    color: #ffffff;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+  }
+
+  .navbar-home .login-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+
+/* ======= Loginpage specific navbar ======= */
+  .navbar-login .nav-items a {
+    color: #ffffff;
+  }
+
+  .navbar-login .nav-items a:hover {
+    color: #7AB8F5;
+  }
+
+
+/* ==== Light mode ==== */
+  /* Light mode navbar */
+  body.light-mode .navbar {
+    background-color: #95A6B5;
+  }
+
+  /* Light mode buttons */
+  body.light-mode .login-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #2F2721;
+  }
+
+  body.light-mode .nav-items a:hover {
+    color: #2F2721;
+  }
+  body.light-mode .logo {
+    color: #ffffff;
+  }
