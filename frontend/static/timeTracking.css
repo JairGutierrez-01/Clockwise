@@ -10,7 +10,7 @@
 
 /* Dark mode overrides */
 body.dark-mode {
-    --background-color: #171717;
+    --background-color: #121212;
     --foreground-color: #E0E0E0;
     --tracker-background: #1F1F1F;
     --project-background: #292929;

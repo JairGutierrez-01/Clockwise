@@ -7,6 +7,8 @@
     --project-details-bg: #FBEDEB;
     --reports-bg: #F0EFFF;
     --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --dashboard-max-width: 1200px;
+
 }
 
 body.dark-mode {
@@ -32,7 +34,10 @@ body {
 /* Dashboard Layout */
 .dashboard-wrapper {
   display: flex;
-  min-height: calc(100vh - 100px); /* subtract navbar height */
+  min-height: calc(100vh - 100px);
+     width: 100%;
+  max-width: var(--dashboard-max-width);
+  margin: 0 auto;
 }
 
 /* Main Content */
@@ -78,10 +83,26 @@ body {
 
 /* Card Base */
 .card {
+    line-height: 1.6;
+  letter-spacing: 0.4px;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: var(--card-shadow-light);
   background-color: var(--card-bg);
+}
+
+.card h3 {
+  line-height: 1.3;            /* tighter on headings */
+  letter-spacing: 1px;         /* makes headings feel more “set” */
+  text-transform: uppercase;   /* optional: all-caps for emphasis */
+  margin-bottom: 1rem;
+}
+
+.card p,
+.card span,
+.team-members .member {
+  line-height: 1.5;
+  letter-spacing: 0.2px;
 }
 
 /* Projects Table Card */
@@ -92,23 +113,50 @@ body.dark-mode .projects-table {
   background-color: var(--projects-table-bg);
 }
 .projects-table h3 {
+  letter-spacing: 0.8px;
   margin-bottom: 1rem;
-  font-size: 1.25rem;
 }
 .projects-table table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 .projects-table th,
 .projects-table td {
   padding: 0.75rem;
   text-align: left;
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Column widths and alignment */
+.projects-table th:nth-child(1),
+.projects-table td:nth-child(1) {
+  width: 70%;
+  text-align: left;
+}
+.projects-table th:nth-child(2),
+.projects-table td:nth-child(2) {
+  width: 30%;
+  text-align: right;
+}
+/* Projects table cell typography */
+.projects-table td:nth-child(1) {
+  font-size: var(--font-lg);
+  letter-spacing: 0.5px;
+}
+.projects-table td:nth-child(2) {
+  font-size: var(--font-base);
+  font-family: monospace;
+  letter-spacing: 0.6px;
 }
 .projects-table th {
-  color: #ffffff;
+  color: var(--foreground-color);
 }
 .projects-table td {
-  color: #ffffff;
+color: var(--foreground-color);
 }
 
 /* Calendar Card */
@@ -131,6 +179,9 @@ body.dark-mode .calendar {
   text-align: center;
   padding: 0.5rem;
   border-radius: 4px;
+  line-height: 1;
+  letter-spacing: 0px;
+  font-weight: 500;
 }
 
 /* Project Details Card */
@@ -146,6 +197,12 @@ body.dark-mode .project-details {
 }
 .project-details p {
   margin: 0.5rem 0;
+  font-size: var(--font-base);
+}
+.project-details p span#total-time {
+  font-family: monospace;
+  font-weight: bold;
+  letter-spacing: 0.6px;
 }
 .team-members {
   display: flex;
@@ -156,7 +213,8 @@ body.dark-mode .project-details {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: var(--font-base);
+  letter-spacing: 0.3px;
   color: #FFFFFF;
 }
 .sp1 { background-color: rgba(243, 215, 212, 0.6); }
@@ -176,6 +234,8 @@ body.dark-mode .reports {
   background-color: var(--reports-bg);
 }
 .reports h3 {
+  line-height: 1.3;
+  letter-spacing: 0.8px;
   font-size: 1.25rem;
   margin-bottom: 1rem;
 }
