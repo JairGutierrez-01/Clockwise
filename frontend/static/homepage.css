@@ -4,173 +4,175 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   min-height: 100%;
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* === Basecolors === */
-  /* dark mode */
-  body.dark-mode {
-    background: linear-gradient(to bottom, #081520 0%, #0B1C2C 30%, #12395f 70%, #1e4f85 100%);
-    background-attachment: fixed;
-    background-size: cover;
-    color: #ffffff;
-  }
+/* dark mode */
+body.dark-mode {
+  background: linear-gradient(
+    to bottom,
+    #081520 0%,
+    #0b1c2c 30%,
+    #12395f 70%,
+    #1e4f85 100%
+  );
+  background-attachment: fixed;
+  background-size: cover;
+  color: #ffffff;
+}
 
-  .logo {
-    font-size: 32px;
-    font-weight: 600;
-    color: #ffffff;
-  }
-  .nav-items {
+.logo {
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffffff;
+}
+.nav-items {
   display: flex;
   gap: 40px;
   align-items: center;
-  }
+}
 
-  .nav-items a {
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 18px;
-    font-weight: 500;
-  }
+.nav-items a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 500;
+}
 
-  .nav-items a.active {
-  color: #7AB8F5;
+.nav-items a.active {
+  color: #7ab8f5;
   padding-bottom: 2px;
 }
 
-  .login-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 600;
-    border: 2px solid #ffffff;
-    background: transparent;
-    color: #ffffff;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
+.login-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border: 2px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
 
-  .login-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+.login-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
-  /* light mode */
-  body.light-mode {
-    background: linear-gradient(to bottom,
-      #F3F6F9 0%,
-      #F8FAFC 50%,
-      #FFFFFF 100% );
-    background-attachment: fixed;
-    background-size: cover;
-    color: #0B1C2C;
-  }
+/* light mode */
+body.light-mode {
+  background: linear-gradient(to bottom, #f3f6f9 0%, #f8fafc 50%, #ffffff 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  color: #0b1c2c;
+}
 
-  body.light-mode .navbar {
-    background-color: #95A6B5;
-  }
-
+body.light-mode .navbar {
+  background-color: #95a6b5;
+}
 
 /* === Toggle Switch === */
-  /* Theme Toggle Switch */
-  .theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    margin-right: 20px;
-  }
+/* Theme Toggle Switch */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-right: 20px;
+}
 
-  .sun-moon-icon {
-    position: relative;
-    width: 24px;
-    height: 24px;
-  }
+.sun-moon-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+}
 
-  #sun-icon, #moon-icon {
-    width: 24px;
-    height: 24px;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
+#sun-icon,
+#moon-icon {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
 
-  /* Toggle Button – DARK MODE */
-  .toggle-button {
-    background-color: #102A43;
-    border-radius: 50px;
-    position: relative;
-    width: 50px;
-    height: 24px;
-    padding: 2px;
-    transition: background-color 0.3s ease;
-  }
+/* Toggle Button – DARK MODE */
+.toggle-button {
+  background-color: #102a43;
+  border-radius: 50px;
+  position: relative;
+  width: 50px;
+  height: 24px;
+  padding: 2px;
+  transition: background-color 0.3s ease;
+}
 
-  .toggle-circle {
-    width: 20px;
-    height: 20px;
-    background-color: #ffffff;
-    border-radius: 50%;
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s;
-  }
+.toggle-circle {
+  width: 20px;
+  height: 20px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+}
 
-  /* Toggle Button - Light Mode */
-  body.light-mode .toggle-button {
-    background-color: #657085;
-  }
+/* Toggle Button - Light Mode */
+body.light-mode .toggle-button {
+  background-color: #657085;
+}
 
-  /* moves circle of toggle button */
-  body.light-mode .toggle-circle {
-    transform: translateX(26px);
-  }
-
+/* moves circle of toggle button */
+body.light-mode .toggle-circle {
+  transform: translateX(26px);
+}
 
 /* === Headers === */
-  .hero {
-    height: calc(100vh - 100px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 2rem;
-  }
+.hero {
+  height: calc(100vh - 100px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
 
-  .hero-content {
-    max-width: 800px;
-  }
+.hero-content {
+  max-width: 800px;
+}
 
-  .hero h1 {
-    font-size: 48px;
-    font-weight: 700;
-    color: #7AB8F5;
-    margin-bottom: 1rem;
-    white-space: nowrap;
-  }
+.hero h1 {
+  font-size: 48px;
+  font-weight: 700;
+  color: #7ab8f5;
+  margin-bottom: 1rem;
+  white-space: nowrap;
+}
 
-  .hero p {
-    font-size: 24px;
-    font-weight: 400;
-    margin-bottom: 2rem;
-    color: #AFCDEB;
-  }
-
+.hero p {
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 2rem;
+  color: #afcdeb;
+}
 
 /* === Buttons === */
-  /* Get Started Button */
+/* Get Started Button */
 .cta-btn {
   padding: 16px 32px;
   font-size: 20px;
   font-weight: 600;
-  background-color: #95A6B5;
+  background-color: #95a6b5;
   color: white;
   border: none;
   border-radius: 8px;
@@ -182,208 +184,209 @@ html, body {
   background-color: #4b6ea3;
 }
 
-
 /* === Sections === */
-  .section {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    padding: 2rem;
-    text-align: center;
-    transition: background-color 0.8s, color 0.8s;
-  }
+.section {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 2rem;
+  text-align: center;
+  transition:
+    background-color 0.8s,
+    color 0.8s;
+}
 
-  .section h2 {
-    font-size: 40px;
-    margin-bottom: 1rem;
-    color: #7AB8F5;
-  }
+.section h2 {
+  font-size: 40px;
+  margin-bottom: 1rem;
+  color: #7ab8f5;
+}
 
-  .section p {
-    font-size: 18px;
-    max-width: 600px;
-    color: #7AB8F5;
-  }
+.section p {
+  font-size: 18px;
+  max-width: 600px;
+  color: #7ab8f5;
+}
 
-  /* Split Layout of the sections */
-  .split-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    max-width: 1000px;
-    width: 100%;
-  }
+/* Split Layout of the sections */
+.split-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  max-width: 1000px;
+  width: 100%;
+}
 
-  .split-container.reverse {
-    flex-direction: row-reverse;
-  }
+.split-container.reverse {
+  flex-direction: row-reverse;
+}
 
-  .text-block {
-    flex: 1;
-    min-width: 280px;
-  }
+.text-block {
+  flex: 1;
+  min-width: 280px;
+}
 
-  /* Reflection Effect */
-  .reflection-layer {
-    position: absolute;
-    bottom: -80px;
-    width: 100%;
-    height: 80px;
-    border-radius: 20px;
-    z-index: 0;
-    pointer-events: none;
-    background: linear-gradient(
-      to bottom,
-      rgba(15, 35, 50, 1.0),
-      rgba(15, 35, 50, 0.8) 30%,
-      rgba(23, 48, 68, 0.7) 50%,
-      rgba(23, 48, 68, 0.3) 70%,
-      rgba(23, 48, 68, 0) 100%
-    );
-    filter: blur(4px);
-    opacity: 0.6;
-  }
+/* Reflection Effect */
+.reflection-layer {
+  position: absolute;
+  bottom: -80px;
+  width: 100%;
+  height: 80px;
+  border-radius: 20px;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 35, 50, 1),
+    rgba(15, 35, 50, 0.8) 30%,
+    rgba(23, 48, 68, 0.7) 50%,
+    rgba(23, 48, 68, 0.3) 70%,
+    rgba(23, 48, 68, 0) 100%
+  );
+  filter: blur(4px);
+  opacity: 0.6;
+}
 
-  /* Timer Box */
-  .timer-reflection-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-  }
+/* Timer Box */
+.timer-reflection-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
 
-  .timer-box {
-    background-color: #173044;
-    padding: 2rem;
-    border-radius: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    min-width: 300px;
-    z-index: 1;
-  }
-  .clock-icon svg {
+.timer-box {
+  background-color: #173044;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 300px;
+  z-index: 1;
+}
+.clock-icon svg {
   display: block;
   margin-bottom: 1rem;
-  }
+}
 
-  #minuteHand, #secondHand {
-    transform-origin: 50% 50%;
-    transition: transform 0.2s linear;
-  }
+#minuteHand,
+#secondHand {
+  transform-origin: 50% 50%;
+  transition: transform 0.2s linear;
+}
 
-  .time-display {
-    font-size: 48px;
-    font-weight: 600;
-  }
+.time-display {
+  font-size: 48px;
+  font-weight: 600;
+}
 
-  .button-row {
-    display: flex;
-    gap: 1rem;
-  }
+.button-row {
+  display: flex;
+  gap: 1rem;
+}
 
-  .button-row button {
-    padding: 12px 20px;
-    font-size: 16px;
-    background-color: #7AB8F5;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.3s;
-  }
+.button-row button {
+  padding: 12px 20px;
+  font-size: 16px;
+  background-color: #7ab8f5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
 
-  .button-row button:hover {
-    background-color: #4b6ea3;
-  }
+.button-row button:hover {
+  background-color: #4b6ea3;
+}
 
-  .blink {
-    animation: blinkAnim 1s step-start infinite;
-  }
+.blink {
+  animation: blinkAnim 1s step-start infinite;
+}
 
-  @keyframes blinkAnim {
-    50% {
-      opacity: 0;
-    }
+@keyframes blinkAnim {
+  50% {
+    opacity: 0;
   }
+}
 
-  /* Diagram Box */
-  .diagram-box {
-    background-color: #0F2C44;
-    padding: 2rem;
-    border-radius: 20px;
-    width: 450px;
-    height: 300px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #AFCDEB;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    position: relative;
-  }
+/* Diagram Box */
+.diagram-box {
+  background-color: #0f2c44;
+  padding: 2rem;
+  border-radius: 20px;
+  width: 450px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #afcdeb;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
 
-  .diagram-header {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-
+.diagram-header {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
 
 /* === Light Mode === */
-  /* Light Mode – Section-Titles */
-  body.light-mode #track h2,
-  body.light-mode #analyze h2,
-  body.light-mode #plan h2 {
-    color: #2F2721;
-  }
+/* Light Mode – Section-Titles */
+body.light-mode #track h2,
+body.light-mode #analyze h2,
+body.light-mode #plan h2 {
+  color: #2f2721;
+}
 
-  /* Light Mode – Subtitles */
-  body.light-mode #track p,
-  body.light-mode #analyze p,
-  body.light-mode #plan p {
-    color: #2F2721;
-  }
+/* Light Mode – Subtitles */
+body.light-mode #track p,
+body.light-mode #analyze p,
+body.light-mode #plan p {
+  color: #2f2721;
+}
 
-  body.light-mode .timer-box {
-    background-color: #DDD5F3;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06)
-  }
+body.light-mode .timer-box {
+  background-color: #ddd5f3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
 
-  body.light-mode .time-display {
-    color: #ffffff;
-  }
+body.light-mode .time-display {
+  color: #ffffff;
+}
 
-  body.light-mode #minuteHand,
-  body.light-mode #secondHand,
-  body.light-mode #clock circle {
-    stroke: #9C8FD4;
-  }
+body.light-mode #minuteHand,
+body.light-mode #secondHand,
+body.light-mode #clock circle {
+  stroke: #9c8fd4;
+}
 
-  body.light-mode .button-row button {
-    background-color: #9C8FD4;
-    color: white;
-  }
+body.light-mode .button-row button {
+  background-color: #9c8fd4;
+  color: white;
+}
 
-  body.light-mode .button-row button:hover {
-    background-color: #9C8FD4;
-  }
+body.light-mode .button-row button:hover {
+  background-color: #9c8fd4;
+}
 
-  body.light-mode .hero h1,
-  body.light-mode .hero p {
-    color: #2F2721;
-  }
+body.light-mode .hero h1,
+body.light-mode .hero p {
+  color: #2f2721;
+}
 
-  body.light-mode .cta-btn {
-    background-color: #95A6B5;
-    color: #ffffff;
-  }
+body.light-mode .cta-btn {
+  background-color: #95a6b5;
+  color: #ffffff;
+}
 
 /* Spiegelung für Analyze Box */
 .reflection-analyze {
@@ -396,7 +399,7 @@ html, body {
   pointer-events: none;
   background: linear-gradient(
     to bottom,
-    rgba(15, 35, 50, 1.0),
+    rgba(15, 35, 50, 1),
     rgba(15, 35, 50, 0.8) 30%,
     rgba(23, 48, 68, 0.7) 50%,
     rgba(23, 48, 68, 0.3) 70%,
@@ -414,7 +417,9 @@ html, body {
 .section {
   opacity: 0;
   transform: translateY(80px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
 }
 
 .section.animate-in {
@@ -434,16 +439,14 @@ html, body {
 
 .cta-btn {
   text-decoration: none;
-    margin-top: 2rem;
-    display: inline-block;
-
-
+  margin-top: 2rem;
+  display: inline-block;
 }
 
 body.light-mode .reflection-layer {
   background: linear-gradient(
     to bottom,
-    rgba(222, 214, 243, 1.0),
+    rgba(222, 214, 243, 1),
     rgba(222, 214, 243, 0.8) 30%,
     rgba(222, 214, 243, 0.7) 50%,
     rgba(222, 214, 243, 0.3) 70%,
@@ -454,15 +457,14 @@ body.light-mode .reflection-layer {
 }
 
 body.light-mode .diagram-box {
-  background-color: #BFD9C8;
-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06)}
-
-
+  background-color: #bfd9c8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
 
 body.light-mode .reflection-analyze {
   background: linear-gradient(
     to bottom,
-    rgba(191, 217, 200, 1.0),
+    rgba(191, 217, 200, 1),
     rgba(191, 217, 200, 0.8) 30%,
     rgba(191, 217, 200, 0.6) 50%,
     rgba(191, 217, 200, 0.3) 70%,
@@ -472,7 +474,7 @@ body.light-mode .reflection-analyze {
   opacity: 0.6;
 }
 
-  /* Light mode buttons */
-  body.light-mode .cta-btn {
-    color: #ffffff;
-  }
+/* Light mode buttons */
+body.light-mode .cta-btn {
+  color: #ffffff;
+}

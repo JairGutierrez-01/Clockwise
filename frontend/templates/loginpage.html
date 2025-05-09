@@ -1,42 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - ClockWise</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='loginpage.css') }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - ClockWise</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='homepage.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='loginpage.css') }}"
+    />
+  </head>
+  <body class="dark-mode">
+    <!-- Navbar -->
+    <nav class="navbar navbar-login">
+      <div class="logo">ClockWise</div>
+      <div class="nav-items">
+        <a href="{{ url_for('home') }}">Home</a>
+      </div>
+    </nav>
 
-</head>
-<body class="dark-mode">
+    <!-- Login Box -->
+    <div class="login-container">
+      <div class="login-icon">
+        <img
+          src="{{ url_for('static', filename='images/ICON.png') }}"
+          alt="Login Icon"
+        />
+      </div>
 
-  <!-- Navbar -->
-<nav class="navbar navbar-login">
-    <div class="logo">ClockWise</div>
-    <div class="nav-items">
-      <a href="{{ url_for('home') }}">Home</a>
+      <form
+        class="login-box"
+        method="POST"
+        action="{{ url_for('auth.login') }}"
+      >
+        <input type="text" name="username" placeholder="Username" required />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+
+        <div class="forgot-password">
+          <a href="{{ url_for('forgot_password') }}">Forgot your password?</a>
+        </div>
+
+        <button type="submit">Log in</button>
+        <a href="{{ url_for('auth.register') }}" class="register-link"
+          >Create an account</a
+        >
+      </form>
     </div>
-  </nav>
-
-
-  <!-- Login Box -->
-  <div class="login-container">
-  <div class="login-icon">
-    <img src="{{ url_for('static', filename='images/ICON.png') }}" alt="Login Icon">
-  </div>
-
- <form class="login-box" method="POST" action="{{ url_for('auth.login') }}">
-  <input type="text" name="username" placeholder="Username" required />
-  <input type="password" name="password" placeholder="Password" required />
-
-  <div class="forgot-password">
-    <a href="{{ url_for('forgot_password') }}">Forgot your password?</a>
-  </div>
-
-  <button type="submit">Log in</button>
-  <a href="{{ url_for('auth.register') }}" class="register-link">Create an account</a>
-</form>
-  </div>
-</body>
+  </body>
 </html>

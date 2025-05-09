@@ -1,21 +1,21 @@
 /* ======= General navbar layout ======= */
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2rem 5rem;
-    background-color: #0B1C2C;
-    z-index: 100;
-  }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 5rem;
+  background-color: #0b1c2c;
+  z-index: 100;
+}
 
-  .logo {
-    font-size: 32px;
-    font-weight: 600;
-    color: #ffffff;
-    text-decoration: none;
-  }
+.logo {
+  font-size: 32px;
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+}
 
-  .logo a {
+.logo a {
   color: #ffffff;
   text-decoration: none;
 }
@@ -24,33 +24,32 @@
   color: #ffffff;
 }
 
-  .nav-items {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
+.nav-items {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
 
-  .nav-items a {
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 20px;
-    font-weight: 500;
-    transition: color 0.3s ease;
-  }
+.nav-items a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 20px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
 
-  .nav-items a:hover {
-    color: #7AB8F5;
-  }
+.nav-items a:hover {
+  color: #7ab8f5;
+}
 
-  .nav-items a.active {
-  color: #7AB8F5;
+.nav-items a.active {
+  color: #7ab8f5;
   padding-bottom: 2px;
 }
 
 body.light-mode .nav-items a.active {
-  color: #2F2721;
+  color: #2f2721;
 }
-
 
 .theme-toggle {
   display: flex;
@@ -66,7 +65,8 @@ body.light-mode .nav-items a.active {
   height: 24px;
 }
 
-#sun-icon, #moon-icon {
+#sun-icon,
+#moon-icon {
   width: 24px;
   height: 24px;
   position: absolute;
@@ -75,7 +75,7 @@ body.light-mode .nav-items a.active {
 }
 
 .toggle-button {
-  background-color: #102A43;
+  background-color: #102a43;
   border-radius: 50px;
   position: relative;
   width: 50px;
@@ -103,26 +103,25 @@ body.light-mode .toggle-circle {
   transform: translateX(26px);
 }
 
-
 /* ======= Homepage-specific navbar ======= */
-  .login-btn {
-    padding: 14px 24px;
-    font-size: 16px;
-    font-weight: 700;
-    border: 2px solid #ffffff;
-    background-color: transparent;
-    color: #ffffff;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
-    transition: background-color 0.3s ease;
-  }
+.login-btn {
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 2px solid #ffffff;
+  background-color: transparent;
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
 
-  .login-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
+.login-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
-  .home-link {
+.home-link {
   color: #ffffff;
   font-size: 20px;
   font-weight: 500;
@@ -131,34 +130,33 @@ body.light-mode .toggle-circle {
 }
 
 .home-link:hover {
-  color: #7AB8F5;
+  color: #7ab8f5;
 }
 
 /* ======= Loginpage specific navbar ======= */
-  .navbar-login .nav-items a {
-    color: #ffffff;
-  }
+.navbar-login .nav-items a {
+  color: #ffffff;
+}
 
-  .navbar-login .nav-items a:hover {
-    color: #7AB8F5;
-  }
-
+.navbar-login .nav-items a:hover {
+  color: #7ab8f5;
+}
 
 /* ==== Light mode ==== */
-  /* Light mode navbar */
-  body.light-mode .navbar {
-    background-color: #95A6B5;
-  }
+/* Light mode navbar */
+body.light-mode .navbar {
+  background-color: #95a6b5;
+}
 
-  /* Light mode buttons */
-  body.light-mode .login-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #2F2721;
-  }
+/* Light mode buttons */
+body.light-mode .login-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #2f2721;
+}
 
-  body.light-mode .nav-items a:hover {
-    color: #2F2721;
-  }
-  body.light-mode .logo {
-    color: #ffffff;
-  }
+body.light-mode .nav-items a:hover {
+  color: #2f2721;
+}
+body.light-mode .logo {
+  color: #ffffff;
+}

@@ -1,43 +1,46 @@
 :root {
-    --foreground-color: #000;
-    --card-bg: #FFFFFF;
-    --projects-table-bg: #FFF9E5;
-    --calendar-bg: #DDF4F0;
-    --project-details-bg: #FBEDEB;
-    --reports-bg: #F0EFFF;
-    --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --dashboard-max-width: 1200px;
-
+  --foreground-color: #000;
+  --card-bg: #ffffff;
+  --projects-table-bg: #fff9e5;
+  --calendar-bg: #ddf4f0;
+  --project-details-bg: #fbedeb;
+  --reports-bg: #f0efff;
+  --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --dashboard-max-width: 1200px;
 }
 
 body.dark-mode {
-    background: linear-gradient(to bottom, #081520 0%, #0B1C2C 30%, #12395f 70%, #1e4f85 100%);
-    background-attachment: fixed;
-    background-size: cover;
-    color: #E0E0E0;
-    --foreground-color: #E0E0E0;
-    --card-bg: #1F1F1F;
-    --projects-table-bg: #292929;
-    --calendar-bg: #2A2A2A;
-    --project-details-bg: #242424;
-    --reports-bg: #2E2E2E;
-    --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(
+    to bottom,
+    #081520 0%,
+    #0b1c2c 30%,
+    #12395f 70%,
+    #1e4f85 100%
+  );
+  background-attachment: fixed;
+  background-size: cover;
+  color: #e0e0e0;
+  --foreground-color: #e0e0e0;
+  --card-bg: #1f1f1f;
+  --projects-table-bg: #292929;
+  --calendar-bg: #2a2a2a;
+  --project-details-bg: #242424;
+  --reports-bg: #2e2e2e;
+  --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: var(--background-color);
-    color: var(--foreground-color);
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--foreground-color);
 }
-
-
 
 /* Dashboard Layout */
 .dashboard-wrapper {
   display: flex;
   min-height: calc(100vh - 100px);
-     width: 100%;
+  width: 100%;
   max-width: var(--dashboard-max-width);
   margin: 0 auto;
 }
@@ -85,7 +88,7 @@ body {
 
 /* Card Base */
 .card {
-    line-height: 1.6;
+  line-height: 1.6;
   letter-spacing: 0.4px;
   border-radius: 12px;
   padding: 1.5rem;
@@ -94,9 +97,9 @@ body {
 }
 
 .card h3 {
-  line-height: 1.3;            /* tighter on headings */
-  letter-spacing: 1px;         /* makes headings feel more “set” */
-  text-transform: uppercase;   /* optional: all-caps for emphasis */
+  line-height: 1.3; /* tighter on headings */
+  letter-spacing: 1px; /* makes headings feel more “set” */
+  text-transform: uppercase; /* optional: all-caps for emphasis */
   margin-bottom: 1rem;
 }
 
@@ -158,7 +161,7 @@ body.dark-mode .projects-table {
   color: var(--foreground-color);
 }
 .projects-table td {
-color: var(--foreground-color);
+  color: var(--foreground-color);
 }
 
 /* Calendar Card */
@@ -217,11 +220,17 @@ body.dark-mode .project-details {
   border-radius: 4px;
   font-size: var(--font-base);
   letter-spacing: 0.3px;
-  color: #FFFFFF;
+  color: #ffffff;
 }
-.sp1 { background-color: rgba(243, 215, 212, 0.6); }
-.sp2 { background-color: rgba(217, 142, 123, 0.6); }
-.sp3 { background-color: rgba(166, 92, 73, 0.6); }
+.sp1 {
+  background-color: rgba(243, 215, 212, 0.6);
+}
+.sp2 {
+  background-color: rgba(217, 142, 123, 0.6);
+}
+.sp3 {
+  background-color: rgba(166, 92, 73, 0.6);
+}
 .progress-chart {
   width: 120px;
   height: 120px;

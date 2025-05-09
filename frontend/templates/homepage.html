@@ -1,272 +1,360 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ClockWise</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClockWise</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='homepage.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+  </head>
 
-<body class="dark-mode">
-
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="logo">ClockWise</div>
-    <div class="nav-items">
-      <a href="#track">Track</a>
-      <a href="#analyze">Analyze</a>
-      <a href="#plan">Plan</a>
+  <body class="dark-mode">
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <div class="logo">ClockWise</div>
+      <div class="nav-items">
+        <a href="#track">Track</a>
+        <a href="#analyze">Analyze</a>
+        <a href="#plan">Plan</a>
         <!-- Dashboard (conditional) -->
-<a href="{{ url_for('dashboard') if user_logged_in else url_for('auth.login') }}">Dashboard</a>
+        <a
+          href="{{ url_for('dashboard') if user_logged_in else url_for('auth.login') }}"
+          >Dashboard</a
+        >
 
-      <!-- Toggle -->
-      <div class="theme-toggle" onclick="toggleTheme()">
-        <div class="sun-moon-icon">
-          <!-- Sun -->
-          <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
+        <!-- Toggle -->
+        <div class="theme-toggle" onclick="toggleTheme()">
+          <div class="sun-moon-icon">
+            <!-- Sun -->
+            <svg
+              id="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="#fff"
+              stroke-width="1.25"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
 
-          <!-- Moon -->
-          <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-          </svg>
-        </div>
-
-        <div class="toggle-button">
-          <div class="toggle-circle"></div>
-        </div>
-      </div>
-
-     {% if user_logged_in %}
-  <a href="{{ url_for('logout') }}" class="login-btn">Log Out</a>
-{% else %}
-  <a href="{{ url_for('auth.login') }}" class="login-btn">Log In</a>
-{% endif %}
-    </div>
-  </nav>
-
-  <!-- HERO -->
-  <header class="hero">
-    <div class="hero-content">
-      <h1>Track your time efficiently</h1>
-      <p>Track and analyze your project-related activities</p>
-<a href="{{ url_for('auth.login') }}" class="cta-btn">Get Started</a>
-    </div>
-  </header>
-
-  <!-- MAIN SECTIONS -->
-  <div class="main-wrapper">
-
-    <!-- TRACK -->
-    <section id="track" class="section">
-      <div class="split-container">
-        <div class="text-block">
-          <h2>Track</h2>
-          <p>Track the time you work on your projects in real time.</p>
-        </div>
-
-        <div class="timer-reflection-wrapper" style="position: relative;">
-          <div class="timer-box original-box">
-            <div class="clock-icon">
-              <svg id="clock" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" stroke="#7AB8F5" stroke-width="4" fill="none"></circle>
-                <line id="minuteHand" x1="50" y1="50" x2="50" y2="25" stroke="#7AB8F5" stroke-width="3" stroke-linecap="round"></line>
-                <line id="secondHand" x1="50" y1="50" x2="50" y2="20" stroke="#7AB8F5" stroke-width="2" stroke-linecap="round"></line>
-              </svg>
-            </div>
-            <div class="time-display" id="time">00:00:00</div>
-            <div class="button-row">
-              <button onclick="startTimer()">Start</button>
-              <button onclick="pauseTimer()">Pause</button>
-              <button onclick="stopTimer()">Stop</button>
-            </div>
+            <!-- Moon -->
+            <svg
+              id="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="#fff"
+              stroke-width="1.25"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="display: none"
+            >
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+            </svg>
           </div>
-          <div class="reflection-layer"></div>
+
+          <div class="toggle-button">
+            <div class="toggle-circle"></div>
+          </div>
         </div>
+
+        {% if user_logged_in %}
+        <a href="{{ url_for('logout') }}" class="login-btn">Log Out</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="login-btn">Log In</a>
+        {% endif %}
       </div>
-    </section>
+    </nav>
 
-    <!-- ANALYZE -->
-<section id="analyze" class="section">
-  <div class="split-container">
-    <!-- Picture left -->
-    <div class="diagram-box" style="display: flex; justify-content: center; align-items: center;">
-      <img id="analyze-img"
-           src="{{ url_for('static', filename='images/AnalyzeDiagram.png') }}"
-           alt="Analyze Diagram"
-           style="width: 97%; height: auto; object-fit: contain; border-radius: 12px;" />
-      <div class="reflection-layer reflection-analyze"></div>
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-content">
+        <h1>Track your time efficiently</h1>
+        <p>Track and analyze your project-related activities</p>
+        <a href="{{ url_for('auth.login') }}" class="cta-btn">Get Started</a>
+      </div>
+    </header>
+
+    <!-- MAIN SECTIONS -->
+    <div class="main-wrapper">
+      <!-- TRACK -->
+      <section id="track" class="section">
+        <div class="split-container">
+          <div class="text-block">
+            <h2>Track</h2>
+            <p>Track the time you work on your projects in real time.</p>
+          </div>
+
+          <div class="timer-reflection-wrapper" style="position: relative">
+            <div class="timer-box original-box">
+              <div class="clock-icon">
+                <svg
+                  id="clock"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="120"
+                  height="120"
+                  viewBox="0 0 100 100"
+                >
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="48"
+                    stroke="#7AB8F5"
+                    stroke-width="4"
+                    fill="none"
+                  ></circle>
+                  <line
+                    id="minuteHand"
+                    x1="50"
+                    y1="50"
+                    x2="50"
+                    y2="25"
+                    stroke="#7AB8F5"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  ></line>
+                  <line
+                    id="secondHand"
+                    x1="50"
+                    y1="50"
+                    x2="50"
+                    y2="20"
+                    stroke="#7AB8F5"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  ></line>
+                </svg>
+              </div>
+              <div class="time-display" id="time">00:00:00</div>
+              <div class="button-row">
+                <button onclick="startTimer()">Start</button>
+                <button onclick="pauseTimer()">Pause</button>
+                <button onclick="stopTimer()">Stop</button>
+              </div>
+            </div>
+            <div class="reflection-layer"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ANALYZE -->
+      <section id="analyze" class="section">
+        <div class="split-container">
+          <!-- Picture left -->
+          <div
+            class="diagram-box"
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <img
+              id="analyze-img"
+              src="{{ url_for('static', filename='images/AnalyzeDiagram.png') }}"
+              alt="Analyze Diagram"
+              style="
+                width: 97%;
+                height: auto;
+                object-fit: contain;
+                border-radius: 12px;
+              "
+            />
+            <div class="reflection-layer reflection-analyze"></div>
+          </div>
+
+          <!-- Text right -->
+          <div class="text-block">
+            <h2>Analyze</h2>
+            <p>
+              Visualize your time distribution – with interactive diagrams for
+              optimal insight.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLAN -->
+      <section id="plan" class="section">
+        <div class="split-container">
+          <!-- Text left -->
+          <div class="text-block">
+            <h2>Plan</h2>
+            <p>
+              Plan and structure your tasks effectively to reach your goals.
+            </p>
+          </div>
+
+          <!-- Picture right -->
+          <div
+            class="diagram-box"
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <img
+              id="plan-img"
+              src="{{ url_for('static', filename='images/PlanDiagram.png') }}"
+              alt="Analyze Diagram"
+              style="
+                width: 97%;
+                height: auto;
+                object-fit: contain;
+                border-radius: 12px;
+              "
+            />
+            <div class="reflection-layer reflection-analyze"></div>
+          </div>
+        </div>
+      </section>
     </div>
 
-    <!-- Text right -->
-    <div class="text-block">
-      <h2>Analyze</h2>
-      <p>Visualize your time distribution – with interactive diagrams for optimal insight.</p>
-    </div>
-  </div>
-</section>
+    <!-- SCRIPT -->
+    <script>
+      let timerInterval;
+      let seconds = 0;
+      let running = false;
+      let paused = false;
 
-    <!-- PLAN -->
-<section id="plan" class="section">
-  <div class="split-container">
-    <!-- Text left -->
-    <div class="text-block">
-      <h2>Plan</h2>
-      <p>Plan and structure your tasks effectively to reach your goals.</p>
-    </div>
+      const timeDisplay = document.getElementById("time");
+      const secondHand = document.getElementById("secondHand");
+      const minuteHand = document.getElementById("minuteHand");
+      const pauseButton = document.querySelector(".button-row").children[1];
 
-    <!-- Picture right -->
-    <div class="diagram-box" style="display: flex; justify-content: center; align-items: center;">
-      <img id="plan-img"
-           src="{{ url_for('static', filename='images/PlanDiagram.png') }}"
-           alt="Analyze Diagram"
-           style="width: 97%; height: auto; object-fit: contain; border-radius: 12px;" />
-      <div class="reflection-layer reflection-analyze"></div>
-    </div>
-  </div>
-</section>
-  </div>
+      function updateDisplay() {
+        const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const secs = String(seconds % 60).padStart(2, "0");
+        timeDisplay.textContent = `${hrs}:${mins}:${secs}`;
+      }
 
-  <!-- SCRIPT -->
-  <script>
-    let timerInterval;
-    let seconds = 0;
-    let running = false;
-    let paused = false;
+      function updateClock() {
+        const secDeg = (seconds % 60) * 6;
+        const minDeg = (seconds / 60) * 6;
+        secondHand.style.transform = `rotate(${secDeg}deg)`;
+        minuteHand.style.transform = `rotate(${minDeg}deg)`;
+      }
 
-    const timeDisplay = document.getElementById("time");
-    const secondHand = document.getElementById("secondHand");
-    const minuteHand = document.getElementById("minuteHand");
-    const pauseButton = document.querySelector(".button-row").children[1];
+      function startTimer() {
+        if (running && paused) {
+          paused = false;
+          pauseButton.textContent = "Pause";
+          timeDisplay.classList.remove("blink");
+          return;
+        }
 
-    function updateDisplay() {
-      const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
-      const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-      const secs = String(seconds % 60).padStart(2, '0');
-      timeDisplay.textContent = `${hrs}:${mins}:${secs}`;
-    }
-
-    function updateClock() {
-      const secDeg = (seconds % 60) * 6;
-      const minDeg = (seconds / 60) * 6;
-      secondHand.style.transform = `rotate(${secDeg}deg)`;
-      minuteHand.style.transform = `rotate(${minDeg}deg)`;
-    }
-
-    function startTimer() {
-      if (running && paused) {
+        if (running) return;
+        running = true;
         paused = false;
+
+        timerInterval = setInterval(() => {
+          if (!paused) {
+            seconds++;
+            updateDisplay();
+            updateClock();
+          }
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        if (!running) return;
+        paused = !paused;
+        pauseButton.textContent = paused ? "Weiter" : "Pause";
+        timeDisplay.classList.toggle("blink", paused);
+      }
+
+      function stopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        seconds = 0;
+        running = false;
+        paused = false;
+        updateDisplay();
+        updateClock();
         pauseButton.textContent = "Pause";
         timeDisplay.classList.remove("blink");
-        return;
       }
 
-      if (running) return;
-      running = true;
-      paused = false;
-
-      timerInterval = setInterval(() => {
-        if (!paused) {
-          seconds++;
-          updateDisplay();
-          updateClock();
-        }
-      }, 1000);
-    }
-
-    function pauseTimer() {
-      if (!running) return;
-      paused = !paused;
-      pauseButton.textContent = paused ? "Weiter" : "Pause";
-      timeDisplay.classList.toggle("blink", paused);
-    }
-
-    function stopTimer() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      seconds = 0;
-      running = false;
-      paused = false;
       updateDisplay();
       updateClock();
-      pauseButton.textContent = "Pause";
-      timeDisplay.classList.remove("blink");
-    }
 
-    updateDisplay();
-    updateClock();
+      // Scrollanimation
+      const sections = document.querySelectorAll(".section");
+      let lastScrollY = window.scrollY;
+      let scrollDirection = "down";
 
-    // Scrollanimation
-    const sections = document.querySelectorAll('.section');
-    let lastScrollY = window.scrollY;
-    let scrollDirection = 'down';
+      window.addEventListener("scroll", () => {
+        const currentScrollY = window.scrollY;
+        scrollDirection = currentScrollY > lastScrollY ? "down" : "up";
+        lastScrollY = currentScrollY;
+      });
 
-    window.addEventListener('scroll', () => {
-      const currentScrollY = window.scrollY;
-      scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
-      lastScrollY = currentScrollY;
-    });
+      const fadeObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const section = entry.target;
 
-    const fadeObserver = new IntersectionObserver(
-  entries => {
-    entries.forEach(entry => {
-      const section = entry.target;
+            if (entry.isIntersecting) {
+              section.classList.add("animate-in");
+              section.classList.remove("animate-out-up", "animate-out-down");
+            } else {
+              section.classList.remove("animate-in");
+              section.classList.add(
+                scrollDirection === "down"
+                  ? "animate-out-up"
+                  : "animate-out-down",
+              );
+            }
+          });
+        },
+        { threshold: 0.4 },
+      );
 
-      if (entry.isIntersecting) {
-        section.classList.add('animate-in');
-        section.classList.remove('animate-out-up', 'animate-out-down');
-      } else {
-        section.classList.remove('animate-in');
-        section.classList.add(
-          scrollDirection === 'down' ? 'animate-out-up' : 'animate-out-down'
-        );
+      sections.forEach((section) => fadeObserver.observe(section));
+
+      /* Bilder Switchen je nach Light/Dark Modus*/
+      function updateAnalyzeImage() {
+        const img = document.getElementById("analyze-img");
+        if (document.body.classList.contains("light-mode")) {
+          img.src =
+            "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
+        } else {
+          img.src =
+            "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+        }
       }
-    });
-  },
-  { threshold: 0.4 }
-);
 
-sections.forEach(section => fadeObserver.observe(section));
+      // Beim Seitenstart prüfen
+      updateAnalyzeImage();
 
-/* Bilder Switchen je nach Light/Dark Modus*/
-  function updateAnalyzeImage() {
-    const img = document.getElementById("analyze-img");
-    if (document.body.classList.contains("light-mode")) {
-      img.src = "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
-    } else {
-      img.src = "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
-    }
-  }
+      // Nach Theme-Änderung aktualisieren
+      const toggleTheme = () => {
+        document.body.classList.toggle("light-mode");
+        document.body.classList.toggle("dark-mode");
 
-  // Beim Seitenstart prüfen
-  updateAnalyzeImage();
+        // Icons aktualisieren
+        const sunIcon = document.getElementById("sun-icon");
+        const moonIcon = document.getElementById("moon-icon");
 
-  // Nach Theme-Änderung aktualisieren
-  const toggleTheme = () => {
-  document.body.classList.toggle("light-mode");
-  document.body.classList.toggle("dark-mode");
+        const isLightMode = document.body.classList.contains("light-mode");
+        sunIcon.style.display = isLightMode ? "none" : "block";
+        moonIcon.style.display = isLightMode ? "block" : "none";
 
-  // Icons aktualisieren
-  const sunIcon = document.getElementById("sun-icon");
-  const moonIcon = document.getElementById("moon-icon");
-
-  const isLightMode = document.body.classList.contains("light-mode");
-  sunIcon.style.display = isLightMode ? "none" : "block";
-  moonIcon.style.display = isLightMode ? "block" : "none";
-
-  updateAnalyzeImage(); // deine bestehende Bildwechsel-Funktion
-};
-</script>
-<script src="{{ url_for('static', filename='theme.js') }}"></script>
-</body>
+        updateAnalyzeImage(); // deine bestehende Bildwechsel-Funktion
+      };
+    </script>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  </body>
 </html>

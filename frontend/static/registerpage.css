@@ -1,130 +1,122 @@
 /* This CSS file defines the layout and styling of the register page */
 
-
 /* === Container: .login-container === */
-  /* Centers the login box vertically and horizontally below the navbar an positions the icon */
-  .login-container {
-    height: calc(100vh - 100px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-
+/* Centers the login box vertically and horizontally below the navbar an positions the icon */
+.login-container {
+  height: calc(100vh - 100px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
 
 /* === Box: .login-box === */
-  /* Main login box styling: layout, border, padding and shadow */
-  .login-box {
-    position: relative;
-    background-color: transparent;
-    border: 2px solid #7AB8F5;
-    border-radius: 16px;
-    padding: 3rem 2rem 2rem 2rem;
-    width: 680px;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    overflow: visible;
-  }
+/* Main login box styling: layout, border, padding and shadow */
+.login-box {
+  position: relative;
+  background-color: transparent;
+  border: 2px solid #7ab8f5;
+  border-radius: 16px;
+  padding: 3rem 2rem 2rem 2rem;
+  width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: visible;
+}
 
-  .form-columns {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-  }
+.form-columns {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
 
-  .form-column {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 48%;
-  }
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 48%;
+}
 
-  .login-box input[type="file"] {
-    background-color: transparent;
-    color: white;
-  }
-
+.login-box input[type="file"] {
+  background-color: transparent;
+  color: white;
+}
 
 /* === Inputs: .login-box input + .login-box input::placeholder + .login-box input:first-of-type === */
-  /* Style for input fields inside the login box */
-  .login-box input {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    border: none;
-    background-color: #0f2c44;
-    color: white;
-    font-size: 16px;
-  }
+/* Style for input fields inside the login box */
+.login-box input {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #0f2c44;
+  color: white;
+  font-size: 16px;
+}
 
-  /* Style for placeholder text ("Username", "Password") inside input fields */
-  .login-box input::placeholder {
-    color: #7AB8F5;
-  }
-
+/* Style for placeholder text ("Username", "Password") inside input fields */
+.login-box input::placeholder {
+  color: #7ab8f5;
+}
 
 /* === File Upload === */
-  .login-box input[type="file"] {
-    border: none;
-    color: white;
-    background-color: transparent;
-    margin-top: 0.5rem;
-  }
-
+.login-box input[type="file"] {
+  border: none;
+  color: white;
+  background-color: transparent;
+  margin-top: 0.5rem;
+}
 
 /* === Button: .login-box button === */
-  /* Style for the login button */
-  .login-box button {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 8px;
-    background-color: #7AB8F5;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 2rem;
-  }
-
+/* Style for the login button */
+.login-box button {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #7ab8f5;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 2rem;
+}
 
 /* === Links: .forgot-password a + .register-link === */
-  /* Style for the "Create an account" link under the login button */
-  .register-link {
-    margin-top: 0.5rem;
-    text-align: center;
-    color: #7AB8F5;
-    text-decoration: underline;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
+/* Style for the "Create an account" link under the login button */
+.register-link {
+  margin-top: 0.5rem;
+  text-align: center;
+  color: #7ab8f5;
+  text-decoration: underline;
+  font-size: 12px;
+  cursor: pointer;
+}
 
 /* === Error Message === */
-    /* Wrong Password */
-    .error-message {
-      color: #ff6b6b;
-      font-size: 12px;
-      text-align: left;
-      margin-top: -0.5rem;
-      margin-bottom: 0.5rem;
-    }
-
+/* Wrong Password */
+.error-message {
+  color: #ff6b6b;
+  font-size: 12px;
+  text-align: left;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+}
 
 /* === Enter profile picture === */
-  .profile-upload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 1rem 0;
-  }
+.profile-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
 
-  .profile-upload label {
-    color: #7AB8F5;
-    font-size: 14px;
-  }
+.profile-upload label {
+  color: #7ab8f5;
+  font-size: 14px;
+}
 
-  .profile-upload input[type="file"] {
-    color: white;
-  }
+.profile-upload input[type="file"] {
+  color: white;
+}
