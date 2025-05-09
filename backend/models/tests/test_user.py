@@ -6,13 +6,6 @@ from backend.database import Base
 from datetime import datetime
 
 from backend.models import User
-from backend.models import UserTeam
-from backend.models import Team
-from backend.models import Project
-from backend.models import Task
-from backend.models import TimeEntry
-from backend.models import Notification
-from backend.models import Category
 
 
 @pytest.fixture(scope="function")
