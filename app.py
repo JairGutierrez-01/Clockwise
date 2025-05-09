@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import os
+app = Flask(
+    __name__,
+    template_folder='frontend/templates',
+    static_folder='frontend/static'
+)
 
-app = Flask(__name__)
 app.secret_key = 'u89234h2v98vn34vvj2934hvjwef'  # Sicherer zufälliger Key um zu simulieren, dass ein user eingeloggt ist
 
 @app.context_processor
