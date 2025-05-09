@@ -31,24 +31,23 @@ def db_session():
 def test_create_user(db_session):
     """Test the creation and retrieval of a User.
 
-     This test ensures that a User is correctly created and added to the database.
-     It also verifies that the user data can be fetched and matches the inserted values.
+    This test ensures that a User is correctly created and added to the database.
+    It also verifies that the user data can be fetched and matches the inserted values.
 
-     Args:
-         db_session (Session): The database session fixture.
-     """
+    Args:
+        db_session (Session): The database session fixture.
+    """
     user = User(
         username="annadoe",
         email="annadoe@example.com",
         password_hash="hashedpassword123",
         first_name="Anna",
         last_name="Doe",
-        profile_picture=None
+        profile_picture=None,
     )
 
     db_session.add(user)
     db_session.commit()
-    db_session.refresh(user)
     db_session.refresh(user)
 
     fetched_user = db_session.query(User).filter_by(email="annadoe@example.com").first()

@@ -2,49 +2,50 @@ from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base
+from backend.database import db
 
-class Project(Base):
+
+class Project(db.Model):
     """
-    Represents a project a user could be working on. 
+    Represents a project a user could be working on.
 
     Attributes:
         project_id (int): Identifier of the project, also primary key.
-        name (str): The name of the project. 
+        name (str): The name of the project.
         description (str): The description of the project.
-        team_id (int): Foreign key of the team the project belongs to.  
-        category_id (int): Foreign key identifying the category of the project. 
-        time_limit_hours (int): Limit of how much time the user wants to spend on the project. 
+        team_id (int): Foreign key of the team the project belongs to.
+        category_id (int): Foreign key identifying the category of the project.
+        time_limit_hours (int): Limit of how much time the user wants to spend on the project.
         current_hours (int): How many hours the user already spent on the project.
-        created_at (datetime): The timestamp when the project was created.  
+        created_at (datetime): The timestamp when the project was created.
         due_date (datetime): Deadline for the project.
         task (relationship): The tasks the project contains.
         team (relationship): The team the project belongs to.
         user (relationship): The user the project belongs to.
-        category (relationship): The category of the project. 
+        category (relationship): The category of the project.
 
     """
 
     __tablename__ = "projects"
 
-    project_id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    team_id = Column(Integer, ForeignKey("teams.team_id"), nullable=True)
-    category_id = Column(Integer, ForeignKey("categories.category_id"))
-    time_limit_hours = Column(Integer, nullable=False)
-    current_hours = Column(Integer, nullable=True)
-    created_at = Column(DateTime, default=datetime.now)
-    due_date = Column(DateTime, nullable=True)
+    project_id = db.Column(db.Integer, primary_key=True, index=True)
+    name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=True)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.team_id"), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"))
+    time_limit_hours = db.Column(db.Integer, nullable=False)
+    current_hours = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    due_date = db.Column(db.DateTime, nullable=True)
 
-    # ForeignKey zu users.user_id
-    user_id = Column(Integer, ForeignKey("users.user_id"))
+    # Foreign Key to users.user_id
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"))
 
-    task = relationship("Task", back_populates="project")
-    team = relationship("Team", back_populates="project")
-    user = relationship("User", back_populates="project")
-    category = relationship("Category", back_populates="project")
-    notifications = relationship("Notification", back_populates="project")
-
+    task = db.relationship("Task", back_populates="project")
+    team = db.relationship("Team", back_populates="project")
+    user = db.relationship("User", back_populates="project")
+    category = db.relationship("Category", back_populates="project")
+    notifications = db.relationship("Notification", back_populates="project")
 
     def __repr__(self) -> str:
         """

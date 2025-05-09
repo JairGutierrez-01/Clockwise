@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.database import Base
+from backend.database import Base, db
+from flask_sqlalchemy import SQLAlchemy
 
 
-class User(Base):
+class User(db.Model):
     """
     Represents a user in the system.
 
@@ -27,21 +28,21 @@ class User(Base):
 
     __tablename__ = "users"
 
-    user_id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
-    last_active = Column(DateTime, default=datetime.now)
-    profile_picture = Column(String, nullable=True)
+    user_id = db.Column(db.Integer, primary_key=True, index=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    password_hash = db.Column(db.String, nullable=False)
+    first_name = db.Column(db.String, nullable=False)
+    last_name = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    last_active = db.Column(db.DateTime, default=datetime.now)
+    profile_picture = db.Column(db.String, nullable=True)
 
-    teams = relationship("UserTeam", back_populates="user")
-    project = relationship("Project", back_populates="user")
-    assigned_task = relationship("Task", back_populates="assigned_user")
-    time_entries = relationship("TimeEntry", back_populates="user")
-    notifications = relationship("Notification", back_populates="user")
+    teams = db.relationship("UserTeam", back_populates="user")
+    project = db.relationship("Project", back_populates="user")
+    assigned_task = db.relationship("Task", back_populates="assigned_user")
+    time_entries = db.relationship("TimeEntry", back_populates="user")
+    notifications = db.relationship("Notification", back_populates="user")
 
     def __repr__(self) -> str:
         """
@@ -50,5 +51,4 @@ class User(Base):
         Returns:
             str: A string representation of the user object.
         """
-        return f"<User(id={self.user_id}, email={self.email}, password_hash={self.password_hash}, first_name={self.first_name}, last_name={self.last_name})>"
-
+        return f"<User(id={self.user_id}, username={self.username}, email={self.email}, password_hash={self.password_hash}, first_name={self.first_name}, last_name={self.last_name})>"

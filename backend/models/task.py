@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, DateTime, ForeignKey, String, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base
+from backend.database import db
 import enum
 
 
@@ -10,39 +11,42 @@ class TaskStatus(enum.Enum):
     in_progress = "in_progress"
     done = "done"
 
-class Task(Base):
-    """
-        Represents a task that belongs to a project and may be assigned to a user.
 
-        Attributes:
-            task_id (int): Primary key of the task.
-            project_id (int): Foreign key linking the task to a project.
-            assigned_user_id (int, optional): Foreign key to the assigned user.
-            title (str, optional): Short title of the task.
-            description (str, optional): Detailed description of the task.
-            due_date (datetime, optional): Deadline for the task.
-            status (enum): Task status (todo, in_progress, done).
-            created_at (datetime): Timestamp when the task was created.
-            time_entries (relationship):  All time entries associated with this task.
-            assigned_user (relationship): The user currently assigned to this task.
-            project (relationship): The project this task belongs to.
+class Task(db.Model):
+    """
+    Represents a task that belongs to a project and may be assigned to a user.
+
+    Attributes:
+        task_id (int): Primary key of the task.
+        project_id (int): Foreign key linking the task to a project.
+        assigned_user_id (int, optional): Foreign key to the assigned user.
+        title (str, optional): Short title of the task.
+        description (str, optional): Detailed description of the task.
+        due_date (datetime, optional): Deadline for the task.
+        status (enum): Task status (todo, in_progress, done).
+        created_at (datetime): Timestamp when the task was created.
+        time_entries (relationship):  All time entries associated with this task.
+        assigned_user (relationship): The user currently assigned to this task.
+        project (relationship): The project this task belongs to.
     """
 
     __tablename__ = "tasks"
 
-    task_id = Column(Integer, primary_key=True, index=True)
-    project_id = Column(Integer, ForeignKey("projects.project_id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    task_id = db.Column(db.Integer, primary_key=True, index=True)
+    project_id = db.Column(
+        db.Integer, db.ForeignKey("projects.project_id"), nullable=False
+    )
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
 
-    title = Column(String, nullable=True)
-    description = Column(String, nullable=True)
-    due_date = Column(DateTime, nullable=True)
-    status = Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
-    created_at = Column(DateTime, default=datetime.now, nullable=False)
+    title = db.Column(db.String, nullable=True)
+    description = db.Column(db.String, nullable=True)
+    due_date = db.Column(db.DateTime, nullable=True)
+    status = db.Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
 
-    time_entries = relationship("TimeEntry", back_populates="task")
-    assigned_user = relationship("User", back_populates="assigned_task")
-    project = relationship("Project", back_populates="task")
+    time_entries = db.relationship("TimeEntry", back_populates="task")
+    assigned_user = db.relationship("User", back_populates="assigned_task")
+    project = db.relationship("Project", back_populates="task")
 
     def __repr__(self):
         """

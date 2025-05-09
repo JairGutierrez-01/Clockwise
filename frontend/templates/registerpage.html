@@ -22,7 +22,7 @@
   <!-- Register Box -->
   <div class="login-container">
 
-   <form class="login-box" method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data" onsubmit="return validatePasswords()">
+   <form class="login-box" method="POST" action="{{ url_for('auth.register') }}" enctype="multipart/form-data" onsubmit="return validatePasswords()">
   <div class="form-columns">
     <div class="form-column">
       <input type="text" name="first_name" placeholder="First Name" required />
@@ -43,7 +43,7 @@
 
   <div id="error-message" class="error-message"></div>
   <button type="submit">Register</button>
-  <a href="{{ url_for('login') }}" class="register-link">Already have an account?</a>
+  <a href="{{ url_for('auth.login') }}" class="register-link">Already have an account?</a>
 </form>
   </div>
 

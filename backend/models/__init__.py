@@ -22,13 +22,23 @@ Exports:
     Notification: The Notification model class.
     Category: The Category model class.
 """
-from .user import User
-from .user_team import UserTeam
-from .team import Team
-from .project import Project
-from .task import Task
-from .time_entry import TimeEntry
-from .notification import Notification
-from .category import Category
 
-__all__ = ["User", "UserTeam", "Team", "Project", "Task", "TimeEntry", "Notification", "Category"]
+from backend.models.user import User
+from backend.models.user_team import UserTeam
+from backend.models.team import Team
+from backend.models.project import Project
+from backend.models.task import Task
+from backend.models.time_entry import TimeEntry
+from backend.models.notification import Notification
+from backend.models.category import Category
+
+__all__ = [
+    "User",
+    "UserTeam",
+    "Team",
+    "Project",
+    "Task",
+    "TimeEntry",
+    "Notification",
+    "Category",
+]

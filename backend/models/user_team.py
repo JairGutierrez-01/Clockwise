@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.database import Base
+from backend.database import Base, db
 
 
-class UserTeam(Base):
+class UserTeam(db.Model):
     """
     Represents the association between a user and a team.
 
@@ -19,13 +19,13 @@ class UserTeam(Base):
 
     __tablename__ = "user_teams"
 
-    user_id = Column(Integer, ForeignKey("users.user_id"), primary_key=True)
-    team_id = Column(Integer, ForeignKey("teams.team_id"), primary_key=True)
-    role = Column(String, nullable=False, default="member")
-    joined_at = Column(DateTime, default=datetime.now)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.team_id"), primary_key=True)
+    role = db.Column(db.String, nullable=False, default="member")
+    joined_at = db.Column(db.DateTime, default=datetime.now)
 
-    user = relationship("User", back_populates="teams")
-    team = relationship("Team", back_populates="members")
+    user = db.relationship("User", back_populates="teams")
+    team = db.relationship("Team", back_populates="members")
 
     def __repr__(self) -> str:
         """

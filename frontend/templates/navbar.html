@@ -6,7 +6,7 @@
     <div class="nav-items">
       <a href="{{ url_for('timeTracking') }}" class="{% if request.path == '/TimeTracking' %}active{% endif %}">TimeTracking</a>
       <a href="{{ url_for('projects') }}" class="{% if request.path == '/projects' %}active{% endif %}">Projects</a>
-      <a href="{{ url_for('dashboard') if user_logged_in else url_for('login') }}"
+      <a href="{{ url_for('dashboard') if user_logged_in else url_for('auth.login') }}"
    class="{% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a>
       <a href="{{ url_for('analysis') }}" class="{% if request.path == '/analysis' %}active{% endif %}">Analysis</a>
       <a href="{{ url_for('teams') }}" class="{% if request.path == '/teams' %}active{% endif %}">Teams</a>
@@ -45,7 +45,7 @@
 {% if user_logged_in %}
   <a href="{{ url_for('logout') }}" class="login-btn">Log Out</a>
 {% else %}
-  <a href="{{ url_for('login') }}" class="login-btn">Log In</a>
+  <a href="{{ url_for('auth.login') }}" class="login-btn">Log In</a>
 {% endif %}
     </div>
   </nav>

@@ -39,7 +39,13 @@ def test_create_user_team(db_session):
     Args:
         db_session (Session): The database session fixture.
     """
-    user = User(username="john_doe", email="john@example.com", password_hash="hashedpassword123")
+    user = User(
+        username="john_doe",
+        email="john@example.com",
+        password_hash="hashedpassword123",
+        first_name="John",
+        last_name="Doe",
+    )
     team = Team(name="Development Team")
 
     db_session.add(user)
@@ -68,7 +74,13 @@ def test_user_team_relationship(db_session):
     Args:
         db_session (Session): The database session fixture.
     """
-    user = User(username="jane_doe", email="jane@example.com", password_hash="hashedpassword123")
+    user = User(
+        username="jane_doe",
+        email="jane@example.com",
+        password_hash="hashedpassword123",
+        first_name="Jane",
+        last_name="Doe",
+    )
     team = Team(name="Marketing Team")
 
     db_session.add(user)
@@ -83,7 +95,11 @@ def test_user_team_relationship(db_session):
     db_session.add(user_team)
     db_session.commit()
 
-    user_team_from_db = db_session.query(UserTeam).filter_by(user_id=user.user_id, team_id=team.team_id).first()
+    user_team_from_db = (
+        db_session.query(UserTeam)
+        .filter_by(user_id=user.user_id, team_id=team.team_id)
+        .first()
+    )
 
     assert user_team_from_db is not None
     assert user_team_from_db.user == user
@@ -100,7 +116,13 @@ def test_default_values(db_session):
     Args:
         db_session (Session): The database session fixture.
     """
-    user = User(username="alice_smith", email="alice@example.com", password_hash="hashedpassword123")
+    user = User(
+        username="alice_smith",
+        email="alice@example.com",
+        password_hash="hashedpassword123",
+        first_name="Alice",
+        last_name="Smith",
+    )
     team = Team(name="HR Team")
 
     db_session.add(user)
