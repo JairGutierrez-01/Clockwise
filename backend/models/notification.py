@@ -9,8 +9,8 @@ class Notification(Base):
 
 #   Attributes
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    project_id = Column(Integer, ForeignKey("projects.project_id"), nullable=True)
     message = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     type = Column(String, nullable=False)

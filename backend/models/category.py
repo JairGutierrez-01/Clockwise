@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base
 
-class Project(Base):
+class Category(Base):
     """
     Represents the categories the projects could have. 
 

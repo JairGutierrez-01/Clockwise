@@ -30,17 +30,20 @@ class Project(Base):
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     team_id = Column(Integer, ForeignKey("teams.team_id"), nullable=True)
-    category_id = Column(Integer, ForeignKey("category.category_id"))
+    category_id = Column(Integer, ForeignKey("categories.category_id"))
     time_limit_hours = Column(Integer, nullable=False)
     current_hours = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
     due_date = Column(DateTime, nullable=True)
 
+    # ForeignKey zu users.user_id
+    user_id = Column(Integer, ForeignKey("users.user_id"))
 
     task = relationship("Task", back_populates="project")
     team = relationship("Team", back_populates="project")
     user = relationship("User", back_populates="project")
     category = relationship("Category", back_populates="project")
+    notifications = relationship("Notification", back_populates="project")
 
 
     def __repr__(self) -> str:

@@ -34,6 +34,10 @@ class User(Base):
     profile_picture = Column(String, nullable=True)
 
     teams = relationship("UserTeam", back_populates="user")
+    project = relationship("Project", back_populates="user")
+    assigned_task = relationship("Task", back_populates="assigned_user")
+    time_entries = relationship("TimeEntry", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")
 
     def __repr__(self) -> str:
         """

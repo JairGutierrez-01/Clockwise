@@ -16,7 +16,11 @@ Exports:
 """
 from .user import User
 from .user_team import UserTeam
+from .team import Team
+from .project import Project
 from .task import Task
 from .time_entry import TimeEntry
+from .notification import Notification
+from .category import Category
 
-__all__ = ["User", "UserTeam", "Task", "TimeEntry"]
+__all__ = ["User", "UserTeam", "Team", "Project", "Task", "TimeEntry", "Notification", "Category"]

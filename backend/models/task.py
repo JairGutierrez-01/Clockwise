@@ -32,7 +32,7 @@ class Task(Base):
 
     task_id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.project_id"), nullable=False)
-    assigned_user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
 
     title = Column(String, nullable=True)
     description = Column(String, nullable=True)
@@ -42,7 +42,7 @@ class Task(Base):
 
     time_entries = relationship("TimeEntry", back_populates="task")
     assigned_user = relationship("User", back_populates="assigned_task")
-    project = relationship("Project", back_populates="tasks")
+    project = relationship("Project", back_populates="task")
 
     def __repr__(self):
         """
