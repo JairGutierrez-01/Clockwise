@@ -12,6 +12,14 @@ from datetime import datetime
 
 @pytest.fixture(scope="function")
 def db_session():
+    """Fixture to create a new database session for each test.
+
+    This fixture sets up an in-memory SQLite database for testing and ensures
+    that the session is properly closed after the test completes.
+
+    Returns:
+        session (Session): A SQLAlchemy session connected to the in-memory database.
+    """
     engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(bind=engine)
@@ -23,6 +31,14 @@ def db_session():
 
 
 def test_create_user_team(db_session):
+    """Test the creation of a UserTeam association.
+
+    This test ensures that a User and Team are correctly added to the database,
+    and that the UserTeam association between them is correctly established.
+
+    Args:
+        db_session (Session): The database session fixture.
+    """
     user = User(username="john_doe", email="john@example.com", password_hash="hashedpassword123")
     team = Team(name="Development Team")
 
@@ -44,6 +60,14 @@ def test_create_user_team(db_session):
 
 
 def test_user_team_relationship(db_session):
+    """Test the relationship between User, Team, and UserTeam.
+
+    This test verifies that the UserTeam object correctly links a User and a Team,
+    and that the role is correctly set in the database.
+
+    Args:
+        db_session (Session): The database session fixture.
+    """
     user = User(username="jane_doe", email="jane@example.com", password_hash="hashedpassword123")
     team = Team(name="Marketing Team")
 
@@ -68,6 +92,14 @@ def test_user_team_relationship(db_session):
 
 
 def test_default_values(db_session):
+    """Test the default value of the role attribute in UserTeam.
+
+    This test verifies that when no role is provided, the default value "member"
+    is used for the UserTeam association.
+
+    Args:
+        db_session (Session): The database session fixture.
+    """
     user = User(username="alice_smith", email="alice@example.com", password_hash="hashedpassword123")
     team = Team(name="HR Team")
 

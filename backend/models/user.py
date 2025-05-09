@@ -19,6 +19,10 @@ class User(Base):
         last_active (datetime): The timestamp of the user's last activity.
         profile_picture (str, optional): The URL or path to the user's profile picture.
         teams (relationship): The teams the user is a member of.
+        project (relationship): The projects the user is associated with.
+        assigned_task (relationship): The tasks assigned to the user.
+        time_entries (relationship): The time entries related to the user.
+        notifications (relationship): The notifications related to the user.
     """
 
     __tablename__ = "users"

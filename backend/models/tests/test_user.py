@@ -10,6 +10,14 @@ from backend.models import User
 
 @pytest.fixture(scope="function")
 def db_session():
+    """Fixture to create a new database session for each test.
+
+    This fixture sets up an in-memory SQLite database for testing and ensures
+    that the session is properly closed after the test completes.
+
+    Returns:
+        session (Session): A SQLAlchemy session connected to the in-memory database.
+    """
     engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(bind=engine)
@@ -21,6 +29,14 @@ def db_session():
 
 
 def test_create_user(db_session):
+    """Test the creation and retrieval of a User.
+
+     This test ensures that a User is correctly created and added to the database.
+     It also verifies that the user data can be fetched and matches the inserted values.
+
+     Args:
+         db_session (Session): The database session fixture.
+     """
     user = User(
         username="annadoe",
         email="annadoe@example.com",
