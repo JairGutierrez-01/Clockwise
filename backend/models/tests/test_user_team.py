@@ -7,8 +7,6 @@ from backend.models import User
 from backend.models import Team
 from backend.models import UserTeam
 
-from datetime import datetime
-
 
 @pytest.fixture(scope="function")
 def db_session():

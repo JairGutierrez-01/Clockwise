@@ -22,6 +22,13 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    """
+    Handle user registration.
+
+    Returns:
+        str or Response: Redirect to login on success, error message on failure,
+        or registration page on GET.
+    """
     if request.method == "POST":
         username = request.form["username"]
         email = request.form["email"]
@@ -43,6 +50,13 @@ def register():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    Handle user login.
+
+    Returns:
+        str or Response: Redirect to dashboard on success, error message on failure,
+        or login page on GET.
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -60,6 +74,13 @@ def login():
 
 @auth_bp.route("/user/delete", methods=["GET", "POST"])
 def user_delete():
+    """
+    Handle user deletion.
+
+    Returns:
+        str or Response: Redirect to dashboard on success, error message on failure,
+        or deletion form on GET.
+    """
     if request.method == "POST":
         username = request.form["username"]
         result = delete_user(username)
@@ -73,6 +94,16 @@ def user_delete():
 
 @auth_bp.route("/entertoken/<token>", methods=["GET", "POST"])
 def reset_password(token):
+    """
+    Handle password reset via token.
+
+    Args:
+        token (str): Reset token sent via email.
+
+    Returns:
+        str or Response: Redirect to login on success, error or expired token message,
+        or password form on GET.
+    """
     email = verify_reset_token(token)
     if not email:
         return "Token is invalid or expired.", 400
@@ -90,6 +121,13 @@ def reset_password(token):
 
 @auth_bp.route("/edit/profile", methods=["GET", "POST"])
 def edit_profile():
+    """
+    Handle user profile editing.
+
+    Returns:
+        str or Response: Redirect to profile page on success, error message on failure,
+        or profile editing form on GET.
+    """
     if request.method == "POST":
         username = request.form["username"]
         email = request.form["email"]
