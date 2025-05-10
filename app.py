@@ -1,15 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session
-from flask_sqlalchemy import SQLAlchemy
-
-# from backend.models import User, Project
-from sqlalchemy.sql import func
-
-# from backend import db
 from backend.database import db
-
-
 from backend.routes.user_routes import auth_bp
+from flask_mail import Mail
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -21,10 +14,19 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
     basedir, "database.db"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# TODO: profile picture
-app.config["UPLOAD_EXTENSIONS"] = [".jpg", ".png"]
-app.config["UPLOAD_PATH"] = "backend/models/profile_pictures"
 
+app.config["UPLOAD_EXTENSIONS"] = [".jpg", ".png"]
+app.config["UPLOAD_PATH"] = "frontend/static/profile_pictures"
+app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), app.config["UPLOAD_PATH"])
+os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+
+# TODO: forgot password
+app.config["MAIL_SERVER"] = "smtp.gmail.com"
+app.config["MAIL_PORT"] = 465
+app.config["MAIL_USE_SSL"] = True
+app.config["MAIL_USERNAME"] = "username@gmail.com"
+app.config["MAIL_PASSWORD"] = "password"
+mail = Mail(app)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 
 db.init_app(app)

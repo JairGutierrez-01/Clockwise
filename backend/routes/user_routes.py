@@ -4,10 +4,18 @@ from flask import (
     request,
     redirect,
     url_for,
-    jsonify,
     session,
 )
-from backend.services.user_service import register_user, login_user
+
+from backend.services.token_service import verify_reset_token
+from backend.services.user_service import (
+    register_user,
+    login_user,
+    delete_user,
+    forgot_password,
+    edit_user,
+    new_password,
+)
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -20,9 +28,11 @@ def register():
         first_name = request.form["first_name"]
         last_name = request.form["last_name"]
         password = request.form["password"]
-        # profile_picture = request.form["profile_picture"]
+        profile_picture = request.files["profile_picture"]
 
-        result = register_user(username, email, first_name, last_name, password)
+        result = register_user(
+            username, email, first_name, last_name, password, profile_picture
+        )
 
         if "error" in result:
             return result["error"]
@@ -48,25 +58,50 @@ def login():
     return render_template("loginpage.html")
 
 
-"""
-@app.route("/users")
-def user_list():
-    users = db.session.execute(db.select(User).order_by(User.username)).scalars()
-    return render_template("user/list.html", users=users)
+@auth_bp.route("/user/delete", methods=["GET", "POST"])
+def user_delete():
+    if request.method == "POST":
+        username = request.form["username"]
+        result = delete_user(username)
 
-@app.route("/user/<int:id>")
-def user_detail(id):
-    user = db.get_or_404(User, id)
-    return render_template("user/detail.html", user=user)
+        if result.get("success"):
+            return redirect(url_for("dashboard"))
+        else:
+            return result.get("error", "Delete user failed.")
+    return render_template("deleteuser.html")
 
-@app.route("/user/<int:id>/delete", methods=["GET", "POST"])
-def user_delete(id):
-    user = db.get_or_404(User, id)
+
+@auth_bp.route("/entertoken/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    email = verify_reset_token(token)
+    if not email:
+        return "Token is invalid or expired.", 400
 
     if request.method == "POST":
-        db.session.delete(user)
-        db.session.commit()
-        return redirect(url_for("user_list"))
+        password = request.form["password"]
+        result = new_password(email, password)
+        if result.get("success"):
+            return redirect(url_for("auth.login"))
+        else:
+            return "User not found", 404
 
-    return render_template("user/delete.html", user=user)
-"""
+    return render_template("forgotpassword.html")
+
+
+@auth_bp.route("/edit/profile", methods=["GET", "POST"])
+def edit_profile():
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+        password = request.form["password"]
+        first_name = request.form["first_name"]
+        last_name = request.form["last_name"]
+        profile_picture = request.files["profile_picture"]
+        result = edit_user(
+            username, email, first_name, last_name, password, profile_picture
+        )
+        if "success" in result:
+            return redirect(url_for("profile"))
+        else:
+            return result.get("error", "Edit profile failed.")
+    return render_template("editprofile.html")
