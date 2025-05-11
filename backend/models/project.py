@@ -3,7 +3,11 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base
 from backend.database import db
+import enum
 
+class ProjectType(enum.Enum):
+    TeamProject = "TeamProject"
+    SoloProject = "SoloProject"
 
 class Project(db.Model):
     """
@@ -19,6 +23,9 @@ class Project(db.Model):
         current_hours (int): How many hours the user already spent on the project.
         created_at (datetime): The timestamp when the project was created.
         due_date (datetime): Deadline for the project.
+        type (enum): Project Type (TeamProject, SoloProject).
+        is_course (bool): Statement if Project is a Course or not.
+        credit_points (int, optional): The credit points of the course, if it is a course.
         task (relationship): The tasks the project contains.
         team (relationship): The team the project belongs to.
         user (relationship): The user the project belongs to.
@@ -37,6 +44,9 @@ class Project(db.Model):
     current_hours = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     due_date = db.Column(db.DateTime, nullable=True)
+    type = db.Column(enum(ProjectType), default=ProjectType.SoloProject, nullable=False)
+    is_course = db.Column(db.Boolean)
+    credit_points = db.Column(db.Integer, nullable=True)
 
     # Foreign Key to users.user_id
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"))
