@@ -22,7 +22,9 @@ def add_member(username, teamname, role):
     if not existing_team:
         return {"error": "Team doesn't exists."}
 
-    existing_user_team = UserTeam.query.filter_by(user_id=existing_user.user_id, team_id=existing_team.team_id).first()
+    existing_user_team = UserTeam.query.filter_by(
+        user_id=existing_user.user_id, team_id=existing_team.team_id
+    ).first()
     if existing_user_team:
         return {"error": "User is already a member of this team."}
 

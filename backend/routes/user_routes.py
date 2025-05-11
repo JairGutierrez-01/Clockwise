@@ -12,7 +12,7 @@ from backend.services.user_service import (
     register_user,
     login_user,
     delete_user,
-    forgot_password,
+    password_forget,
     edit_user,
     new_password,
 )
@@ -116,7 +116,7 @@ def reset_password(token):
         else:
             return "User not found", 404
 
-    return render_template("forgotpassword.html")
+    return render_template("entertoken.html")
 
 
 @auth_bp.route("/edit/profile", methods=["GET", "POST"])
@@ -143,3 +143,22 @@ def edit_profile():
         else:
             return result.get("error", "Edit profile failed.")
     return render_template("editprofile.html")
+
+
+@auth_bp.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    """
+    Handle forgot password form.
+
+    Returns:
+        str or Response: Confirmation message on success, or form on GET.
+    """
+    if request.method == "POST":
+        email = request.form["email"]
+        result = password_forget(email)
+        if result.get("success"):
+            return "Reset instructions have been sent to your email.."
+        else:
+            return result.get("error", "Error resetting the password.")
+
+    return render_template("forgotpassword.html")

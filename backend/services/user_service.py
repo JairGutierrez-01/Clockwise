@@ -1,6 +1,6 @@
 from werkzeug.security import generate_password_hash
 
-from flask import current_app
+from flask import current_app, url_for
 from backend.database import db
 from backend.models import User
 from werkzeug.security import check_password_hash
@@ -8,8 +8,12 @@ from werkzeug.utils import secure_filename
 import uuid as uuid
 import os
 
+from backend.services.mail_service import send_forgot_password
+
 # from backend.services.mail_service import send_forgot_password
 from backend.services.profile_picture_service import create_profile_picture
+from backend.services.token_service import generate_reset_token
+
 
 # from backend.services.token_service import generate_reset_token
 
@@ -72,13 +76,14 @@ def new_password(email, password):
 
 
 # TODO: forgot password
-def forgot_password(email):
+def password_forget(email):
     user = User.query.filter_by(email=email).first()
     if not user:
         return {"error": "E-Mail not found"}
 
-    # token = generate_reset_token(user.email)
-    # send_forgot_password(current_app, email, token)
+    token = generate_reset_token(user.email)
+    reset_url = url_for("auth.reset_password", token=token, _external=True)
+    send_forgot_password(email, reset_url)
     return {"success": True, "message": "Password reset instructions sent"}
 
 

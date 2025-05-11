@@ -2,7 +2,9 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session
 from backend.database import db
 from backend.routes.user_routes import auth_bp
-from flask_mail import Mail
+from flask_mail import Mail, Message
+
+# from backend.team_routes import team_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -20,14 +22,15 @@ app.config["UPLOAD_PATH"] = "frontend/static/profile_pictures"
 app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), app.config["UPLOAD_PATH"])
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-# TODO: forgot password
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
 app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USERNAME"] = "username@gmail.com"
-app.config["MAIL_PASSWORD"] = "password"
+app.config["Mail_USE_TLS"] = False
+app.config["MAIL_USERNAME"] = "sep.clockwise@gmail.com"
+app.config["MAIL_PASSWORD"] = "sclpdlhelcwwobob"
 mail = Mail(app)
 app.register_blueprint(auth_bp, url_prefix="/auth")
+# app.register_blueprint(team_bp, url_prefix="/team")
 
 db.init_app(app)
 with app.app_context():
@@ -55,6 +58,15 @@ def override_url_for():
 def home():
     return render_template("homepage.html")
 
+
+# TODO: send email
+"""@app.route("/email")
+def email():
+    from backend.services.mail_service import send_forgot_password
+
+    with app.app_context():
+        return send_forgot_password()
+"""
 
 # @app.route("/login", methods=["GET", "POST"])
 # def login():
@@ -88,13 +100,14 @@ def register():
     return render_template('registerpage.html')
     """
 
-
+"""
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
         # E-Mail senden oder Token generieren
         pass
     return render_template("forgotpassword.html")
+"""
 
 
 @app.route("/enter_token", methods=["GET", "POST"])
@@ -102,7 +115,7 @@ def enter_token():
     if request.method == "POST":
         token = request.form.get("token")
         # Tokenprüfung hier
-    return render_template("enter_token.html")
+    return render_template("entertoken.html")
 
 
 # Dummy dashboard for prototype
