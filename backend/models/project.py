@@ -3,7 +3,11 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base
 from backend.database import db
+import enum
 
+class ProjectType(enum.Enum):
+    TeamProject = "TeamProject"
+    SoloProject = "SoloProject"
 
 class Project(db.Model):
     """
@@ -40,7 +44,7 @@ class Project(db.Model):
     current_hours = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     due_date = db.Column(db.DateTime, nullable=True)
-    type = db.Column(Enum(ProjectType), default=ProjectType.SoloProject, nullable=False)
+    type = db.Column(enum(ProjectType), default=ProjectType.SoloProject, nullable=False)
     is_course = db.Column(db.Boolean)
     credit_points = db.Column(db.Integer, nullable=True)
 
