@@ -5,9 +5,11 @@ from backend.database import Base
 from backend.database import db
 import enum
 
+
 class ProjectType(enum.Enum):
     TeamProject = "TeamProject"
     SoloProject = "SoloProject"
+
 
 class Project(db.Model):
     """
