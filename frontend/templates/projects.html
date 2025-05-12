@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project Management – ClockWise</title>
+  <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='projects.css') }}"
+    />
+</head>
+<body class="dark-mode">
+{% include 'navbar.html' %}
+  <div class="project-page">
+    <!-- Header with Create-Project Button -->
+    <header class="project-header">
+      <h1>Projects</h1>
+      <button id="create-project-btn" type="button">＋ New Project</button>
+    </header>
+
+    <!-- List of Existing Projects -->
+    <section id="project-list" class="project-list">
+      <!-- Remember I've put the layout of the card in the JS code -->
+    </section>
+
+    <!-- Project Creation / Edit Modal -->
+    <div id="project-form-modal" class="modal hidden">
+      <form id="project-form" class="project-form">
+        <h2 id="form-title">New Project</h2>
+
+        <label for="project-name">Name *</label>
+        <input type="text" id="project-name" name="name" required />
+
+        <label for="project-description">Description</label>
+        <textarea id="project-description" name="description"></textarea>
+
+        <label for="project-type">Type *</label>
+        <select id="project-type" name="type">
+          <option value="SoloProject">SoloProject</option>
+          <option value="TeamProject">TeamProject</option>
+        </select>
+
+        <label for="project-time-limit">Time Limit (hours) *</label>
+        <input type="number" id="project-time-limit" name="time_limit_hours" min="0" value="0" required />
+
+        <label for="project-due-date">Due Date</label>
+        <input type="date" id="project-due-date" name="due_date" />
+
+        <div class="form-actions">
+          <button type="submit" id="save-project-btn">Save</button>
+          <button type="button" id="cancel-project-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Detail View for a Single Project -->
+    <section id="project-detail" class="project-detail hidden">
+      <header class="project-detail__header">
+        <h2 id="detail-name">Project Name</h2>
+        <div class="project-detail__actions">
+          <button id="edit-project-btn">Edit</button>
+          <button id="delete-project-btn">Delete</button>
+        </div>
+      </header>
+      <dl class="project-detail__info">
+        <dt>Description:</dt><dd id="detail-description">…</dd>
+        <dt>Type:</dt><dd id="detail-type">SoloProject</dd>
+        <dt>Time Limit:</dt><dd id="detail-time-limit">10 h</dd>
+        <dt>Current Hours:</dt><dd id="detail-current-hours">2 h</dd>
+        <dt>Due Date:</dt><dd id="detail-due-date">2025-06-01</dd>
+      </dl>
+
+      <!-- Task Management Within This Project -->
+      <div class="tasks-section">
+        <header class="tasks-header">
+          <h3>Tasks</h3>
+          <button id="create-task-btn" type="button">＋ Add Task</button>
+        </header>
+        <ul id="task-list" class="task-list">
+          <!-- Remember: JS will inject each task-item here -->
+        </ul>
+      </div>
+    </section>
+  </div>
+
+      <!-- Include theme toggle and projects scripts -->
+      <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/projects.js') }}"></script>
+
+</body>
+</html>

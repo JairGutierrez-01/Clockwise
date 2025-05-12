@@ -104,10 +104,9 @@ function formatTime(ms) {
   );
 }
 
-// ============================================================================
-// Main Application Logic
-// Sets up event listeners, state management, and UI update routines after DOM load.
-// ============================================================================
+/**
+ * Sets up event listeners, state variables, and initial UI rendering after DOM content is loaded.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   // --- Cache DOM Elements ---
   const trackerEl = document.querySelector('.tracker');
@@ -145,8 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.style.display = list.children.length === 0 ? "block" : "none";
   }
 
-  // --- Render a Single Time Entry in the UI ---
-  // Clones the project template, populates data, and appends to project list.
+
   /**
    * Renders a single time entry in the project list UI.
    * @function renderEntry
@@ -174,8 +172,6 @@ document.addEventListener("DOMContentLoaded", () => {
     updateEmptyState();
   }
 
-  // --- Load and Render All Entries on Page Load ---
-  // Fetches existing entries and invokes renderEntry for each.
   /**
    * Fetches and renders all existing time entries on page load.
    * @async
@@ -187,7 +183,12 @@ document.addEventListener("DOMContentLoaded", () => {
     entries.forEach(renderEntry);
   }
 
-  // --- Start Button: Create and Start Timer for a New Entry ---
+
+  /**
+   * Handles the start button click to create a new time entry and start the timer.
+   *
+   * @async
+   */
   startBtn.addEventListener("click", async () => {
     const name = input.value.trim();
     if (!name) return;
@@ -219,7 +220,10 @@ document.addEventListener("DOMContentLoaded", () => {
     startDisplay = new Date(newEntry.start_time).toLocaleTimeString();
   });
 
-  // --- Pause Button: Pause Active Timer ---
+
+  /**
+   * Pauses the active timer, clears the interval, and updates UI controls.
+   */
   pauseBtn.addEventListener("click", () => {
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -229,7 +233,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Resume Button: Continue Paused Timer ---
+
+  /**
+   * Resumes a paused timer and updates UI controls.
+   */
   resumeBtn.addEventListener("click", () => {
     startTime = Date.now() - elapsedTime;
     timerInterval = setInterval(() => {
@@ -240,7 +247,12 @@ document.addEventListener("DOMContentLoaded", () => {
     pauseBtn.hidden = false;
   });
 
-  // --- Stop Button: Stop Timer, Update Entry, and Reset UI ---
+
+  /**
+   * Stops the timer, updates the time entry in the backend, renders the entry, and resets UI controls.
+   *
+   * @async
+   */
   stopBtn.addEventListener("click", async () => {
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -274,7 +286,13 @@ document.addEventListener("DOMContentLoaded", () => {
     trackerEl.classList.remove('animate-controls');
   });
 
-  // --- Click Handler for Project List Actions (Delete/Edit) ---
+
+  /**
+   * Handles click events on the entry list to delete or edit time entries.
+   *
+   * @param {Event} e - The click event object.
+   * @async
+   */
   list.addEventListener("click", async (e) => {
     const wrapper = e.target.closest(".project-wrapper");
     if (!wrapper) return;
@@ -284,7 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wrapper.remove();
       updateEmptyState();
     } else if (e.target.classList.contains("edit-btn")) {
-      // TODO: I still need to check the backend to implement this part
+      // TODO: edit button
     }
   });
 
