@@ -1,10 +1,9 @@
 from datetime import datetime
 from backend.database import Base, db
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
-from sqlalchemy.orm import relationship
 
 
 class Notification(db.Model):
+    """Database model for user notifications related to projects or system events."""
 
     __tablename__ = "notifications"
 
