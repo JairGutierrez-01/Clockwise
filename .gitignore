@@ -5,3 +5,7 @@ __pycache__/
 
 # Lokale SQLite-Datenbank
 backend/database.db
+
+#Profilbilder
+app.config["UPLOAD_PATH"] = "frontend/static/profile_pictures"
+
