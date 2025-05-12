@@ -138,18 +138,12 @@ def register():
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "POST":
-        # E-Mail senden oder Token generieren
+        # E-Mail senden
         pass
     return render_template("forgotpassword.html")
 """
 
 
-@app.route("/enter_token", methods=["GET", "POST"])
-def enter_token():
-    if request.method == "POST":
-        token = request.form.get("token")
-        # Tokenprüfung hier
-    return render_template("entertoken.html")
 
 
 # Dummy dashboard for prototype

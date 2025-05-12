@@ -135,7 +135,7 @@ def reset_password(token):
         else:
             return "User not found", 404
 
-    return render_template("entertoken.html")
+    return render_template("passwordchange.html")
 
 
 @auth_bp.route("/edit/profile", methods=["GET", "POST"])
