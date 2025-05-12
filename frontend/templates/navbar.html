@@ -3,7 +3,9 @@
   <div class="logo">
     <a href="{{ url_for('home') }}">ClockWise</a>
   </div>
-{% if user_logged_in %}
+
+  <div class="nav-items">
+      {% if user_logged_in %}
 <div class="notification-icon">
   <a href="{{ url_for('notifications') }}">
     <svg
@@ -26,7 +28,6 @@
   </a>
 </div>
 {% endif %}
-  <div class="nav-items">
     <a
       href="{{ url_for('timeTracking') }}"
       class="{% if request.path == '/TimeTracking' %}active{% endif %}"
