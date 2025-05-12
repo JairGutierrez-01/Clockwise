@@ -1,0 +1,88 @@
+.profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem;
+  min-height: calc(100vh - 100px);
+  background-color: transparent;
+}
+
+.profile-card {
+  background-color: var(--card-bg, #1f1f1f);
+  color: var(--foreground-color, #e0e0e0);
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: var(--card-shadow-light, 0 4px 12px rgba(0, 0, 0, 0.4));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile-picture {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #7ab8f5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0.5rem 0 0;
+}
+
+.profile-card p {
+  font-size: 16px;
+  margin: 0.25rem 0;
+}
+
+.teams, .projects {
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.teams h3, .projects h3 {
+  font-size: 18px;
+  color: #7ab8f5;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #7ab8f5;
+  padding-bottom: 0.3rem;
+}
+
+.teams ul, .projects ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.teams li, .projects li {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 15px;
+  color: var(--foreground-color, #e0e0e0);
+}
+
+/* Light Mode */
+body.light-mode .profile-card {
+  background-color: #ffffff;
+  color: #0b1c2c;
+}
+
+body.light-mode .teams h3,
+body.light-mode .projects h3 {
+  color: #2f2721;
+  border-color: #2f2721;
+}
+
+body.light-mode .teams li,
+body.light-mode .projects li {
+  background-color: #f1f5fa;
+  color: #0b1c2c;
+}

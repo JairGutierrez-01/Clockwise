@@ -1,0 +1,57 @@
+<!-- rendered profile.html -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile - ClockWise</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+  </head>
+
+  <body class="dark-mode">
+    {% include 'navbar.html' %}
+
+    <div class="profile-container">
+      <div class="profile-card">
+        <img
+          src="{{ user.profile_picture or url_for('static', filename='images/default_avatar.png') }}"
+          alt="Profile Picture"
+          class="profile-picture"
+        />
+
+        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+        <p>@{{ user.username }}</p>
+        <p>Email: {{ user.email }}</p>
+        <p>Joined: {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+        <p>Last Active: {{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</p>
+
+        <div class="teams">
+          <h3>Teams</h3>
+          <ul>
+            {% for ut in user.teams %}
+              <li>{{ ut.team.name }} ({{ ut.role }})</li>
+            {% else %}
+              <li>No team memberships</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="projects">
+          <h3>My Projects</h3>
+          <ul>
+            {% for project in user.project %}
+              <li>{{ project.name }} – {{ project.type.value }}</li>
+            {% else %}
+              <li>No projects found</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+  </body>
+</html>
