@@ -1,19 +1,22 @@
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from backend.database import SessionLocal
+from backend.database import db
 from backend.models.notification import Notification
 
+# Blueprint for notification-related endpoints
 notification_bp = Blueprint("notifications", __name__)
 
 
 @notification_bp.route("/notifications", methods=["GET"])
 @jwt_required()
 def get_notifications():
-    session = SessionLocal()
+    """Returns a list of notifications for the authenticated user."""
     try:
         user_id = get_jwt_identity()
+
+        # Query all notifications for the user, ordered by most recent
         notifications = (
-            session.query(Notification)
+            db.session.query(Notification)
             .filter_by(user_id=user_id)
             .order_by(Notification.created_at.desc())
             .all()
@@ -29,9 +32,8 @@ def get_notifications():
             }
             for n in notifications
         ]
+
         return jsonify(result), 200
+
     except Exception as e:
-        session.rollback()
         return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
