@@ -1,14 +1,26 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session 
+from flask_mail import Mail
+from flask_login import LoginManager
+
+
+
+
+
+
 from backend.database import db
 from backend.routes.user_routes import auth_bp
-from flask_mail import Mail, Message
+#from flask_mail import Mail, Message
 
 # from backend.team_routes import team_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
 )
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'  # where to redirect when not logged in
+login_manager.init_app(app)
+
 #####
 basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "backend")
 
@@ -147,9 +159,9 @@ def teams():
     return "<h1>Teams page</h1>"
 
 
-@app.route("/profile")
-def profile():
-    return "<h1>Profile page</h1>"
+# @app.route("/profile")
+# def profile():
+#     return "<h1>Profile page</h1>"
 
 
 @app.route("/logout")
@@ -161,6 +173,12 @@ def logout():
 @app.context_processor
 def inject_user_status():
     return dict(user_logged_in=session.get("user_id") is not None)
+from backend.models import User
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 
 
 if __name__ == "__main__":

@@ -3,9 +3,11 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.database import Base, db
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 
-class User(db.Model):
+
+class User(db.Model, UserMixin):
     """
     Represents a user in the system.
 
@@ -43,6 +45,10 @@ class User(db.Model):
     assigned_task = db.relationship("Task", back_populates="assigned_user")
     time_entries = db.relationship("TimeEntry", back_populates="user")
     notifications = db.relationship("Notification", back_populates="user")
+
+    def get_id(self):
+        return str(self.user_id)
+
 
     def __repr__(self) -> str:
         """

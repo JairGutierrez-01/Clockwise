@@ -1,3 +1,4 @@
+from flask_login import login_user as flask_login_user
 from flask import (
     Blueprint,
     render_template,
@@ -47,29 +48,47 @@ def register():
 
     return render_template("registerpage.html")
 
+## REMEMBER ##
+# @auth_bp.route("/login", methods=["GET", "POST"])
+# def login():
+#     """
+#     Handle user login.
+
+#     Returns:
+#         str or Response: Redirect to dashboard on success, error message on failure,
+#         or login page on GET.
+#     """
+#     if request.method == "POST":
+#         username = request.form["username"]
+#         password = request.form["password"]
+
+#         result = login_user(username, password)
+
+#         if result.get("success"):
+#             session["user_id"] = result["user"].user_id
+#             return redirect(url_for("dashboard"))
+#         else:
+#             return result.get("error", "Login failed.")
+
+#     return render_template("loginpage.html")
+
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """
-    Handle user login.
-
-    Returns:
-        str or Response: Redirect to dashboard on success, error message on failure,
-        or login page on GET.
-    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
-        result = login_user(username, password)
+        result = login_user(username, password)  # your service method
 
         if result.get("success"):
-            session["user_id"] = result["user"].user_id
+            flask_login_user(result["user"])  # ✅ This replaces session manually
             return redirect(url_for("dashboard"))
         else:
             return result.get("error", "Login failed.")
 
     return render_template("loginpage.html")
+
 
 
 @auth_bp.route("/user/delete", methods=["GET", "POST"])
@@ -162,3 +181,12 @@ def forgot_password():
             return result.get("error", "Error resetting the password.")
 
     return render_template("forgotpassword.html")
+
+from flask_login import login_required, current_user
+from flask import render_template
+
+@auth_bp.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html", user=current_user)
+
