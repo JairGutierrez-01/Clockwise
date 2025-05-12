@@ -7,18 +7,11 @@ from flask_login import logout_user
 from flask_login import current_user
 from backend.models.user import User
 from backend.models.notification import Notification
-
-
-
-
-
-
-
-
 from backend.database import db
 from backend.routes.user_routes import auth_bp
 from flask_mail import Mail, Message
 from backend.routes.team_routes import team_bp
+from backend.routes.notification_routes import notification_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -49,6 +42,8 @@ app.config["MAIL_PASSWORD"] = "sclpdlhelcwwobob"
 mail = Mail(app)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/teams")
+
+app.register_blueprint(notification_bp, url_prefix="/api/notifications")
 
 
 db.init_app(app)

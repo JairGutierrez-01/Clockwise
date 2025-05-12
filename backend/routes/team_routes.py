@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from backend.database import db
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
+from backend.models.notification import Notification
 
 team_bp = Blueprint("teams", __name__)
 
@@ -25,6 +26,15 @@ def create_team():
 
         user_team = UserTeam(user_id=user_id, team_id=new_team.team_id, role="admin")
         db.session.add(user_team)
+        db.session.commit()
+
+        notification = Notification(
+            user_id=user_id,
+            project_id=None,  # no projects associated
+            message=f"Team created '{new_team.name}'.",
+            type="team"
+        )
+        db.session.add(notification)
         db.session.commit()
 
         return jsonify({"message": "Team created", "team_id": new_team.team_id}), 201
