@@ -18,7 +18,31 @@
     <!-- NAVBAR -->
     <nav class="navbar">
       <div class="logo">ClockWise</div>
+
       <div class="nav-items">
+          {% if user_logged_in %}
+<div class="notification-icon">
+  <a href="{{ url_for('notifications') }}">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="feather feather-bell"
+    >
+      <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 01-3.46 0"></path>
+    </svg>
+    {% if has_notifications %}
+    <span class="notification-dot"></span>
+    {% endif %}
+  </a>
+</div>
+{% endif %}
         <a href="#track">Track</a>
         <a href="#analyze">Analyze</a>
         <a href="#plan">Plan</a>
