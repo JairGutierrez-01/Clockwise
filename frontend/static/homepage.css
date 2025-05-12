@@ -34,6 +34,26 @@ body.dark-mode {
   font-weight: 600;
   color: #ffffff;
 }
+
+.notification-icon {
+  position: relative;
+}
+
+.notification-icon a {
+  color: white;
+  text-decoration: none;
+}
+
+.notification-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  height: 8px;
+  width: 8px;
+  background-color: red;
+  border-radius: 50%;
+}
+
 .nav-items {
   display: flex;
   gap: 40px;

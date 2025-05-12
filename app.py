@@ -211,6 +211,10 @@ def inject_user_status():
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.route("/notifications")
+def notifications():
+    return render_template("notifications.html")
+
 
 
 if __name__ == "__main__":
