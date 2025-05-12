@@ -1,51 +1,71 @@
 <!doctype html>
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Time Tracking - ClockWise</title>
-    <!-- Styles -->
+    <!-- Stylesheets for navigation bar and time tracking page -->
+    <!-- Include global navbar styles -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='navbar.css') }}"
     />
+    <!-- Include styles to the time-tracking interface -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='timeTracking.css') }}"
     />
   </head>
+  <!-- Apply dark-mode theme by default -->
   <body class="dark-mode">
+    <!-- Load the site-wide navigation bar -->
     {% include 'navbar.html' %}
+    <!-- Main time-tracking container wraps tracker and projects list -->
+    <!-- Container for the tracker panel and recent projects -->
     <div class="time-tracking container">
       <div class="tracker-wrapper">
+        <!-- Tracker panel: input for project name, timer display, and control buttons -->
         <div class="tracker">
-          <input type="text" placeholder="Project Name ..." />
+          <input type="text" id="project-name-input" placeholder="Project Name ..." />
           <div id="tracker-time" class="time-display">00:00:00</div>
-          <button id="tracker-btn" type="button">Start Tracking</button>
+          <!-- Start button to begin timing -->
+          <button id="tracker-start" class="btn-start" type="button">Start</button>
+          <!-- Pause button, shown when tracking is active -->
+          <button id="tracker-pause" class="btn-pause" type="button" hidden>Pause</button>
+          <!-- Resume button, shown after pausing -->
+          <button id="tracker-resume" class="btn-resume" type="button" hidden>Resume</button>
+          <!-- Stop button to end tracking session -->
+          <button id="tracker-stop" class="btn-stop" type="button" hidden>Stop</button>
         </div>
       </div>
-
+      <!-- Projects section: shows latest tracked sessions or a placeholder message -->
+      <!-- Section heading for recent projects list -->
       <h2 id="recent-projects-heading">Latest Projects</h2>
-      <div class="project-list">
-        <div class="project-wrapper">
-          <div class="project">
-            <div>Clockwise</div>
-            <div>18:00 - 19:43</div>
-            <div>01:43:22</div>
-          </div>
-        </div>
-
-        <div class="project-wrapper">
-          <div class="project">
-            <div>Lineare Algebra</div>
-            <div>20:00 - 21:43</div>
-            <div>01:43:22</div>
-          </div>
-        </div>
+      <!-- Dynamic list container -->
+      <div class="project-list" id="project-list">
       </div>
+      <!-- Message displayed when there are no tracked projects -->
+      <p id="empty-message">No projects yet. Start by adding one!</p>
+      <!-- template for rendering individual project entries -->
+      <template id="project-template">
+        <!-- Wrapper for a single project card -->
+        <div class="project-wrapper">
+          <!-- Project card: name, time range, duration, and action buttons -->
+          <div class="project">
+            <div class="project-name">Project Name</div>
+            <div class="time-range">Start - End</div>
+            <div class="duration">Duration</div>
+            <!-- Edit project details -->
+            <button class="edit-btn">Edit</button>
+            <!-- Remove project entry -->
+            <button class="delete-btn">Delete</button>
+          </div>
+        </div>
+      </template>
+      <!-- Include theme toggle and time-tracking scripts -->
+      <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+      <script src="{{ url_for('static', filename='js/timeTracking.js') }}"></script>
     </div>
-
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/timeTracking.js') }}"></script>
   </body>
 </html>
