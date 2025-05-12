@@ -2,6 +2,11 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session 
 from flask_mail import Mail
 from flask_login import LoginManager
+from flask_login import login_user
+from flask_login import logout_user
+from flask_login import current_user
+from backend.models.user import User
+
 
 
 
@@ -81,7 +86,20 @@ def email():
     with app.app_context():
         return send_forgot_password()
 """
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        user = User.query.filter_by(username=username).first()
 
+        if user and user.password == password:
+            login_user(user)  # ← Das ist entscheidend!
+            return redirect(url_for("dashboard"))
+        else:
+            return render_template("loginpage.html", error="Invalid credentials")
+
+    return render_template("loginpage.html")
 # @app.route("/login", methods=["GET", "POST"])
 # def login():
 #    if request.method == "POST":
@@ -166,16 +184,28 @@ def teams():
 #     return "<h1>Profile page</h1>"
 
 
+#@app.route("/logout")
+#def logout():
+#    session.pop("user_id", None)
+#    return redirect(url_for("home"))
+
 @app.route("/logout")
 def logout():
-    session.pop("user_id", None)
+    logout_user()
     return redirect(url_for("home"))
 
 
+#@app.context_processor
+#def inject_user_status():
+#    return dict(user_logged_in=session.get("user_id") is not None)
+#from backend.models import User
+
 @app.context_processor
 def inject_user_status():
-    return dict(user_logged_in=session.get("user_id") is not None)
-from backend.models import User
+    return dict(
+        user_logged_in=current_user.is_authenticated,
+        has_notifications=False
+    )
 
 @login_manager.user_loader
 def load_user(user_id):
