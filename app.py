@@ -162,7 +162,7 @@ def analysis():
 
 @app.route("/projects")
 def projects():
-    return "<h1>Projects page</h1>"
+    return render_template("projects.html")
 
 
 @app.route("/teams")
