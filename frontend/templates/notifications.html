@@ -1,10 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Notifications</title>
-</head>
-<body>
-  <h1>Notifications</h1>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notifications - ClockWise</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}" />
+  </head>
+  <body class="dark-mode">
+    {% include 'navbar.html' %}
+
+    <main class="notification-container">
+        <h1>Notifications</h1>
+        {% if notifications %}
+  <div class="notification-list">
+    {% for note in notifications %}
+      <div class="notification-card">
+        <div class="notification-message">{{ note.message }}</div>
+        <button class="delete-btn" onclick="deleteNotification({{ note.id }})">Delete</button>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>You currently have no new notifications.</p>
+{% endif %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script>
+  function deleteNotification(id) {
+    fetch(`/notifications/delete/${id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(() => {
+      location.reload(); // Seite neu laden nach Löschen
+    });
+  }
+</script>
+  </body>
 </html>

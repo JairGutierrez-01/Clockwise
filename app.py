@@ -6,6 +6,8 @@ from flask_login import login_user
 from flask_login import logout_user
 from flask_login import current_user
 from backend.models.user import User
+from backend.models.notification import Notification
+
 
 
 
@@ -215,7 +217,17 @@ def load_user(user_id):
 def notifications():
     return render_template("notifications.html")
 
+@app.route("/notifications/delete/<int:notification_id>", methods=["POST"])
+def delete_notification(notification_id):
+    if not current_user.is_authenticated:
+        return "", 403
 
+    notification = Notification.query.get(notification_id)
+    if notification and notification.user_id == current_user.id:
+        db.session.delete(notification)
+        db.session.commit()
+        return "", 200
+    return "", 404
 
 if __name__ == "__main__":
     # from livereload import Server
