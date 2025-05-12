@@ -10,9 +10,8 @@ from flask_login import LoginManager
 
 from backend.database import db
 from backend.routes.user_routes import auth_bp
-#from flask_mail import Mail, Message
-
-# from backend.team_routes import team_bp
+from flask_mail import Mail, Message
+from backend.routes.team_routes import team_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -42,9 +41,12 @@ app.config["MAIL_USERNAME"] = "sep.clockwise@gmail.com"
 app.config["MAIL_PASSWORD"] = "sclpdlhelcwwobob"
 mail = Mail(app)
 app.register_blueprint(auth_bp, url_prefix="/auth")
-# app.register_blueprint(team_bp, url_prefix="/team")
+app.register_blueprint(team_bp, url_prefix="/teams")
+
 
 db.init_app(app)
+from flask_jwt_extended import JWTManager
+jwt = JWTManager(app)
 with app.app_context():
     db.create_all()
 

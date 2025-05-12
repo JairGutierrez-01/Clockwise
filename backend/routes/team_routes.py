@@ -1,42 +1,37 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from backend.database import SessionLocal
+from backend.database import db
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
 
 team_bp = Blueprint("teams", __name__)
 
-
-@team_bp.route("/teams", methods=["POST"])
+@team_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_team():
-    session = SessionLocal()
-    try:  # create a new sesion for the Database
+    """Create a new team and assign the current user as admin."""
+    try:
         data = request.get_json()
         name = data.get("name")
 
         if not name or not name.strip():
-            return jsonify({"Error": "Team name is required"}), 400
+            return jsonify({"error": "Team name is required"}), 400
 
         user_id = get_jwt_identity()
 
-        # - Create team
         new_team = Team(name=name.strip())
-        session.add(new_team)
-        session.commit()
+        db.session.add(new_team)
+        db.session.commit()
 
-        # - User as admin
-        user_team = UserTeam(user_id=user_id, team_id=new_team.id, role="admin")
-        session.add(user_team)
-        session.commit()
+        user_team = UserTeam(user_id=user_id, team_id=new_team.team_id, role="admin")
+        db.session.add(user_team)
+        db.session.commit()
 
-        return jsonify({"message": "Team created", "team_id": new_team.id}), 201
+        return jsonify({"message": "Team created", "team_id": new_team.team_id}), 201
 
     except Exception as e:
-        session.rollback()
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
 
 
 """

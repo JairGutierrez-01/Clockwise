@@ -1,10 +1,10 @@
 from datetime import datetime
 from backend.database import db, Base
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import relationship
-
 
 class Team(db.Model):
+
+    """Database model for a team within the system."""
+
     __tablename__ = "teams"
     # - Attributes:
     team_id = db.Column(db.Integer, primary_key=True, index=True)
@@ -16,6 +16,7 @@ class Team(db.Model):
 
     # - Validation
     def is_valid(self):
+        """Checks if the team object has a valid (non-empty) name."""
         if not self.name or not self.name.strip():
             return False
         return True
