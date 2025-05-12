@@ -1,3 +1,36 @@
+from pathlib import Path
+
+# Neue Version von profile.css im Stil von dashboard.css
+dashboard_style_profile_css = """
+:root {
+  --foreground-color: #000;
+  --card-bg: #ffffff;
+  --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode {
+  background: linear-gradient(
+    to bottom,
+    #081520 0%,
+    #0b1c2c 30%,
+    #12395f 70%,
+    #1e4f85 100%
+  );
+  background-attachment: fixed;
+  background-size: cover;
+  color: #e0e0e0;
+  --foreground-color: #e0e0e0;
+  --card-bg: #1f1f1f;
+  --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+}
+
 .profile-container {
   display: flex;
   justify-content: center;
@@ -8,17 +41,34 @@
 }
 
 .profile-card {
-  background-color: var(--card-bg, #1f1f1f);
-  color: var(--foreground-color, #e0e0e0);
+  background-color: var(--card-bg);
+  color: var(--foreground-color);
   padding: 2rem;
-  border-radius: 16px;
+  border-radius: 12px;
   max-width: 600px;
   width: 100%;
-  box-shadow: var(--card-shadow-light, 0 4px 12px rgba(0, 0, 0, 0.4));
+  box-shadow: var(--card-shadow-light);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
+  line-height: 1.6;
+  letter-spacing: 0.4px;
+}
+
+.profile-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.profile-card p {
+  font-size: 16px;
+  margin: 0.25rem 0;
+  line-height: 1.5;
+  letter-spacing: 0.2px;
 }
 
 .profile-picture {
@@ -30,20 +80,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.profile-card h2 {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0.5rem 0 0;
-}
-
-.profile-card p {
-  font-size: 16px;
-  margin: 0.25rem 0;
-}
-
 .teams, .projects {
   width: 100%;
-  margin-top: 1.5rem;
 }
 
 .teams h3, .projects h3 {
@@ -52,37 +90,36 @@
   margin-bottom: 0.5rem;
   border-bottom: 1px solid #7ab8f5;
   padding-bottom: 0.3rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .teams ul, .projects ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .teams li, .projects li {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
   font-size: 15px;
-  color: var(--foreground-color, #e0e0e0);
+  color: var(--foreground-color);
 }
 
-/* Light Mode */
-body.light-mode .profile-card {
-  background-color: #ffffff;
-  color: #0b1c2c;
+body.dark-mode .teams li,
+body.dark-mode .projects li {
+  background-color: rgba(255, 255, 255, 0.05);
 }
+"""
 
-body.light-mode .teams h3,
-body.light-mode .projects h3 {
-  color: #2f2721;
-  border-color: #2f2721;
-}
+# Speichern unter neuem Pfad
+updated_dashboard_style_path = "/mnt/data/profile.dashboardstyle.css"
+Path(updated_dashboard_style_path).write_text(dashboard_style_profile_css)
 
-body.light-mode .teams li,
-body.light-mode .projects li {
-  background-color: #f1f5fa;
-  color: #0b1c2c;
-}
+updated_dashboard_style_path
+
