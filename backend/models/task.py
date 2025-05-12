@@ -33,9 +33,7 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     task_id = db.Column(db.Integer, primary_key=True, index=True)
-    project_id = db.Column(
-        db.Integer, db.ForeignKey("projects.project_id"), nullable=False
-    )
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.project_id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
 
     title = db.Column(db.String, nullable=True)
@@ -43,6 +41,7 @@ class Task(db.Model):
     due_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
 
     time_entries = db.relationship("TimeEntry", back_populates="task")
     assigned_user = db.relationship("User", back_populates="assigned_task")
