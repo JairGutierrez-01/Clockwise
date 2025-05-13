@@ -31,6 +31,8 @@ body.dark-mode {
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+
+
 body.light-mode {
   background: linear-gradient(to bottom, #f3f6f9 0%, #f8fafc 50%, #ffffff 100%);
   background-attachment: fixed;
@@ -204,4 +206,27 @@ body.light-mode .delete-form button {
 
 body.light-mode .delete-form button:hover {
   background-color: #e05f5f;
+}
 
+.btn-primary {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #7ab8f5;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 2rem;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #5ea4e0;
+}
+
+.button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
