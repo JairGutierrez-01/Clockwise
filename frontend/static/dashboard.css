@@ -4,7 +4,7 @@
   --projects-table-bg: #fff9e5;
   --calendar-bg: #ddf4f0;
   --project-details-bg: #fbedeb;
-  --reports-bg: #f0efff;
+  --reports-bg: #173044;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
   --dashboard-max-width: 1200px;
 }
@@ -32,7 +32,6 @@ body.dark-mode {
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background-color: var(--background-color);
   color: var(--foreground-color);
 }
 
