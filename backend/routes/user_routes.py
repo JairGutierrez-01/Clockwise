@@ -111,7 +111,7 @@ def user_delete():
     return render_template("deleteuser.html")
 
 
-@auth_bp.route("/entertoken/<token>", methods=["GET", "POST"])
+@auth_bp.route("/forgot-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     """
     Handle password reset via token.
