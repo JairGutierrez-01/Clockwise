@@ -24,9 +24,11 @@ class Task(db.Model):
         due_date (datetime, optional): Deadline for the task.
         status (enum): Task status (todo, in_progress, done).
         created_at (datetime): Timestamp when the task was created.
+        category_id (int): Foreign key identifying the category of the tasks.
         time_entries (relationship):  All time entries associated with this task.
         assigned_user (relationship): The user currently assigned to this task.
         project (relationship): The project this task belongs to.
+        category (relationship): The category of the task.
     """
 
     __tablename__ = "tasks"
@@ -41,10 +43,12 @@ class Task(db.Model):
     due_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"))
 
     time_entries = db.relationship("TimeEntry", back_populates="task")
     assigned_user = db.relationship("User", back_populates="assigned_task")
     project = db.relationship("Project", back_populates="task")
+    category = db.relationship("Category", back_populates="task")
 
     def __repr__(self):
         """
