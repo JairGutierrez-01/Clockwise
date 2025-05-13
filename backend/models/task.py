@@ -6,6 +6,7 @@ import enum
 
 
 class TaskStatus(enum.Enum):
+    """Enumeration of possible task statuses."""
     todo = "todo"
     in_progress = "in_progress"
     done = "done"
@@ -18,7 +19,8 @@ class Task(db.Model):
     Attributes:
         task_id (int): Primary key of the task.
         project_id (int): Foreign key linking the task to a project.
-        assigned_user_id (int, optional): Foreign key to the assigned user.
+        user_id (int): Foreign key linking the task to the assigned user.
+        category_id (int): Foreign key linking the task to a category.
         title (str, optional): Short title of the task.
         description (str, optional): Detailed description of the task.
         due_date (datetime, optional): Deadline for the task.
@@ -28,16 +30,15 @@ class Task(db.Model):
         time_entries (relationship):  All time entries associated with this task.
         assigned_user (relationship): The user currently assigned to this task.
         project (relationship): The project this task belongs to.
-        category (relationship): The category of the task.
+        category (relationship): The category this task belongs to.
     """
 
     __tablename__ = "tasks"
 
     task_id = db.Column(db.Integer, primary_key=True, index=True)
-    project_id = db.Column(
-        db.Integer, db.ForeignKey("projects.project_id"), nullable=False
-    )
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.project_id"), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"), nullable=True)
     title = db.Column(db.String, nullable=True)
     description = db.Column(db.String, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)
@@ -54,4 +55,9 @@ class Task(db.Model):
         """
         Returns a string representation of the Task instance.
         """
-        return f"<Task(id={self.task_id}, title={self.title}, project={self.project_id}, assigned_user={self.assigned_user_id}, status={self.status})>"
+        project_part = self.project_id if self.project_id else "Default"
+        category_name = self.category.name if self.category else "None"
+        return (
+            f"<Task(id={self.task_id}, title={self.title}, project={project_part}, "
+            f"user_id={self.user_id}, category={category_name}, status={self.status})>"
+        )
