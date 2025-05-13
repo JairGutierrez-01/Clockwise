@@ -1,9 +1,9 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from backend.database import Base
 from backend.database import db
-
 
 class Category(db.Model):
     """
@@ -13,7 +13,6 @@ class Category(db.Model):
         category_id (int): Primary key identifying the category.
         name (str): The name of the category.
         task (relationship): Defines the category of a task.
-
     """
 
     __tablename__ = "categories"
