@@ -7,6 +7,7 @@ from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
 from backend.models.category import Category
 
+
 def test_team_is_valid():
     team = Team(name="Lineare Algebra")
     assert team.is_valid() is True

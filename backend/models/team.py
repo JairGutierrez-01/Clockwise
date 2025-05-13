@@ -1,8 +1,8 @@
 from datetime import datetime
 from backend.database import db, Base
 
-class Team(db.Model):
 
+class Team(db.Model):
     """Database model for a team within the system."""
 
     __tablename__ = "teams"

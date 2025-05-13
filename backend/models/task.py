@@ -32,7 +32,9 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     task_id = db.Column(db.Integer, primary_key=True, index=True)
-    project_id = db.Column(db.Integer, db.ForeignKey("projects.project_id"), nullable=False)
+    project_id = db.Column(
+        db.Integer, db.ForeignKey("projects.project_id"), nullable=False
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
     title = db.Column(db.String, nullable=True)
     description = db.Column(db.String, nullable=True)

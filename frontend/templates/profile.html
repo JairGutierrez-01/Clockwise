@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Profile - ClockWise</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='profile.css') }}"
+    />
   </head>
 
   <body class="dark-mode">
@@ -30,9 +36,9 @@
           <h3>Teams</h3>
           <ul>
             {% for ut in user.teams %}
-              <li>{{ ut.team.name }} ({{ ut.role }})</li>
+            <li>{{ ut.team.name }} ({{ ut.role }})</li>
             {% else %}
-              <li>No team memberships</li>
+            <li>No team memberships</li>
             {% endfor %}
           </ul>
         </div>
@@ -41,9 +47,9 @@
           <h3>My Projects</h3>
           <ul>
             {% for project in user.project %}
-              <li>{{ project.name }} – {{ project.type.value }}</li>
+            <li>{{ project.name }} – {{ project.type.value }}</li>
             {% else %}
-              <li>No projects found</li>
+            <li>No projects found</li>
             {% endfor %}
           </ul>
         </div>
@@ -53,4 +59,3 @@
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
   </body>
 </html>
-

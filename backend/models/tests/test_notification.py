@@ -16,7 +16,7 @@ def test_notification_creation():
         message="You were added to the project.",
         type="Uni",
         is_read=False,
-        created_at=datetime.now()
+        created_at=datetime.now(),
     )
 
     assert notif.user_id == 1

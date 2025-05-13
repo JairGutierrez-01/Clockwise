@@ -27,24 +27,35 @@
       <div class="tracker-wrapper">
         <!-- Tracker panel: input for project name, timer display, and control buttons -->
         <div class="tracker">
-          <input type="text" id="project-name-input" placeholder="Project Name ..." />
+          <input
+            type="text"
+            id="project-name-input"
+            placeholder="Project Name ..."
+          />
           <div id="tracker-time" class="time-display">00:00:00</div>
           <!-- Start button to begin timing -->
-          <button id="tracker-start" class="btn-start" type="button">Start</button>
+          <button id="tracker-start" class="btn-start" type="button">
+            Start
+          </button>
           <!-- Pause button, shown when tracking is active -->
-          <button id="tracker-pause" class="btn-pause" type="button" hidden>Pause</button>
+          <button id="tracker-pause" class="btn-pause" type="button" hidden>
+            Pause
+          </button>
           <!-- Resume button, shown after pausing -->
-          <button id="tracker-resume" class="btn-resume" type="button" hidden>Resume</button>
+          <button id="tracker-resume" class="btn-resume" type="button" hidden>
+            Resume
+          </button>
           <!-- Stop button to end tracking session -->
-          <button id="tracker-stop" class="btn-stop" type="button" hidden>Stop</button>
+          <button id="tracker-stop" class="btn-stop" type="button" hidden>
+            Stop
+          </button>
         </div>
       </div>
       <!-- Projects section: shows latest tracked sessions or a placeholder message -->
       <!-- Section heading for recent projects list -->
       <h2 id="recent-projects-heading">Latest Projects</h2>
       <!-- Dynamic list container -->
-      <div class="project-list" id="project-list">
-      </div>
+      <div class="project-list" id="project-list"></div>
       <!-- Message displayed when there are no tracked projects -->
       <p id="empty-message">No projects yet. Start by adding one!</p>
       <!-- template for rendering individual project entries -->

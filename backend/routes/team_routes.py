@@ -7,6 +7,7 @@ from backend.models.notification import Notification
 
 team_bp = Blueprint("teams", __name__)
 
+
 @team_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_team():
@@ -32,7 +33,7 @@ def create_team():
             user_id=user_id,
             project_id=None,  # no projects associated
             message=f"Team created '{new_team.name}'.",
-            type="team"
+            type="team",
         )
         db.session.add(notification)
         db.session.commit()

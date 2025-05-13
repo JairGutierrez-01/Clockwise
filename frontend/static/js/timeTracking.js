@@ -52,25 +52,25 @@ async function deleteTimeEntry(id) {
 const mockEntries = [];
 
 async function fetchTimeEntries() {
-  return Promise.resolve(mockEntries.map(e => ({ ...e })));
+  return Promise.resolve(mockEntries.map((e) => ({ ...e })));
 }
 
 async function createTimeEntry(data) {
   const id = Date.now();
   const entry = {
     time_entry_id: id,
-    project_id:    data.project_id,
-    name:          data.name || "",
-    start_time:    data.start_time,
-    end_time:      null,
-    duration:      "00:00:00"
+    project_id: data.project_id,
+    name: data.name || "",
+    start_time: data.start_time,
+    end_time: null,
+    duration: "00:00:00",
   };
   mockEntries.push(entry);
   return Promise.resolve({ ...entry });
 }
 
 async function updateTimeEntry(id, data) {
-  const idx = mockEntries.findIndex(e => e.time_entry_id === id);
+  const idx = mockEntries.findIndex((e) => e.time_entry_id === id);
   if (idx > -1) {
     mockEntries[idx] = { ...mockEntries[idx], ...data };
     return Promise.resolve({ ...mockEntries[idx] });
@@ -79,7 +79,7 @@ async function updateTimeEntry(id, data) {
 }
 
 async function deleteTimeEntry(id) {
-  const idx = mockEntries.findIndex(e => e.time_entry_id === id);
+  const idx = mockEntries.findIndex((e) => e.time_entry_id === id);
   if (idx > -1) mockEntries.splice(idx, 1);
   return Promise.resolve();
 }
@@ -109,7 +109,7 @@ function formatTime(ms) {
  */
 document.addEventListener("DOMContentLoaded", () => {
   // --- Cache DOM Elements ---
-  const trackerEl = document.querySelector('.tracker');
+  const trackerEl = document.querySelector(".tracker");
 
   const display = document.getElementById("tracker-time");
   const startBtn = document.getElementById("tracker-start");
@@ -144,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.style.display = list.children.length === 0 ? "block" : "none";
   }
 
-
   /**
    * Renders a single time entry in the project list UI.
    * @function renderEntry
@@ -161,13 +160,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const wrapper = clone.querySelector(".project-wrapper");
     wrapper.dataset.id = entry.time_entry_id || entry.id;
     clone.querySelector(".project-name").textContent = entry.name;
-    clone.querySelector(".time-range").textContent = entry.start_time + " - " + (entry.end_time || "");
+    clone.querySelector(".time-range").textContent =
+      entry.start_time + " - " + (entry.end_time || "");
     clone.querySelector(".duration").textContent = entry.duration;
     list.appendChild(clone);
     // Animate new entry
-    wrapper.classList.add('new-entry');
-    wrapper.addEventListener('animationend', () => {
-      wrapper.classList.remove('new-entry');
+    wrapper.classList.add("new-entry");
+    wrapper.addEventListener("animationend", () => {
+      wrapper.classList.remove("new-entry");
     });
     updateEmptyState();
   }
@@ -182,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const entries = await fetchTimeEntries();
     entries.forEach(renderEntry);
   }
-
 
   /**
    * Handles the start button click to create a new time entry and start the timer.
@@ -199,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resumeBtn.hidden = true;
 
     // Trigger slide-in animation for controls
-    trackerEl.classList.add('animate-controls');
+    trackerEl.classList.add("animate-controls");
 
     const now = new Date();
     startTime = now;
@@ -213,13 +212,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const entry = {
       project_id: parseInt(input.dataset.projectId),
       start_time: now.toISOString(),
-      name: name
+      name: name,
     };
     const newEntry = await createTimeEntry(entry);
     currentEntryId = newEntry.time_entry_id || newEntry.id;
     startDisplay = new Date(newEntry.start_time).toLocaleTimeString();
   });
-
 
   /**
    * Pauses the active timer, clears the interval, and updates UI controls.
@@ -233,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
   /**
    * Resumes a paused timer and updates UI controls.
    */
@@ -246,7 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
     resumeBtn.hidden = true;
     pauseBtn.hidden = false;
   });
-
 
   /**
    * Stops the timer, updates the time entry in the backend, renders the entry, and resets UI controls.
@@ -263,11 +259,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update backend
     const updatedEntry = await updateTimeEntry(currentEntryId, {
       end_time: endTime.toISOString(),
-      duration: durationStr
+      duration: durationStr,
     });
     // Prepare display values
     updatedEntry.start_time = startDisplay;
-    updatedEntry.end_time = new Date(updatedEntry.end_time).toLocaleTimeString();
+    updatedEntry.end_time = new Date(
+      updatedEntry.end_time,
+    ).toLocaleTimeString();
     updatedEntry.duration = durationStr;
     renderEntry(updatedEntry);
     // Reset controls and input
@@ -283,9 +281,8 @@ document.addEventListener("DOMContentLoaded", () => {
     display.textContent = "00:00:00";
 
     // Remove animation class so controls reset next time
-    trackerEl.classList.remove('animate-controls');
+    trackerEl.classList.remove("animate-controls");
   });
-
 
   /**
    * Handles click events on the entry list to delete or edit time entries.
@@ -311,8 +308,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadEntries();
   updateEmptyState();
   // Trigger page-load animation
-  const container = document.querySelector('.time-tracking');
+  const container = document.querySelector(".time-tracking");
   requestAnimationFrame(() => {
-    container.classList.add('page-loaded');
+    container.classList.add("page-loaded");
   });
 });

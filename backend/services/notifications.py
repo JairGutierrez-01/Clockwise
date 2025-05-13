@@ -1,6 +1,7 @@
 from backend.database import db
 from backend.models.notification import Notification
 
+
 def create_notification(user_id, message, notif_type="info", project_id=None):
     """
     Creates a new notification for a specific user.
@@ -22,11 +23,7 @@ def create_notification(user_id, message, notif_type="info", project_id=None):
     """
 
     notification = Notification(
-        user_id=user_id,
-        message=message,
-        type=notif_type,
-        project_id=project_id
+        user_id=user_id, message=message, type=notif_type, project_id=project_id
     )
     db.session.add(notification)
     db.session.commit()
-

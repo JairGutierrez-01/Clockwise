@@ -43,28 +43,28 @@ async function deleteProject(id) {
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
   // --- DOM Elements ---
-  const projectListEl        = document.getElementById("project-list");
-  const createBtn            = document.getElementById("create-project-btn");
-  const modal                = document.getElementById("project-form-modal");
-  const form                 = document.getElementById("project-form");
-  const cancelBtn            = document.getElementById("cancel-project-btn");
-  const formTitle            = document.getElementById("form-title");
-  const nameInput            = document.getElementById("project-name");
-  const descInput            = document.getElementById("project-description");
-  const typeSelect           = document.getElementById("project-type");
-  const timeLimitInput       = document.getElementById("project-time-limit");
-  const dueDateInput         = document.getElementById("project-due-date");
-  const detailSection        = document.getElementById("project-detail");
-  const detailName           = document.getElementById("detail-name");
-  const detailDesc           = document.getElementById("detail-description");
-  const detailType           = document.getElementById("detail-type");
-  const detailTimeLimit      = document.getElementById("detail-time-limit");
-  const detailCurrentHours   = document.getElementById("detail-current-hours");
-  const detailDueDate        = document.getElementById("detail-due-date");
-  const editProjBtn          = document.getElementById("edit-project-btn");
-  const deleteProjBtn        = document.getElementById("delete-project-btn");
-  const createTaskBtn        = document.getElementById("create-task-btn");
-  const taskListEl           = document.getElementById("task-list");
+  const projectListEl = document.getElementById("project-list");
+  const createBtn = document.getElementById("create-project-btn");
+  const modal = document.getElementById("project-form-modal");
+  const form = document.getElementById("project-form");
+  const cancelBtn = document.getElementById("cancel-project-btn");
+  const formTitle = document.getElementById("form-title");
+  const nameInput = document.getElementById("project-name");
+  const descInput = document.getElementById("project-description");
+  const typeSelect = document.getElementById("project-type");
+  const timeLimitInput = document.getElementById("project-time-limit");
+  const dueDateInput = document.getElementById("project-due-date");
+  const detailSection = document.getElementById("project-detail");
+  const detailName = document.getElementById("detail-name");
+  const detailDesc = document.getElementById("detail-description");
+  const detailType = document.getElementById("detail-type");
+  const detailTimeLimit = document.getElementById("detail-time-limit");
+  const detailCurrentHours = document.getElementById("detail-current-hours");
+  const detailDueDate = document.getElementById("detail-due-date");
+  const editProjBtn = document.getElementById("edit-project-btn");
+  const deleteProjBtn = document.getElementById("delete-project-btn");
+  const createTaskBtn = document.getElementById("create-task-btn");
+  const taskListEl = document.getElementById("task-list");
 
   // === Mock Backend Implementation ===
   const mockProjects = [];
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   async function fetchProjects() {
     // Return a shallow copy to avoid mutation
-    return Promise.resolve(mockProjects.map(p => ({ ...p })));
+    return Promise.resolve(mockProjects.map((p) => ({ ...p })));
   }
 
   /**
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: data.type,
       time_limit_hours: data.time_limit_hours,
       current_hours: 0,
-      due_date: data.due_date
+      due_date: data.due_date,
     };
     mockProjects.push(project);
     return Promise.resolve({ ...project });
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<Object>} A promise that resolves with the updated project object.
    */
   async function updateProject(id, data) {
-    const idx = mockProjects.findIndex(p => p.project_id === id);
+    const idx = mockProjects.findIndex((p) => p.project_id === id);
     if (idx > -1) {
       mockProjects[idx] = { ...mockProjects[idx], ...data };
       return Promise.resolve({ ...mockProjects[idx] });
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<void>} A promise that resolves once the deletion is complete.
    */
   async function deleteProject(id) {
-    const idx = mockProjects.findIndex(p => p.project_id === id);
+    const idx = mockProjects.findIndex((p) => p.project_id === id);
     if (idx > -1) mockProjects.splice(idx, 1);
     return Promise.resolve();
   }
@@ -140,12 +140,12 @@ document.addEventListener("DOMContentLoaded", () => {
     form.reset();
     if (isEdit) {
       formTitle.textContent = "Edit Project";
-      const proj = projects.find(p => p.project_id === editingProjectId);
-      nameInput.value      = proj.name;
-      descInput.value      = proj.description || "";
-      typeSelect.value     = proj.type;
+      const proj = projects.find((p) => p.project_id === editingProjectId);
+      nameInput.value = proj.name;
+      descInput.value = proj.description || "";
+      typeSelect.value = proj.type;
       timeLimitInput.value = proj.time_limit_hours;
-      dueDateInput.value   = proj.due_date ? proj.due_date.slice(0,10) : "";
+      dueDateInput.value = proj.due_date ? proj.due_date.slice(0, 10) : "";
     } else {
       formTitle.textContent = "New Project";
       editingProjectId = null;
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function renderProjectList() {
     projectListEl.innerHTML = "";
-    projects.forEach(proj => {
+    projects.forEach((proj) => {
       const card = document.createElement("div");
       card.className = "project-card";
       card.dataset.id = proj.project_id;
@@ -188,13 +188,15 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {number} id - The unique identifier of the project to display.
    */
   function showProjectDetail(id) {
-    const proj = projects.find(p => p.project_id === id);
-    detailName.textContent         = proj.name;
-    detailDesc.textContent         = proj.description || "-";
-    detailType.textContent         = proj.type;
-    detailTimeLimit.textContent    = `${proj.time_limit_hours} h`;
+    const proj = projects.find((p) => p.project_id === id);
+    detailName.textContent = proj.name;
+    detailDesc.textContent = proj.description || "-";
+    detailType.textContent = proj.type;
+    detailTimeLimit.textContent = `${proj.time_limit_hours} h`;
     detailCurrentHours.textContent = `${proj.current_hours || 0} h`;
-    detailDueDate.textContent      = proj.due_date ? new Date(proj.due_date).toLocaleDateString() : "-";
+    detailDueDate.textContent = proj.due_date
+      ? new Date(proj.due_date).toLocaleDateString()
+      : "-";
     detailSection.classList.remove("hidden");
     editingProjectId = id;
   }
@@ -203,14 +205,14 @@ document.addEventListener("DOMContentLoaded", () => {
   createBtn.addEventListener("click", () => openModal(false));
   cancelBtn.addEventListener("click", closeModal);
 
-  form.addEventListener("submit", async event => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const payload = {
       name: nameInput.value.trim(),
       description: descInput.value.trim(),
       type: typeSelect.value,
       time_limit_hours: parseInt(timeLimitInput.value, 10),
-      due_date: dueDateInput.value || null
+      due_date: dueDateInput.value || null,
     };
 
     if (editingProjectId) {
@@ -223,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModal();
   });
 
-  projectListEl.addEventListener("click", event => {
+  projectListEl.addEventListener("click", (event) => {
     const card = event.target.closest(".project-card");
     if (!card) return;
     const id = parseInt(card.dataset.id, 10);
