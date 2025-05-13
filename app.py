@@ -14,6 +14,7 @@ from backend.models.user import User
 from backend.routes.notification_routes import notification_bp
 from backend.routes.team_routes import team_bp
 from backend.routes.user_routes import auth_bp
+from backend.routes.task_routes import task_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -46,8 +47,8 @@ app.config["MAIL_PASSWORD"] = "sclpdlhelcwwobob"
 mail = Mail(app)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/teams")
-
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
+app.register_blueprint(task_bp, url_prefix="/tasks")
 
 
 db.init_app(app)
