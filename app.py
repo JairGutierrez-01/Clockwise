@@ -1,17 +1,19 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session
-from flask_mail import Mail
+
+from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager
+from flask_login import current_user
 from flask_login import login_user
 from flask_login import logout_user
-from flask_login import current_user
-from backend.models.user import User
-from backend.models.notification import Notification
+from flask_mail import Mail
+from flask_migrate import Migrate
+
 from backend.database import db
-from backend.routes.user_routes import auth_bp
-from flask_mail import Mail, Message
-from backend.routes.team_routes import team_bp
+from backend.models.notification import Notification
+from backend.models.user import User
 from backend.routes.notification_routes import notification_bp
+from backend.routes.team_routes import team_bp
+from backend.routes.user_routes import auth_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -19,6 +21,8 @@ app = Flask(
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"  # where to redirect when not logged in
 login_manager.init_app(app)
+
+migrate = Migrate(app, db)
 
 #####
 basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "backend")
