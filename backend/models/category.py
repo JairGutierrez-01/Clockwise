@@ -4,7 +4,6 @@ from datetime import datetime
 from backend.database import Base
 from backend.database import db
 
-
 class Category(db.Model):
     """
     Represents the categories the tasks could have.
