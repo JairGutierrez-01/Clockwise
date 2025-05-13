@@ -91,7 +91,7 @@ def user_delete(user_id):
             return redirect(url_for("dashboard"))
         else:
             return result.get("error", "Delete user failed.")
-    return render_template("deleteuser.html")
+    return render_template("deleteuser.html", user_id=user_id)
 
 
 @auth_bp.route("/forgot-password/<token>/<int:user_id>", methods=["GET", "POST"])
@@ -124,7 +124,7 @@ def reset_password(token, user_id):
     )
 
 
-@auth_bp.route("/edit/profile", methods=["GET", "POST"])
+@auth_bp.route("/edit/profile/<int:user_id>", methods=["GET", "POST"])
 def edit_profile(user_id):
     """
     Handle user profile editing.
@@ -149,7 +149,7 @@ def edit_profile(user_id):
             return redirect(url_for("profile"))
         else:
             return result.get("error", "Edit profile failed.")
-    return render_template("editprofile.html")
+    return render_template("editprofile.html", user_id=user_id)
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
