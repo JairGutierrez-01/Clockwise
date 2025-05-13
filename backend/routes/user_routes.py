@@ -49,31 +49,6 @@ def register():
     return render_template("registerpage.html")
 
 
-## REMEMBER ##
-# @auth_bp.route("/login", methods=["GET", "POST"])
-# def login():
-#     """
-#     Handle user login.
-
-#     Returns:
-#         str or Response: Redirect to dashboard on success, error message on failure,
-#         or login page on GET.
-#     """
-#     if request.method == "POST":
-#         username = request.form["username"]
-#         password = request.form["password"]
-
-#         result = login_user(username, password)
-
-#         if result.get("success"):
-#             session["user_id"] = result["user"].user_id
-#             return redirect(url_for("dashboard"))
-#         else:
-#             return result.get("error", "Login failed.")
-
-#     return render_template("loginpage.html")
-
-
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     """
@@ -98,18 +73,19 @@ def login():
     return render_template("loginpage.html")
 
 
-@auth_bp.route("/user/delete", methods=["GET", "POST"])
-def user_delete():
+@auth_bp.route("/user/delete/<int:user_id>", methods=["GET", "POST"])
+def user_delete(user_id):
     """
     Handle user deletion.
 
+    Args:
+        user_id (int): User id to identify user.
     Returns:
         str or Response: Redirect to dashboard on success, error message on failure,
         or deletion form on GET.
     """
     if request.method == "POST":
-        username = request.form["username"]
-        result = delete_user(username)
+        result = delete_user(user_id)
 
         if result.get("success"):
             return redirect(url_for("dashboard"))
@@ -118,13 +94,14 @@ def user_delete():
     return render_template("deleteuser.html")
 
 
-@auth_bp.route("/forgot-password/<token>", methods=["GET", "POST"])
-def reset_password(token):
+@auth_bp.route("/forgot-password/<token>/<int:user_id>", methods=["GET", "POST"])
+def reset_password(token, user_id):
     """
     Handle password reset via token.
 
     Args:
         token (str): Reset token sent via email.
+        user_id (int): User id to indentify user.
 
     Returns:
         str or Response: Redirect to login on success, error or expired token message,
@@ -136,20 +113,24 @@ def reset_password(token):
 
     if request.method == "POST":
         password = request.form["password"]
-        result = new_password(email, password)
+        result = new_password(user_id, password)
         if result.get("success"):
             return redirect(url_for("auth.login"))
         else:
             return "User not found", 404
 
-    return render_template("passwordchange.html", token=token, _external=True)
+    return render_template(
+        "passwordchange.html", token=token, user_id=user_id, _external=True
+    )
 
 
 @auth_bp.route("/edit/profile", methods=["GET", "POST"])
-def edit_profile():
+def edit_profile(user_id):
     """
     Handle user profile editing.
 
+    Args:
+    user_id(int): User id of the user for identifying.
     Returns:
         str or Response: Redirect to profile page on success, error message on failure,
         or profile editing form on GET.
@@ -162,7 +143,7 @@ def edit_profile():
         last_name = request.form["last_name"]
         profile_picture = request.files["profile_picture"]
         result = edit_user(
-            username, email, first_name, last_name, password, profile_picture
+            user_id, username, email, first_name, last_name, password, profile_picture
         )
         if "success" in result:
             return redirect(url_for("profile"))
