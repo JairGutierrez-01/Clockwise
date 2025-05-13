@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteProjBtn = document.getElementById("delete-project-btn");
   const createTaskBtn = document.getElementById("create-task-btn");
   const taskListEl = document.getElementById("task-list");
+  const filterBtns = document.querySelectorAll("#filter-controls button");
 
   // === Mock Backend Implementation ===
   const mockProjects = [];
@@ -76,8 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<Array>} A promise that resolves with an array of project objects.
    */
   async function fetchProjects() {
-    // Return a shallow copy to avoid mutation
-    return Promise.resolve(mockProjects.map((p) => ({ ...p })));
+    return Promise.resolve(mockProjects.map(p => ({ ...p })));
   }
 
   /**
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: data.type,
       time_limit_hours: data.time_limit_hours,
       current_hours: 0,
-      due_date: data.due_date,
+      due_date: data.due_date
     };
     mockProjects.push(project);
     return Promise.resolve({ ...project });
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<Object>} A promise that resolves with the updated project object.
    */
   async function updateProject(id, data) {
-    const idx = mockProjects.findIndex((p) => p.project_id === id);
+    const idx = mockProjects.findIndex(p => p.project_id === id);
     if (idx > -1) {
       mockProjects[idx] = { ...mockProjects[idx], ...data };
       return Promise.resolve({ ...mockProjects[idx] });
@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.resolve();
   }
 
+  let activeFilter = "all";
   let projects = [];
   let editingProjectId = null;
 
@@ -138,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function openModal(isEdit = false) {
     form.reset();
+    modal.classList.remove("hidden");
     if (isEdit) {
       formTitle.textContent = "Edit Project";
       const proj = projects.find((p) => p.project_id === editingProjectId);
@@ -150,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
       formTitle.textContent = "New Project";
       editingProjectId = null;
     }
-    modal.classList.remove("hidden");
   }
 
   /**
@@ -165,10 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function renderProjectList() {
     projectListEl.innerHTML = "";
-    projects.forEach((proj) => {
+    projects.forEach(proj => {
+      if (activeFilter !== "all" && proj.type !== activeFilter) return;
+
       const card = document.createElement("div");
-      card.className = "project-card";
-      card.dataset.id = proj.project_id;
+      card.className   = "project-card";
+      card.dataset.id  = proj.project_id;
+      card.dataset.type = proj.type;
       card.innerHTML = `
         <h2 class="project-card__name">${proj.name}</h2>
         <div class="project-card__meta">
@@ -201,7 +205,18 @@ document.addEventListener("DOMContentLoaded", () => {
     editingProjectId = id;
   }
 
-  // --- Event Listeners ---
+  /* ───────────── Filter logic ───────────── */
+  function setActiveFilter(filter) {
+    activeFilter = filter;
+    document.querySelector("#filter-controls .active")?.classList.remove("active");
+    [...filterBtns].find(b => b.dataset.filter === filter)?.classList.add("active");
+    renderProjectList();
+  }
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => setActiveFilter(btn.dataset.filter));
+  });
+
+  /* ───────────── Event listeners ───────────── */
   createBtn.addEventListener("click", () => openModal(false));
   cancelBtn.addEventListener("click", closeModal);
 
