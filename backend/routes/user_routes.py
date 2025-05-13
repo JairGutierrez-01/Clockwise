@@ -76,14 +76,21 @@ def register():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    Handle user login.
+
+    Returns:
+        str or Response: Redirect to dashboard on success, error message on failure,
+        or login page on GET.
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
-        result = login_user(username, password)  # your service method
+        result = login_user(username, password)
 
         if result.get("success"):
-            flask_login_user(result["user"])  # ✅ This replaces session manually
+            flask_login_user(result["user"])
             return redirect(url_for("dashboard"))
         else:
             return result.get("error", "Login failed.")
