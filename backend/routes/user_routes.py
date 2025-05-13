@@ -197,4 +197,10 @@ from flask import render_template
 @auth_bp.route("/profile")
 @login_required
 def profile():
+    """Render the user profile page.
+    This view requires the user to be authenticated.
+
+    Returns:
+        Response: A Flask response object that renders the profile page.
+    """
     return render_template("profile.html", user=current_user)
