@@ -56,7 +56,7 @@
         <p>Last Active: {{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</p>
 
         <h3 class="section-heading">Edit Profile</h3>
-        <form class="profile-edit-form" method="POST" action="{{ url_for('auth.edit_profile') }}" enctype="multipart/form-data">
+        <form class="profile-edit-form" method="POST" action="{{ url_for('auth.edit_profile', user_id=current_user.user_id) }}" enctype="multipart/form-data">
           {% if csrf_token %}{{ csrf_token() }}{% endif %}
 
           <div class="form-columns">
@@ -85,9 +85,9 @@
             <label for="profile_picture">Change Profile Picture (optional)</label>
             <input type="file" name="profile_picture" id="profile_picture" accept="image/*" />
           </div>
-            <div class="button-wrapper">
-  <button class="btn-primary">Save Changes </button>
-</div>
+          <div class="button-wrapper">
+            <button class="btn-primary">Save Changes</button>
+          </div>
         </form>
 
         <div class="teams">
@@ -112,11 +112,11 @@
           </ul>
         </div>
 
-        <form class="delete-profile-form" method="POST" action="{{ url_for('auth.user_delete') }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+        <form class="delete-profile-form" method="POST" action="{{ url_for('auth.user_delete', user_id=current_user.user_id) }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
           {% if csrf_token %}{{ csrf_token() }}{% endif %}
           <div class="button-wrapper">
-  <button class="btn-primary">Permanently Delete Account</button>
-</div>
+            <button class="btn-primary">Permanently Delete Account</button>
+          </div>
         </form>
       </div>
     </div>
@@ -124,3 +124,4 @@
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
   </body>
 </html>
+
