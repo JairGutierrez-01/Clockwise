@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, String, Enum
 from sqlalchemy.orm import relationship
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from backend.database import Base
 from backend.database import db
@@ -32,7 +33,6 @@ class Project(db.Model):
         team (relationship): The team the project belongs to.
         user (relationship): The user the project belongs to.
         notification (relationship): The notification of the project. 
-
     """
 
     __tablename__ = "projects"
