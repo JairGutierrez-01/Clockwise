@@ -52,25 +52,25 @@ async function deleteTimeEntry(id) {
 const mockEntries = [];
 
 async function fetchTimeEntries() {
-  return Promise.resolve(mockEntries.map(e => ({ ...e })));
+  return Promise.resolve(mockEntries.map((e) => ({ ...e })));
 }
 
 async function createTimeEntry(data) {
   const id = Date.now();
   const entry = {
     time_entry_id: id,
-    project_id:    data.project_id,
-    name:          data.name || "",
-    start_time:    data.start_time,
-    end_time:      null,
-    duration:      "00:00:00"
+    project_id: data.project_id,
+    name: data.name || "",
+    start_time: data.start_time,
+    end_time: null,
+    duration: "00:00:00",
   };
   mockEntries.push(entry);
   return Promise.resolve({ ...entry });
 }
 
 async function updateTimeEntry(id, data) {
-  const idx = mockEntries.findIndex(e => e.time_entry_id === id);
+  const idx = mockEntries.findIndex((e) => e.time_entry_id === id);
   if (idx > -1) {
     mockEntries[idx] = { ...mockEntries[idx], ...data };
     return Promise.resolve({ ...mockEntries[idx] });
@@ -79,7 +79,7 @@ async function updateTimeEntry(id, data) {
 }
 
 async function deleteTimeEntry(id) {
-  const idx = mockEntries.findIndex(e => e.time_entry_id === id);
+  const idx = mockEntries.findIndex((e) => e.time_entry_id === id);
   if (idx > -1) mockEntries.splice(idx, 1);
   return Promise.resolve();
 }
@@ -104,13 +104,12 @@ function formatTime(ms) {
   );
 }
 
-// ============================================================================
-// Main Application Logic
-// Sets up event listeners, state management, and UI update routines after DOM load.
-// ============================================================================
+/**
+ * Sets up event listeners, state variables, and initial UI rendering after DOM content is loaded.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   // --- Cache DOM Elements ---
-  const trackerEl = document.querySelector('.tracker');
+  const trackerEl = document.querySelector(".tracker");
 
   const display = document.getElementById("tracker-time");
   const startBtn = document.getElementById("tracker-start");
@@ -145,8 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.style.display = list.children.length === 0 ? "block" : "none";
   }
 
-  // --- Render a Single Time Entry in the UI ---
-  // Clones the project template, populates data, and appends to project list.
   /**
    * Renders a single time entry in the project list UI.
    * @function renderEntry
@@ -163,19 +160,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const wrapper = clone.querySelector(".project-wrapper");
     wrapper.dataset.id = entry.time_entry_id || entry.id;
     clone.querySelector(".project-name").textContent = entry.name;
-    clone.querySelector(".time-range").textContent = entry.start_time + " - " + (entry.end_time || "");
+    clone.querySelector(".time-range").textContent =
+      entry.start_time + " - " + (entry.end_time || "");
     clone.querySelector(".duration").textContent = entry.duration;
     list.appendChild(clone);
     // Animate new entry
-    wrapper.classList.add('new-entry');
-    wrapper.addEventListener('animationend', () => {
-      wrapper.classList.remove('new-entry');
+    wrapper.classList.add("new-entry");
+    wrapper.addEventListener("animationend", () => {
+      wrapper.classList.remove("new-entry");
     });
     updateEmptyState();
   }
 
-  // --- Load and Render All Entries on Page Load ---
-  // Fetches existing entries and invokes renderEntry for each.
   /**
    * Fetches and renders all existing time entries on page load.
    * @async
@@ -187,7 +183,11 @@ document.addEventListener("DOMContentLoaded", () => {
     entries.forEach(renderEntry);
   }
 
-  // --- Start Button: Create and Start Timer for a New Entry ---
+  /**
+   * Handles the start button click to create a new time entry and start the timer.
+   *
+   * @async
+   */
   startBtn.addEventListener("click", async () => {
     const name = input.value.trim();
     if (!name) return;
@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resumeBtn.hidden = true;
 
     // Trigger slide-in animation for controls
-    trackerEl.classList.add('animate-controls');
+    trackerEl.classList.add("animate-controls");
 
     const now = new Date();
     startTime = now;
@@ -212,14 +212,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const entry = {
       project_id: parseInt(input.dataset.projectId),
       start_time: now.toISOString(),
-      name: name
+      name: name,
     };
     const newEntry = await createTimeEntry(entry);
     currentEntryId = newEntry.time_entry_id || newEntry.id;
     startDisplay = new Date(newEntry.start_time).toLocaleTimeString();
   });
 
-  // --- Pause Button: Pause Active Timer ---
+  /**
+   * Pauses the active timer, clears the interval, and updates UI controls.
+   */
   pauseBtn.addEventListener("click", () => {
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -229,7 +231,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Resume Button: Continue Paused Timer ---
+  /**
+   * Resumes a paused timer and updates UI controls.
+   */
   resumeBtn.addEventListener("click", () => {
     startTime = Date.now() - elapsedTime;
     timerInterval = setInterval(() => {
@@ -240,7 +244,11 @@ document.addEventListener("DOMContentLoaded", () => {
     pauseBtn.hidden = false;
   });
 
-  // --- Stop Button: Stop Timer, Update Entry, and Reset UI ---
+  /**
+   * Stops the timer, updates the time entry in the backend, renders the entry, and resets UI controls.
+   *
+   * @async
+   */
   stopBtn.addEventListener("click", async () => {
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -251,11 +259,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update backend
     const updatedEntry = await updateTimeEntry(currentEntryId, {
       end_time: endTime.toISOString(),
-      duration: durationStr
+      duration: durationStr,
     });
     // Prepare display values
     updatedEntry.start_time = startDisplay;
-    updatedEntry.end_time = new Date(updatedEntry.end_time).toLocaleTimeString();
+    updatedEntry.end_time = new Date(
+      updatedEntry.end_time,
+    ).toLocaleTimeString();
     updatedEntry.duration = durationStr;
     renderEntry(updatedEntry);
     // Reset controls and input
@@ -271,10 +281,15 @@ document.addEventListener("DOMContentLoaded", () => {
     display.textContent = "00:00:00";
 
     // Remove animation class so controls reset next time
-    trackerEl.classList.remove('animate-controls');
+    trackerEl.classList.remove("animate-controls");
   });
 
-  // --- Click Handler for Project List Actions (Delete/Edit) ---
+  /**
+   * Handles click events on the entry list to delete or edit time entries.
+   *
+   * @param {Event} e - The click event object.
+   * @async
+   */
   list.addEventListener("click", async (e) => {
     const wrapper = e.target.closest(".project-wrapper");
     if (!wrapper) return;
@@ -284,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wrapper.remove();
       updateEmptyState();
     } else if (e.target.classList.contains("edit-btn")) {
-      // TODO: I still need to check the backend to implement this part
+      // TODO: edit button
     }
   });
 
@@ -293,8 +308,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadEntries();
   updateEmptyState();
   // Trigger page-load animation
-  const container = document.querySelector('.time-tracking');
+  const container = document.querySelector(".time-tracking");
   requestAnimationFrame(() => {
-    container.classList.add('page-loaded');
+    container.classList.add("page-loaded");
   });
 });

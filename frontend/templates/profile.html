@@ -5,8 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Profile - ClockWise</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}" />
+
+    <style>
+      .form-columns {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+      }
+
+      .form-column {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .profile-upload {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+      }
+
+      .profile-edit-form label {
+        font-weight: bold;
+      }
+
+      .profile-edit-form input {
+        padding: 0.5rem;
+        border-radius: 6px;
+        border: none;
+      }
+    </style>
   </head>
 
   <body class="dark-mode">
@@ -14,25 +48,54 @@
 
     <div class="profile-container">
       <div class="profile-card">
-        <img
-          src="{{ user.profile_picture or url_for('static', filename='images/default_avatar.png') }}"
-          alt="Profile Picture"
-          class="profile-picture"
-        />
+        <img src="{{ user.profile_picture or url_for('static', filename='images/default_avatar.png') }}" alt="Profile Picture" class="profile-picture" />
 
         <h2>{{ user.first_name }} {{ user.last_name }}</h2>
         <p>@{{ user.username }}</p>
-        <p>Email: {{ user.email }}</p>
         <p>Joined: {{ user.created_at.strftime('%Y-%m-%d') }}</p>
         <p>Last Active: {{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</p>
+
+        <h3 class="section-heading">Edit Profile</h3>
+        <form class="profile-edit-form" method="POST" action="{{ url_for('auth.edit_profile') }}" enctype="multipart/form-data">
+          {% if csrf_token %}{{ csrf_token() }}{% endif %}
+
+          <div class="form-columns">
+            <div class="form-column">
+              <label for="first_name">First Name</label>
+              <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" required />
+
+              <label for="last_name">Last Name</label>
+              <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" required />
+
+              <label for="username">Username</label>
+              <input type="text" id="username" name="username" value="{{ user.username }}" required />
+
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" value="{{ user.email }}" required />
+
+              <label for="password">New Password (optional)</label>
+              <input type="password" id="password" name="password" placeholder="Leave blank to keep current password" />
+
+              <label for="confirm_password">Confirm Password</label>
+              <input type="password" id="confirm_password" name="confirm_password" placeholder="Only required if changing password" />
+            </div>
+          </div>
+
+          <div class="profile-upload">
+            <label for="profile_picture">Change Profile Picture (optional)</label>
+            <input type="file" name="profile_picture" id="profile_picture" accept="image/*" />
+          </div>
+
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
 
         <div class="teams">
           <h3>Teams</h3>
           <ul>
             {% for ut in user.teams %}
-              <li>{{ ut.team.name }} ({{ ut.role }})</li>
+            <li>{{ ut.team.name }} ({{ ut.role }})</li>
             {% else %}
-              <li>No team memberships</li>
+            <li>No team memberships</li>
             {% endfor %}
           </ul>
         </div>
@@ -41,16 +104,21 @@
           <h3>My Projects</h3>
           <ul>
             {% for project in user.project %}
-              <li>{{ project.name }} – {{ project.type.value }}</li>
+            <li>{{ project.name }} – {{ project.type.value }}</li>
             {% else %}
-              <li>No projects found</li>
+            <li>No projects found</li>
             {% endfor %}
           </ul>
         </div>
+
+        <h3 class="section-heading danger">Delete Account</h3>
+        <form class="delete-profile-form" method="POST" action="{{ url_for('auth.user_delete') }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+          {% if csrf_token %}{{ csrf_token() }}{% endif %}
+          <button type="submit" class="btn-danger">Permanently Delete Account</button>
+        </form>
       </div>
     </div>
 
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
   </body>
 </html>
-

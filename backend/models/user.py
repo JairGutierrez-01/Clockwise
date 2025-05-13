@@ -6,7 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
 
-
 class User(db.Model, UserMixin):
     """
     Represents a user in the system.
@@ -48,7 +47,6 @@ class User(db.Model, UserMixin):
 
     def get_id(self):
         return str(self.user_id)
-
 
     def __repr__(self) -> str:
         """

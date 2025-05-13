@@ -9,18 +9,26 @@ import uuid as uuid
 import os
 
 from backend.services.mail_service import send_forgot_password
-
-# from backend.services.mail_service import send_forgot_password
 from backend.services.profile_picture_service import create_profile_picture
 from backend.services.token_service import generate_reset_token
-
-
-# from backend.services.token_service import generate_reset_token
 
 
 def register_user(
     username, email, first_name, last_name, password, profile_picture=None
 ):
+    """Register a new user.
+
+    Args:
+        username (str): The desired username.
+        email (str): The user's email address.
+        first_name (str): The user's first name.
+        last_name (str): The user's last name.
+        password (str): The user's password.
+        profile_picture (FileStorage, optional): An optional profile picture file.
+
+    Returns:
+        dict: A success message or an error if the user already exists.
+    """
     existing_user = User.query.filter(
         (User.username == username) | (User.email == email)
     ).first()
@@ -54,6 +62,15 @@ def register_user(
 
 
 def login_user(username, password):
+    """Authenticate a user by username and password.
+
+    Args:
+        username (str): The username of the user.
+        password (str): The password to check.
+
+    Returns:
+        dict: Success and user object if login is successful, else an error message.
+    """
     user = User.query.filter_by(username=username).first()
 
     if user and check_password_hash(user.password_hash, password):
@@ -63,7 +80,16 @@ def login_user(username, password):
 
 
 def new_password(email, password):
-    user = User.query.filter_by(email.email).first()
+    """Set a new password for the user identified by email.
+
+    Args:
+        email (str): The user's email address.
+        password (str): The new password to set.
+
+    Returns:
+        dict: Success if password changed, else an error.
+    """
+    user = User.query.filter_by(email=email).first()
     if user:
         user.password_hash = generate_password_hash(password)
         db.session.commit()
@@ -72,11 +98,16 @@ def new_password(email, password):
         return {"success": False, "error": "Invalid username or password."}
 
 
-""""""
-
-
 # TODO: forgot password
 def password_forget(email):
+    """Trigger the forgot password process by sending a reset link via email.
+
+    Args:
+        email (str): The email address of the user.
+
+    Returns:
+        dict: Success if reset email is sent, else an error.
+    """
     user = User.query.filter_by(email=email).first()
     if not user:
         return {"error": "E-Mail not found"}
@@ -89,6 +120,14 @@ def password_forget(email):
 
 # TODO: delete user
 def delete_user(username):
+    """Delete a user account by username.
+
+    Args:
+        username (str): The username of the account to delete.
+
+    Returns:
+        dict: Success message if deleted, else error if user not found.
+    """
     user = User.query.filter_by(username=username).first()
     if not user:
         return {"error": "User not found."}
@@ -99,6 +138,19 @@ def delete_user(username):
 
 # TODO: edit user
 def edit_user(username, email, first_name, last_name, password, profile_picture=None):
+    """Update a user's account details.
+
+    Args:
+        username (str): The username of the user to update.
+        email (str): The new email address (optional).
+        first_name (str): The new first name (optional).
+        last_name (str): The new last name (optional).
+        password (str): The new password (optional).
+        profile_picture (FileStorage, optional): A new profile picture file.
+
+    Returns:
+        dict: Success message if updated, else error if user not found.
+    """
     existing_user = User.query.filter((User.username == username)).first()
 
     if not existing_user:
@@ -116,9 +168,8 @@ def edit_user(username, email, first_name, last_name, password, profile_picture=
     if password:
         existing_user.password_hash = generate_password_hash(password)
 
-    if existing_user.profile_picture and os.path.exists(existing_user.profile_picture):
+    if profile_picture:
         filepath = create_profile_picture(existing_user, profile_picture)
-
         existing_user.profile_picture = filepath
 
     db.session.commit()

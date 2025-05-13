@@ -48,6 +48,7 @@ def register():
 
     return render_template("registerpage.html")
 
+
 ## REMEMBER ##
 # @auth_bp.route("/login", methods=["GET", "POST"])
 # def login():
@@ -75,20 +76,26 @@ def register():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    Handle user login.
+
+    Returns:
+        str or Response: Redirect to dashboard on success, error message on failure,
+        or login page on GET.
+    """
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
-        result = login_user(username, password)  # your service method
+        result = login_user(username, password)
 
         if result.get("success"):
-            flask_login_user(result["user"])  # ✅ This replaces session manually
+            flask_login_user(result["user"])
             return redirect(url_for("dashboard"))
         else:
             return result.get("error", "Login failed.")
 
     return render_template("loginpage.html")
-
 
 
 @auth_bp.route("/user/delete", methods=["GET", "POST"])
@@ -111,7 +118,7 @@ def user_delete():
     return render_template("deleteuser.html")
 
 
-@auth_bp.route("/entertoken/<token>", methods=["GET", "POST"])
+@auth_bp.route("/forgot-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     """
     Handle password reset via token.
@@ -135,7 +142,7 @@ def reset_password(token):
         else:
             return "User not found", 404
 
-    return render_template("passwordchange.html")
+    return render_template("passwordchange.html", token=token, _external=True)
 
 
 @auth_bp.route("/edit/profile", methods=["GET", "POST"])
@@ -182,11 +189,18 @@ def forgot_password():
 
     return render_template("forgotpassword.html")
 
+
 from flask_login import login_required, current_user
 from flask import render_template
+
 
 @auth_bp.route("/profile")
 @login_required
 def profile():
-    return render_template("profile.html", user=current_user)
+    """Render the user profile page.
+    This view requires the user to be authenticated.
 
+    Returns:
+        Response: A Flask response object that renders the profile page.
+    """
+    return render_template("profile.html", user=current_user)

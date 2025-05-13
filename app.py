@@ -1,31 +1,28 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, session 
-from flask_mail import Mail
+
+from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager
+from flask_login import current_user
 from flask_login import login_user
 from flask_login import logout_user
-from flask_login import current_user
-from backend.models.user import User
-from backend.models.notification import Notification
-
-
-
-
-
-
-
+from flask_mail import Mail
+from flask_migrate import Migrate
 
 from backend.database import db
-from backend.routes.user_routes import auth_bp
-from flask_mail import Mail, Message
+from backend.models.notification import Notification
+from backend.models.user import User
+from backend.routes.notification_routes import notification_bp
 from backend.routes.team_routes import team_bp
+from backend.routes.user_routes import auth_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
 )
 login_manager = LoginManager()
-login_manager.login_view = 'auth.login'  # where to redirect when not logged in
+login_manager.login_view = "auth.login"  # where to redirect when not logged in
 login_manager.init_app(app)
+
+migrate = Migrate(app, db)
 
 #####
 basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "backend")
@@ -50,9 +47,12 @@ mail = Mail(app)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/teams")
 
+app.register_blueprint(notification_bp, url_prefix="/api/notifications")
+
 
 db.init_app(app)
 from flask_jwt_extended import JWTManager
+
 jwt = JWTManager(app)
 with app.app_context():
     db.create_all()
@@ -88,6 +88,8 @@ def email():
     with app.app_context():
         return send_forgot_password()
 """
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -102,6 +104,8 @@ def login():
             return render_template("loginpage.html", error="Invalid credentials")
 
     return render_template("loginpage.html")
+
+
 # @app.route("/login", methods=["GET", "POST"])
 # def login():
 #    if request.method == "POST":
@@ -144,8 +148,6 @@ def forgot_password():
 """
 
 
-
-
 # Dummy dashboard for prototype
 # @app.route("/dashboard")
 # def dashboard():
@@ -167,7 +169,7 @@ def analysis():
 
 @app.route("/projects")
 def projects():
-    return "<h1>Projects page</h1>"
+    return render_template("projects.html")
 
 
 @app.route("/teams")
@@ -180,10 +182,11 @@ def teams():
 #     return "<h1>Profile page</h1>"
 
 
-#@app.route("/logout")
-#def logout():
+# @app.route("/logout")
+# def logout():
 #    session.pop("user_id", None)
 #    return redirect(url_for("home"))
+
 
 @app.route("/logout")
 def logout():
@@ -191,25 +194,26 @@ def logout():
     return redirect(url_for("home"))
 
 
-#@app.context_processor
-#def inject_user_status():
+# @app.context_processor
+# def inject_user_status():
 #    return dict(user_logged_in=session.get("user_id") is not None)
-#from backend.models import User
+# from backend.models import User
+
 
 @app.context_processor
 def inject_user_status():
-    return dict(
-        user_logged_in=current_user.is_authenticated,
-        has_notifications=False
-    )
+    return dict(user_logged_in=current_user.is_authenticated, has_notifications=False)
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 @app.route("/notifications")
 def notifications():
     return render_template("notifications.html")
+
 
 @app.route("/notifications/delete/<int:notification_id>", methods=["POST"])
 def delete_notification(notification_id):
@@ -222,6 +226,7 @@ def delete_notification(notification_id):
         db.session.commit()
         return "", 200
     return "", 404
+
 
 if __name__ == "__main__":
     # from livereload import Server
