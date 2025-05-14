@@ -48,7 +48,9 @@
 
     <div class="profile-container">
       <div class="profile-card">
-        <img src="{{ user.profile_picture or url_for('static', filename='images/default_avatar.png') }}" alt="Profile Picture" class="profile-picture" />
+    <img src="{{ url_for('static', filename=user.profile_picture or 'images/default_avatar.png') }}"
+        alt="Profile Picture"
+        class="profile-picture" />
 
         <h2>{{ user.first_name }} {{ user.last_name }}</h2>
         <p>@{{ user.username }}</p>
@@ -82,7 +84,7 @@
           </div>
 
           <div class="profile-upload">
-            <label for="profile_picture">Change Profile Picture (optional)</label>
+            <label for="profile_picture">Change Profile Picture </label>
             <input type="file" name="profile_picture" id="profile_picture" accept="image/*" />
           </div>
           <div class="button-wrapper">

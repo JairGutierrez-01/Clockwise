@@ -146,7 +146,7 @@ def edit_profile(user_id):
             user_id, username, email, first_name, last_name, password, profile_picture
         )
         if "success" in result:
-            return redirect(url_for("profile"))
+            return redirect(url_for("auth.profile"))
         else:
             return result.get("error", "Edit profile failed.")
     return render_template("editprofile.html", user_id=user_id)

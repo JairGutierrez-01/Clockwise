@@ -23,7 +23,7 @@ body.dark-mode {
   color: #e0e0e0;
 
   --foreground-color: #e0e0e0;
-  --card-bg: #1f1f1f;
+  --card-bg: #173044;
   --projects-table-bg: #292929;
   --calendar-bg: #2a2a2a;
   --project-details-bg: #242424;
@@ -88,12 +88,12 @@ body {
 }
 
 .profile-picture {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--accent);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
 }
 
 .teams,

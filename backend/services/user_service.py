@@ -39,12 +39,14 @@ def register_user(
     hashed_pw = generate_password_hash(password)
     profile_picture_path = None
 
+    # kürzt filepath -> gibt nur Namen des Bilds weiter
     if profile_picture:
-        profile_picture_filename = secure_filename(profile_picture.filename)
-        picture_name = str(uuid.uuid1()) + "_" + profile_picture_filename
-        filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], picture_name)
-        profile_picture.save(filepath)
-        profile_picture_path = filepath
+        filename = secure_filename(profile_picture.filename)
+        picture_name = f"{uuid.uuid4()}_{filename}"
+        relative_path = os.path.join("profile_pictures", picture_name).replace("\\", "/")
+        full_path = os.path.join(current_app.static_folder, relative_path)
+        profile_picture.save(full_path)
+        profile_picture_path = relative_path
 
     new_user = User(
         username=username,
@@ -52,7 +54,7 @@ def register_user(
         password_hash=hashed_pw,
         first_name=first_name,
         last_name=last_name,
-        profile_picture=profile_picture_path,  # optional
+        profile_picture=profile_picture_path,  #optional
     )
 
     db.session.add(new_user)
@@ -154,7 +156,7 @@ def edit_user(
     Returns:
         dict: Success message if updated, else error if user not found.
     """
-    existing_user = User.query.filter((User.user.user_id == user_id)).first()
+    existing_user = User.query.filter_by(user_id=user_id).first()
 
     if not existing_user:
         return {"error": "User not found."}
@@ -175,7 +177,7 @@ def edit_user(
 
     if profile_picture:
         filepath = create_profile_picture(existing_user, profile_picture)
-        existing_user.profile_picture = filepath
+        existing_user.profile_picture = filepath.replace("\\", "/")
 
     db.session.commit()
 
