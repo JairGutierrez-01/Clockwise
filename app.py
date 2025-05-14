@@ -165,7 +165,7 @@ def timeTracking():
 
 @app.route("/analysis")
 def analysis():
-    return "<h1>Analysis page</h1>"
+    return render_template("analysis.html")
 
 
 @app.route("/projects")
@@ -175,7 +175,7 @@ def projects():
 
 @app.route("/teams")
 def teams():
-    return "<h1>Teams page</h1>"
+    return render_template("teams.html")
 
 
 # @app.route("/profile")
