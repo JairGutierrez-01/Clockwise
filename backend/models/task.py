@@ -44,9 +44,8 @@ class Task(db.Model):
     due_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"))
 
-    time_entries = db.relationship("TimeEntry", back_populates="task")
+    time_entries = db.relationship("TimeEntry", back_populates="task", uselist=False)
     assigned_user = db.relationship("User", back_populates="assigned_task")
     project = db.relationship("Project", back_populates="task")
     category = db.relationship("Category", back_populates="task")

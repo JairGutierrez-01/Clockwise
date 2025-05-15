@@ -15,6 +15,7 @@ from backend.routes.notification_routes import notification_bp
 from backend.routes.team_routes import team_bp
 from backend.routes.user_routes import auth_bp
 from backend.routes.task_routes import task_bp
+from backend.routes.time_entry_routes import time_entry_bp
 
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
@@ -49,7 +50,7 @@ app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/teams")
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
 app.register_blueprint(task_bp, url_prefix="/tasks")
-
+app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
 
 db.init_app(app)
 from flask_jwt_extended import JWTManager
