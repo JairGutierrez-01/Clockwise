@@ -49,8 +49,7 @@
     <div class="profile-container">
       <div class="profile-card">
     <img src="{{ url_for('static', filename=user.profile_picture or 'images/default_avatar.png') }}"
-        alt="Profile Picture"
-        class="profile-picture" />
+     class="profile-picture" />
 
         <h2>{{ user.first_name }} {{ user.last_name }}</h2>
         <p>@{{ user.username }}</p>
