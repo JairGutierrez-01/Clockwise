@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from backend.services.task_services import (
+from backend.services.task_service import (
     create_task,
     get_task_by_id,
     get_task_by_project,
@@ -21,8 +21,9 @@ def task_list():
     Returns:
         Response: Rendered HTML page with a list of tasks.
     """
-    project_id = request.args.get("project_id")
-    if project_id:
+    project_id_str = request.args.get("project_id")
+    if project_id_str:
+        project_id = int(project_id_str)
         tasks = get_task_by_project(project_id)
     else:
         tasks = get_default_tasks()

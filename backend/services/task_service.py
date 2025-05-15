@@ -77,10 +77,10 @@ def update_task(task_id, **kwargs):
     if not task:
         return {"error": "Task not found"}
 
-    ALLOWED_FIELDS = ["title", "description", "due_date", "status", "user_id", "project_id", "category_id"]
+    ALLOWED_TASK_FIELDS = ["title", "description", "due_date", "status", "user_id", "project_id", "category_id"]
 
     for key, value in kwargs.items():
-        if key in ALLOWED_FIELDS:
+        if key in ALLOWED_TASK_FIELDS:
           setattr(task, key, value)
     db.session.commit()
     return {"success": True, "message": "Task updated successfully", "updated_task_id": task_id}

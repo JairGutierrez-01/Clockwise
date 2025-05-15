@@ -15,8 +15,8 @@ class TimeEntry(db.Model):
         end_time (datetime): When it ended.
         duration_minutes (int): Total duration in minutes.
         comment (str, optional): Optional note.
-        user(relationship): The user who created the time entry.
-        task(relationship): The task to which this time entry is assigned.
+        user (relationship): The user who created the time entry.
+        task (relationship): The task to which this time entry is assigned.
     """
 
     __tablename__ = "time_entries"
