@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notifications - ClockWise</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='analysis.css') }}"
+    />
+  </head>
+  <body class="dark-mode">
+    {% include 'navbar.html' %}
+
+    <main class="analysis-container">
+    </main>
+
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  </body>
+</html>

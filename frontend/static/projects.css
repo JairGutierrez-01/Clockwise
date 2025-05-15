@@ -31,14 +31,12 @@ Define reusable variables for colors, spacing, typography, and border radius.
 
 /*============================================
 =             Dark Mode Overrides            =
-Customize theme and background gradient for dark Mode.
 ============================================*/
 body.dark-mode {
   --color-bg: #081520;
   --color-fg: #e0e0e0;
   --color-card-bg: #173044;
   --color-card-shadow: rgba(0, 0, 0, 0.5);
-
   background: linear-gradient(
     to bottom,
     #081520 0%,
@@ -46,7 +44,6 @@ body.dark-mode {
     #12395f 70%,
     #1e4f85 100%
   );
-
   background-attachment: fixed;
   background-size: cover;
   color: var(--color-fg);
@@ -54,7 +51,6 @@ body.dark-mode {
 
 /*============================================
 =             Light Mode Base Styles         =
-Set up base typography, background, and text color for the default theme.
 ============================================*/
 body {
   margin: 0;
@@ -68,7 +64,6 @@ body {
 
 /*============================================
 =        Page Container & Header Styling     =
-Center content and style the page header.
 ============================================*/
 .project-page {
   width: 100%;
@@ -79,8 +74,9 @@ Center content and style the page header.
 
 .project-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
   margin-bottom: var(--space-lg);
 }
 
@@ -89,6 +85,28 @@ Center content and style the page header.
   margin: 0;
 }
 
+/* -- Filter Controls -- */
+#filter-controls {
+  display: flex;
+  gap: var(--space-sm);
+}
+#filter-controls button {
+  background-color: var(--color-card-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-accent);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: var(--font-base);
+  transition: background 0.2s;
+}
+#filter-controls button.active,
+#filter-controls button:hover {
+  background-color: var(--color-accent);
+  color: var(--color-card-bg);
+}
+
+/* -- Create Project Btn -- */
 #create-project-btn {
   background-color: var(--color-accent);
   color: var(--color-fg);
@@ -99,14 +117,12 @@ Center content and style the page header.
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-
 #create-project-btn:hover {
   transform: scale(1.05);
 }
 
 /*============================================
 =             Project List Styling           =
-Arrange project cards in a responsive grid.
 ============================================*/
 #project-list {
   display: grid;
@@ -147,14 +163,12 @@ Arrange project cards in a responsive grid.
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
-
 .project-card button:hover {
   opacity: 0.8;
 }
 
 /*============================================
 =                 Modal Styling              =
-Center modal and style form container.
 ============================================*/
 .modal {
   position: fixed;
@@ -167,11 +181,9 @@ Center modal and style form container.
   align-items: center;
   justify-content: center;
 }
-
 .hidden {
   display: none;
 }
-
 .project-form {
   background-color: var(--color-card-bg);
   border-radius: var(--radius);
@@ -182,12 +194,10 @@ Center modal and style form container.
   display: flex;
   flex-direction: column;
 }
-
 .project-form label {
   margin-top: var(--space-md);
   font-weight: bold;
 }
-
 .project-form input,
 .project-form textarea,
 .project-form select {
@@ -198,14 +208,12 @@ Center modal and style form container.
   border: 1px solid #ccc;
   width: 100%;
 }
-
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-sm);
   margin-top: var(--space-lg);
 }
-
 .form-actions button {
   background-color: var(--color-accent);
   color: var(--color-fg);
@@ -215,14 +223,12 @@ Center modal and style form container.
   cursor: pointer;
   transition: transform 0.2s ease;
 }
-
 .form-actions button:hover {
   transform: scale(1.05);
 }
 
 /*============================================
 =            Project Detail Styling          =
-Style detail view and task sections.
 ============================================*/
 #project-detail {
   background-color: var(--color-card-bg);
@@ -231,19 +237,16 @@ Style detail view and task sections.
   margin-top: var(--space-xl);
   box-shadow: 0 4px 12px var(--color-card-shadow);
 }
-
 .project-detail__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-md);
 }
-
 .project-detail__header h2 {
   font-size: var(--font-xl);
   margin: 0;
 }
-
 .project-detail__actions button {
   background: none;
   border: none;
@@ -252,38 +255,31 @@ Style detail view and task sections.
   cursor: pointer;
   margin-left: var(--space-sm);
 }
-
 .project-detail__info dt {
   font-weight: bold;
   margin-top: var(--space-sm);
 }
-
 .project-detail__info dd {
   margin: 0 0 var(--space-sm) var(--space-md);
 }
-
 .tasks-section {
   margin-top: var(--space-xl);
 }
-
 .tasks-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-md);
 }
-
 .tasks-header h3 {
   margin: 0;
   font-size: var(--font-lg);
 }
-
 #task-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
 .task-item {
   background-color: var(--color-bg);
   border-radius: var(--radius);
@@ -293,7 +289,6 @@ Style detail view and task sections.
   justify-content: space-between;
   align-items: center;
 }
-
 .task-item button {
   background: none;
   border: none;

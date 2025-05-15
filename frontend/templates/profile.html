@@ -48,7 +48,8 @@
 
     <div class="profile-container">
       <div class="profile-card">
-        <img src="{{ user.profile_picture or url_for('static', filename='images/default_avatar.png') }}" alt="Profile Picture" class="profile-picture" />
+    <img src="{{ url_for('static', filename=user.profile_picture or 'images/default_avatar.png') }}"
+     class="profile-picture" />
 
         <h2>{{ user.first_name }} {{ user.last_name }}</h2>
         <p>@{{ user.username }}</p>
@@ -56,7 +57,7 @@
         <p>Last Active: {{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</p>
 
         <h3 class="section-heading">Edit Profile</h3>
-        <form class="profile-edit-form" method="POST" action="{{ url_for('auth.edit_profile') }}" enctype="multipart/form-data">
+        <form class="profile-edit-form" method="POST" action="{{ url_for('auth.edit_profile', user_id=current_user.user_id) }}" enctype="multipart/form-data">
           {% if csrf_token %}{{ csrf_token() }}{% endif %}
 
           <div class="form-columns">
@@ -82,11 +83,12 @@
           </div>
 
           <div class="profile-upload">
-            <label for="profile_picture">Change Profile Picture (optional)</label>
+            <label for="profile_picture">Change Profile Picture </label>
             <input type="file" name="profile_picture" id="profile_picture" accept="image/*" />
           </div>
-
-          <button type="submit" class="btn-primary">Save Changes</button>
+          <div class="button-wrapper">
+            <button class="btn-primary">Save Changes</button>
+          </div>
         </form>
 
         <div class="teams">
@@ -111,14 +113,16 @@
           </ul>
         </div>
 
-        <h3 class="section-heading danger">Delete Account</h3>
-        <form class="delete-profile-form" method="POST" action="{{ url_for('auth.user_delete') }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+        <form class="delete-profile-form" method="POST" action="{{ url_for('auth.user_delete', user_id=current_user.user_id) }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
           {% if csrf_token %}{{ csrf_token() }}{% endif %}
-          <button type="submit" class="btn-danger">Permanently Delete Account</button>
+          <div class="button-wrapper">
+            <button class="btn-primary">Permanently Delete Account</button>
+          </div>
         </form>
       </div>
     </div>
 
-    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   </body>
 </html>
+
