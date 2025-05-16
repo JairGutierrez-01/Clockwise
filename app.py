@@ -174,9 +174,10 @@ def analysis():
     return render_template("analysis.html")
 
 
-@app.route("/projects")
+@app.route("/projects", methods=["GET", "POST"])
 def projects():
-    return render_template("projects.html")
+    user_projects = Project.query.filter_by(user_id=current_user.user_id).all()
+    return render_template("projects.html", projects=user_projects)
 
 
 @app.route("/teams")
