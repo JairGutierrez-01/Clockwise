@@ -1,12 +1,9 @@
 import os
-
 from flask import Flask, render_template, request, redirect, url_for
-from flask_login import LoginManager
-from flask_login import current_user
-from flask_login import login_user
-from flask_login import logout_user
+from flask_login import LoginManager, current_user, login_user, logout_user
 from flask_mail import Mail
 from flask_migrate import Migrate
+from dotenv import load_dotenv
 
 from backend.database import db
 from backend.models.notification import Notification
@@ -20,35 +17,31 @@ from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.project_routes import project_bp
 from backend.routes.category_routes import category_bp
 
+from flask_jwt_extended import JWTManager
+
+# Load environment variables from .env file
+load_dotenv()
+
 app = Flask(
     __name__, template_folder="frontend/templates", static_folder="frontend/static"
 )
-login_manager = LoginManager()
-login_manager.login_view = "auth.login"  # where to redirect when not logged in
-login_manager.init_app(app)
 
+# Load configuration from config.py
+app.config.from_object("config.Config")
+
+# Initialize extensions
+db.init_app(app)
 migrate = Migrate(app, db)
+mail = Mail(app)
+login_manager = LoginManager()
+login_manager.login_view = "auth.login"
+login_manager.init_app(app)
+jwt = JWTManager(app)
 
-#####
-basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), "backend")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-    basedir, "database.db"
-)
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-app.config["UPLOAD_EXTENSIONS"] = [".jpg", ".png"]
-app.config["UPLOAD_PATH"] = "frontend/static/profile_pictures"
-app.config["UPLOAD_FOLDER"] = os.path.join(os.getcwd(), app.config["UPLOAD_PATH"])
+# Create upload folder if not exists
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
-app.config["MAIL_SERVER"] = "smtp.gmail.com"
-app.config["MAIL_PORT"] = 465
-app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USE_TLS"] = False
-app.config["MAIL_USERNAME"] = "sep.clockwise@gmail.com"
-app.config["MAIL_PASSWORD"] = "sclpdlhelcwwobob"
-mail = Mail(app)
+# Register Blueprints
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/teams")
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
@@ -57,15 +50,11 @@ app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
 app.register_blueprint(project_bp)
 app.register_blueprint(category_bp, url_prefix="/categories")
 
-db.init_app(app)
-from flask_jwt_extended import JWTManager
-
-jwt = JWTManager(app)
+# Create tables if not exist
 with app.app_context():
     db.create_all()
 
-####
-app.secret_key = "u89234h2v98vn34vvj2934hvjwef"  # Sicherer zufälliger Key um zu simulieren, dass ein user eingeloggt ist
+# Secret key is now in config.py loaded from .env
 
 
 @app.context_processor
@@ -95,7 +84,7 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.password == password:
-            login_user(user)  # ← Das ist entscheidend!
+            login_user(user)
             return redirect(url_for("dashboard"))
         else:
             return render_template("loginpage.html", error="Invalid credentials")
@@ -135,12 +124,6 @@ def logout():
     return redirect(url_for("home"))
 
 
-# @app.context_processor
-# def inject_user_status():
-#    return dict(user_logged_in=session.get("user_id") is not None)
-# from backend.models import User
-
-
 @app.context_processor
 def inject_user_status():
     return dict(user_logged_in=current_user.is_authenticated, has_notifications=False)
@@ -170,7 +153,4 @@ def delete_notification(notification_id):
 
 
 if __name__ == "__main__":
-    # from livereload import Server
-    # server = Server(app.wsgi_app)
-    # server.serve(debug=True)
     app.run(debug=True)
