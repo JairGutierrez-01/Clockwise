@@ -1,9 +1,12 @@
+from backend.models.project import Project, ProjectType
+from flask_login import current_user
+from backend.database import db
 from flask import (
     Blueprint, 
     request, 
     redirect, 
     url_for, 
-    render_template
+    render_template,
 )
 from backend.services.project_service import (
     create_project, 
@@ -92,3 +95,76 @@ def edit_project_route(project_id):
     if "success" in result:
         return render_template("projects.html", project=result["project"])
     return result.get("error", "Project not found."), 404
+
+
+@project_bp.route("/api/projects", methods=["GET", "POST"])
+def api_projects():
+    if request.method == "POST":
+        data = request.get_json()
+        name = data.get("name")
+        description = data.get("description")
+        type_ = ProjectType[data.get("type")]
+        time_limit_hours = data.get("time_limit_hours")
+        due_date = data.get("due_date")
+
+        if not name or not type_:
+            return {"error": "Missing fields"}, 400
+
+        project = Project(
+            name=name,
+            description=description,
+            type=type_,
+            time_limit_hours=time_limit_hours,
+            due_date=due_date,
+            user_id=current_user.user_id
+        )
+
+        db.session.add(project)
+        db.session.commit()
+
+        return {"project_id": project.project_id}, 201
+
+    projects = Project.query.filter_by(user_id=current_user.user_id).all()
+    return {
+        "projects": [
+            {
+                "project_id": p.project_id,
+                "name": p.name,
+                "description": p.description,
+                "type": p.type.name if hasattr(p.type, "name") else str(p.type),
+                "time_limit_hours": p.time_limit_hours,
+                "current_hours": 0,
+                "due_date": p.due_date.isoformat() if p.due_date else None
+            }
+            for p in projects
+        ]
+    }
+
+@project_bp.route("/api/projects/<int:project_id>", methods=["PATCH", "DELETE"])
+def api_project_detail(project_id):
+    if not current_user.is_authenticated:
+        return {"error": "Not authorized"}, 401
+
+    project = Project.query.filter_by(project_id=project_id, user_id=current_user.user_id).first()
+    if not project:
+        return {"error": "Project not found"}, 404
+
+    if request.method == "PATCH":
+        data = request.get_json()
+        if "name" in data:
+            project.name = data["name"]
+        if "description" in data:
+            project.description = data["description"]
+        if "type" in data:
+            project.type = ProjectType[data["type"]]
+        if "time_limit_hours" in data:
+            project.time_limit_hours = data["time_limit_hours"]
+        if "due_date" in data:
+            project.due_date = data["due_date"]
+        db.session.commit()
+        return {"success": True}
+
+    if request.method == "DELETE":
+        db.session.delete(project)
+        db.session.commit()
+        return {"success": True}
