@@ -87,16 +87,6 @@ def home():
     return render_template("homepage.html")
 
 
-# TODO: send email
-"""@app.route("/email")
-def email():
-    from backend.services.mail_service import send_forgot_password
-
-    with app.app_context():
-        return send_forgot_password()
-"""
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -113,55 +103,9 @@ def login():
     return render_template("loginpage.html")
 
 
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#    if request.method == "POST":
-#       username = request.form.get("username")
-#        password = request.form.get("password")
-#        # Daten prüfen hier
-#        return redirect(url_for("dashboard"))  # Demo access: skip real login for now
-#    return render_template("loginpage.html")
-
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#   if request.method == 'POST':
-# hier Login Daten prüfen
-#      session['user_id'] = 'demo_user'  # <- Benutzer als eingeloggt markieren
-#     return redirect(url_for('dashboard'))
-# return render_template('loginpage.html')
-
-
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html")
-
-
-"""
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        # Registrierung verarbeiten
-        pass
-    return render_template('registerpage.html')
-    """
-
-"""
-@app.route("/forgot-password", methods=["GET", "POST"])
-def forgot_password():
-    if request.method == "POST":
-        # E-Mail senden
-        pass
-    return render_template("forgotpassword.html")
-"""
-
-
-# Dummy dashboard for prototype
-# @app.route("/dashboard")
-# def dashboard():
-#    return render_template("dashboard.html")  # Dummy dashboard for prototype
-
-
-# New routes for prototype navigation
 
 
 @app.route("/TimeTracking")
@@ -183,17 +127,6 @@ def projects():
 @app.route("/teams")
 def teams():
     return render_template("teams.html")
-
-
-# @app.route("/profile")
-# def profile():
-#     return "<h1>Profile page</h1>"
-
-
-# @app.route("/logout")
-# def logout():
-#    session.pop("user_id", None)
-#    return redirect(url_for("home"))
 
 
 @app.route("/logout")
