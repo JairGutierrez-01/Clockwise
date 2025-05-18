@@ -1,14 +1,33 @@
-"""from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session, declarative_base
-
-DATABASE_URL = "sqlite:///database.db"
-
-engine = create_engine(DATABASE_URL, echo=True, future=True)
-SessionLocal = scoped_session(
-    sessionmaker(bind=engine, autoflush=False, autocommit=False)
-)
+"""from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
-Base = declarative_base()
+
+
+def create_app(test_config=None):
+    app = Flask(__name__)
+
+    app.config.from_mapping(
+        {
+            "SECRET_KEY": "dev",
+            "SQLALCHEMY_DATABASE_URI": (
+                "sqlite:///:memory:" if test_config else "sqlite:///database.db"
+            ),
+            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+        }
+    )
+
+    if test_config:
+        app.config.update(test_config)
+
+    db.init_app(app)
+
+    from backend.routes.user_routes import auth_bp
+
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+
+    with app.app_context():
+        db.create_all()
+
+    return app
 """
