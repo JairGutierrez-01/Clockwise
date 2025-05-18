@@ -54,7 +54,7 @@ app.register_blueprint(team_bp, url_prefix="/teams")
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
 app.register_blueprint(task_bp, url_prefix="/tasks")
 app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
-app.register_blueprint(project_bp, url_prefix="/projects")
+app.register_blueprint(project_bp)
 app.register_blueprint(category_bp, url_prefix="/categories")
 
 db.init_app(app)
