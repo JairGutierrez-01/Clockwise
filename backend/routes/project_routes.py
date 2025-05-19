@@ -1,6 +1,7 @@
 from backend.models.project import Project, ProjectType
 from flask_login import current_user
 from backend.database import db
+from datetime import datetime
 from flask import (
     Blueprint, 
     request, 
@@ -105,7 +106,14 @@ def api_projects():
         description = data.get("description")
         type_ = ProjectType[data.get("type")]
         time_limit_hours = data.get("time_limit_hours")
-        due_date = data.get("due_date")
+
+        due_date_str = data.get("due_date")
+        due_date = None
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, "%d.%m.%Y")
+            except ValueError:
+                return {"error": "Invalid date format. Use TT.MM.JJJJ."}, 400
 
         if not name or not type_:
             return {"error": "Missing fields"}, 400
@@ -160,7 +168,11 @@ def api_project_detail(project_id):
         if "time_limit_hours" in data:
             project.time_limit_hours = data["time_limit_hours"]
         if "due_date" in data:
-            project.due_date = data["due_date"]
+            try:
+                project.due_date = datetime.strptime(data["due_date"], "%d.%m.%Y")
+            except ValueError:
+                return {"error": "Invalid date format. Use TT.MM.JJJJ."}, 400
+
         db.session.commit()
         return {"success": True}
 
