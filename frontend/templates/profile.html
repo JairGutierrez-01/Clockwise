@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Profile - ClockWise</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='profile.css') }}"
+    />
 
     <style>
       .form-columns {
@@ -48,8 +54,10 @@
 
     <div class="profile-container">
       <div class="profile-card">
-    <img src="{{ url_for('static', filename=user.profile_picture or 'images/default_avatar.png') }}"
-     class="profile-picture" />
+        <img
+          src="{{ url_for('static', filename=user.profile_picture or 'images/default_avatar.png') }}"
+          class="profile-picture"
+        />
 
         <h2>{{ user.first_name }} {{ user.last_name }}</h2>
         <p>@{{ user.username }}</p>
@@ -57,34 +65,78 @@
         <p>Last Active: {{ user.last_active.strftime('%Y-%m-%d %H:%M') }}</p>
 
         <h3 class="section-heading">Edit Profile</h3>
-        <form class="profile-edit-form" method="POST" action="{{ url_for('auth.edit_profile', user_id=current_user.user_id) }}" enctype="multipart/form-data">
+        <form
+          class="profile-edit-form"
+          method="POST"
+          action="{{ url_for('auth.edit_profile', user_id=current_user.user_id) }}"
+          enctype="multipart/form-data"
+        >
           {% if csrf_token %}{{ csrf_token() }}{% endif %}
 
           <div class="form-columns">
             <div class="form-column">
               <label for="first_name">First Name</label>
-              <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}" required />
+              <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                value="{{ user.first_name }}"
+                required
+              />
 
               <label for="last_name">Last Name</label>
-              <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" required />
+              <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                value="{{ user.last_name }}"
+                required
+              />
 
               <label for="username">Username</label>
-              <input type="text" id="username" name="username" value="{{ user.username }}" required />
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value="{{ user.username }}"
+                required
+              />
 
               <label for="email">Email</label>
-              <input type="email" id="email" name="email" value="{{ user.email }}" required />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value="{{ user.email }}"
+                required
+              />
 
               <label for="password">New Password (optional)</label>
-              <input type="password" id="password" name="password" placeholder="Leave blank to keep current password" />
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Leave blank to keep current password"
+              />
 
               <label for="confirm_password">Confirm Password</label>
-              <input type="password" id="confirm_password" name="confirm_password" placeholder="Only required if changing password" />
+              <input
+                type="password"
+                id="confirm_password"
+                name="confirm_password"
+                placeholder="Only required if changing password"
+              />
             </div>
           </div>
 
           <div class="profile-upload">
             <label for="profile_picture">Change Profile Picture </label>
-            <input type="file" name="profile_picture" id="profile_picture" accept="image/*" />
+            <input
+              type="file"
+              name="profile_picture"
+              id="profile_picture"
+              accept="image/*"
+            />
           </div>
           <div class="button-wrapper">
             <button class="btn-primary">Save Changes</button>
@@ -113,7 +165,12 @@
           </ul>
         </div>
 
-        <form class="delete-profile-form" method="POST" action="{{ url_for('auth.user_delete', user_id=current_user.user_id) }}" onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');">
+        <form
+          class="delete-profile-form"
+          method="POST"
+          action="{{ url_for('auth.user_delete', user_id=current_user.user_id) }}"
+          onsubmit="return confirm('Are you sure you want to permanently delete your account? This action cannot be undone.');"
+        >
           {% if csrf_token %}{{ csrf_token() }}{% endif %}
           <div class="button-wrapper">
             <button class="btn-primary">Permanently Delete Account</button>
@@ -125,4 +182,3 @@
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   </body>
 </html>
-

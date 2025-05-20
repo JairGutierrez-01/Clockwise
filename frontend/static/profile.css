@@ -1,8 +1,7 @@
 :root {
- 
   --foreground-color: #000;
   --card-bg: #ffffff;
-  --projects-table-bg: #fff9e5; 
+  --projects-table-bg: #fff9e5;
   --calendar-bg: #ddf4f0;
   --project-details-bg: #fbedeb;
   --reports-bg: #f0efff;
@@ -30,8 +29,6 @@ body.dark-mode {
   --reports-bg: #2e2e2e;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
-
-
 
 body.light-mode {
   background: linear-gradient(to bottom, #f3f6f9 0%, #f8fafc 50%, #ffffff 100%);

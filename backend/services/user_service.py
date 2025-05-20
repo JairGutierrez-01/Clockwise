@@ -43,7 +43,9 @@ def register_user(
     if profile_picture:
         filename = secure_filename(profile_picture.filename)
         picture_name = f"{uuid.uuid4()}_{filename}"
-        relative_path = os.path.join("profile_pictures", picture_name).replace("\\", "/")
+        relative_path = os.path.join("profile_pictures", picture_name).replace(
+            "\\", "/"
+        )
         full_path = os.path.join(current_app.static_folder, relative_path)
         profile_picture.save(full_path)
         profile_picture_path = relative_path
@@ -54,7 +56,7 @@ def register_user(
         password_hash=hashed_pw,
         first_name=first_name,
         last_name=last_name,
-        profile_picture=profile_picture_path,  #optional
+        profile_picture=profile_picture_path,  # optional
     )
 
     db.session.add(new_user)
@@ -115,7 +117,9 @@ def password_forget(email):
         return {"error": "E-Mail not found"}
     user_id = user.user_id
     token = generate_reset_token(user.email)
-    reset_url = url_for("auth.reset_password", token=token, user_id=user.user_id, _external=True)
+    reset_url = url_for(
+        "auth.reset_password", token=token, user_id=user.user_id, _external=True
+    )
     send_forgot_password(email, reset_url)
     return {"success": True, "message": "Password reset instructions sent"}
 

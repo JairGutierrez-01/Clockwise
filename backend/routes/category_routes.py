@@ -1,10 +1,4 @@
-from flask import (
-    Blueprint, 
-    request, 
-    redirect, 
-    url_for, 
-    render_template
-)
+from flask import Blueprint, request, redirect, url_for, render_template
 from backend.services.category_service import (
     create_category,
     get_category,
@@ -15,6 +9,7 @@ from backend.services.category_service import (
 
 category_bp = Blueprint("category", __name__)
 
+
 @category_bp.route("/categories", methods=["GET"])
 def list_categories():
     """Display all available categories.
@@ -24,6 +19,7 @@ def list_categories():
     """
     result = get_all_categories()
     return render_template("category_list.html", categories=result["categories"])
+
 
 @category_bp.route("/category/<int:category_id>", methods=["GET"])
 def view_category(category_id):
@@ -40,6 +36,7 @@ def view_category(category_id):
         return render_template("category_detail.html", category=result["category"])
     return result["error"], 404
 
+
 @category_bp.route("/category/create", methods=["GET", "POST"])
 def create_category_route():
     """Treat creation of a new category.
@@ -54,6 +51,7 @@ def create_category_route():
             return redirect(url_for("category.list_categories"))
         return result["error"]
     return render_template("category_create.html")
+
 
 @category_bp.route("/category/edit/<int:category_id>", methods=["GET", "POST"])
 def edit_category_route(category_id):
@@ -76,6 +74,7 @@ def edit_category_route(category_id):
     if "success" in result:
         return render_template("category_edit.html", category=result["category"])
     return result["error"], 404
+
 
 @category_bp.route("/category/delete/<int:category_id>", methods=["POST"])
 def delete_category_route(category_id):

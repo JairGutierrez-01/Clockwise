@@ -3,6 +3,7 @@ from backend.database import db
 from backend.models import Project
 from datetime import datetime
 
+
 def calculate_time_limit_from_credits(credit_points):
     """Calculate time limit in hours based on credit points.
 
@@ -14,6 +15,7 @@ def calculate_time_limit_from_credits(credit_points):
     """
     return credit_points * 30
 
+
 def create_project(
     name,
     description,
@@ -24,7 +26,7 @@ def create_project(
     due_date,
     type,
     is_course,
-    credit_points=None
+    credit_points=None,
 ):
     """Create a new project and persist it in the database.
 
@@ -66,6 +68,7 @@ def create_project(
 
     return {"success": True, "project_id": new_project.project_id}
 
+
 def get_project(project_id):
     """GEt a project by its ID.
 
@@ -79,6 +82,7 @@ def get_project(project_id):
     if not project:
         return {"error": "Project not found."}
     return {"success": True, "project": project}
+
 
 def delete_project(project_id):
     """Delete a project by its ID.
@@ -96,6 +100,7 @@ def delete_project(project_id):
     db.session.delete(project)
     db.session.commit()
     return {"success": True, "message": "Project deleted successfully."}
+
 
 def update_project(project_id, data):
     """Update a project with provided data.

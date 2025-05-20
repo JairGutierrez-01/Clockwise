@@ -17,7 +17,9 @@ def create_profile_picture(existing_user, profile_picture):
     Relative path to the saved image (str), e.g., "profile_pictures/xyz.png"
     """
     if existing_user and existing_user.profile_picture:
-        old_path = os.path.join(current_app.static_folder, existing_user.profile_picture)
+        old_path = os.path.join(
+            current_app.static_folder, existing_user.profile_picture
+        )
         if os.path.exists(old_path):
             os.remove(old_path)
 

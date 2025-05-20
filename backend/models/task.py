@@ -7,6 +7,7 @@ import enum
 
 class TaskStatus(enum.Enum):
     """Enumeration of possible task statuses."""
+
     todo = "todo"
     in_progress = "in_progress"
     done = "done"
@@ -36,9 +37,13 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     task_id = db.Column(db.Integer, primary_key=True, index=True)
-    project_id = db.Column(db.Integer, db.ForeignKey("projects.project_id"), nullable=True)
+    project_id = db.Column(
+        db.Integer, db.ForeignKey("projects.project_id"), nullable=True
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
-    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"), nullable=True)
+    category_id = db.Column(
+        db.Integer, db.ForeignKey("categories.category_id"), nullable=True
+    )
     title = db.Column(db.String, nullable=True)
     description = db.Column(db.String, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)

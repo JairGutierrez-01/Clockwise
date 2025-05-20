@@ -8,7 +8,7 @@ from backend.services.time_entry_service import (
     start_time_entry,
     stop_time_entry,
     pause_time_entry,
-    resume_time_entry
+    resume_time_entry,
 )
 from backend.services.task_service import get_default_tasks, get_task_by_id, create_task
 
@@ -25,6 +25,7 @@ def time_tracking_list():
     """
     tasks = get_default_tasks()
     return render_template("timeTracking.html", tasks=tasks)
+
 
 @time_entry_bp.route("/time-tracking/create", methods=["POST"])
 def time_entry_create():
@@ -47,11 +48,14 @@ def time_entry_create():
         start_time=start_time,
         end_time=end_time,
         duration_minutes=duration,
-        comment=comment
+        comment=comment,
     )
     return redirect(url_for("time_entries.time_tracking_list"))
 
-@time_entry_bp.route("/time-tracking/update/<int:time_entry_id>", methods=["GET","POST"])
+
+@time_entry_bp.route(
+    "/time-tracking/update/<int:time_entry_id>", methods=["GET", "POST"]
+)
 def time_entry_update(time_entry_id):
     """
     Edit an existing time entry.
@@ -77,10 +81,11 @@ def time_entry_update(time_entry_id):
             start_time=start_time,
             end_time=end_time,
             duration_minutes=duration_minutes,
-            comment=comment
+            comment=comment,
         )
         return redirect(url_for("time_entries.time_tracking_list"))
     return render_template("time_entry_form.html", entry=entry)
+
 
 @time_entry_bp.route("/time-tracking/start", methods=["POST"])
 def time_entry_start():
@@ -104,6 +109,7 @@ def time_entry_start():
     start_time_entry(user_id=user_id, task_id=task.task_id, comment=comment)
     return redirect(url_for("time_entries.time_tracking_list"))
 
+
 @time_entry_bp.route("/time-tracking/stop/<int:time_entry_id>", methods=["POST"])
 def time_entry_stop(time_entry_id):
     """
@@ -117,6 +123,7 @@ def time_entry_stop(time_entry_id):
     """
     stop_time_entry(time_entry_id)
     return redirect(url_for("time_entries.time_tracking_list"))
+
 
 @time_entry_bp.route("/time-tracking/pause/<int:time_entry_id>", methods=["POST"])
 def time_entry_pause(time_entry_id):
@@ -132,6 +139,7 @@ def time_entry_pause(time_entry_id):
     pause_time_entry(time_entry_id)
     return redirect(url_for("time_entries.time_tracking_list"))
 
+
 @time_entry_bp.route("/time-tracking/resume/<int:time_entry_id>", methods=["POST"])
 def time_entry_resume(time_entry_id):
     """
@@ -146,6 +154,7 @@ def time_entry_resume(time_entry_id):
     resume_time_entry(time_entry_id)
     return redirect(url_for("time_entries.time_tracking_list"))
 
+
 @time_entry_bp.route("/time-tracking/delete/<int:time_entry_id>", methods=["POST"])
 def time_entry_delete(time_entry_id):
     """
@@ -159,6 +168,7 @@ def time_entry_delete(time_entry_id):
     """
     delete_time_entry(time_entry_id)
     return redirect(url_for("time_entries.time_tracking_list"))
+
 
 @time_entry_bp.route("/time-tracking/task/<int:task_id>", methods=["GET"])
 def time_entry_by_task(task_id):

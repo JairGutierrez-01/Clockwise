@@ -2,6 +2,7 @@ from flask import current_app
 from backend.database import db
 from backend.models import Category
 
+
 def create_category(name):
     """Create a new category.
 
@@ -20,6 +21,7 @@ def create_category(name):
     db.session.commit()
     return {"success": True, "category_id": category.category_id}
 
+
 def get_category(category_id):
     """Retrieve a single category by its ID.
 
@@ -34,6 +36,7 @@ def get_category(category_id):
         return {"error": "Category not found."}
     return {"success": True, "category": category}
 
+
 def get_all_categories():
     """Retrieve all categories.
 
@@ -42,6 +45,7 @@ def get_all_categories():
     """
     categories = Category.query.all()
     return {"success": True, "categories": categories}
+
 
 def update_category(category_id, name):
     """Update the name of a category.
@@ -59,6 +63,7 @@ def update_category(category_id, name):
     category.name = name
     db.session.commit()
     return {"success": True, "message": "Category updated."}
+
 
 def delete_category(category_id):
     """Delete a category by its ID.

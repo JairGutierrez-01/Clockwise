@@ -1,7 +1,16 @@
 from backend.database import db
 from backend.models.task import Task, TaskStatus
 
-def create_task(title, description=None, due_date=None, status="todo", project_id=None, user_id=None, category_id=None):
+
+def create_task(
+    title,
+    description=None,
+    due_date=None,
+    status="todo",
+    project_id=None,
+    user_id=None,
+    category_id=None,
+):
     """Create a new task with optional project, user, and category assignment.
 
     Args:
@@ -27,7 +36,11 @@ def create_task(title, description=None, due_date=None, status="todo", project_i
     )
     db.session.add(new_task)
     db.session.commit()
-    return {"success": True, "message": "Task created successfully", "task_id": new_task.task_id}
+    return {
+        "success": True,
+        "message": "Task created successfully",
+        "task_id": new_task.task_id,
+    }
 
 
 def get_task_by_id(task_id):
@@ -77,13 +90,25 @@ def update_task(task_id, **kwargs):
     if not task:
         return {"error": "Task not found"}
 
-    ALLOWED_TASK_FIELDS = ["title", "description", "due_date", "status", "user_id", "project_id", "category_id"]
+    ALLOWED_TASK_FIELDS = [
+        "title",
+        "description",
+        "due_date",
+        "status",
+        "user_id",
+        "project_id",
+        "category_id",
+    ]
 
     for key, value in kwargs.items():
         if key in ALLOWED_TASK_FIELDS:
-          setattr(task, key, value)
+            setattr(task, key, value)
     db.session.commit()
-    return {"success": True, "message": "Task updated successfully", "updated_task_id": task_id}
+    return {
+        "success": True,
+        "message": "Task updated successfully",
+        "updated_task_id": task_id,
+    }
 
 
 def delete_task(task_id):
@@ -100,5 +125,8 @@ def delete_task(task_id):
         return {"error": "Task not found"}
     db.session.delete(task)
     db.session.commit()
-    return {"success": True, "message": "User deleted successfully", "deleted_task_id": task_id}
-
+    return {
+        "success": True,
+        "message": "User deleted successfully",
+        "deleted_task_id": task_id,
+    }

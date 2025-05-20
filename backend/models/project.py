@@ -32,7 +32,7 @@ class Project(db.Model):
         task (relationship): The tasks the project contains.
         team (relationship): The team the project belongs to.
         user (relationship): The user the project belongs to.
-        notification (relationship): The notification of the project. 
+        notification (relationship): The notification of the project.
     """
 
     __tablename__ = "projects"

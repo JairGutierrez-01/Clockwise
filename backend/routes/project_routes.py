@@ -3,20 +3,21 @@ from flask_login import current_user
 from backend.database import db
 from datetime import datetime
 from flask import (
-    Blueprint, 
-    request, 
-    redirect, 
-    url_for, 
+    Blueprint,
+    request,
+    redirect,
+    url_for,
     render_template,
 )
 from backend.services.project_service import (
-    create_project, 
-    get_project, 
-    delete_project, 
-    update_project
+    create_project,
+    get_project,
+    delete_project,
+    update_project,
 )
 
 project_bp = Blueprint("project", __name__)
+
 
 @project_bp.route("/project/create", methods=["GET", "POST"])
 def create_project_route():
@@ -37,13 +38,14 @@ def create_project_route():
             due_date=data.get("due_date"),
             type=data["type"],
             is_course=bool(data.get("is_course")),
-            credit_points=data.get("credit_points")
+            credit_points=data.get("credit_points"),
         )
         if "success" in result:
             return redirect(url_for("dashboard"))
         return result.get("error", "Project creation failed.")
 
     return render_template("projects.html")
+
 
 @project_bp.route("/project/<int:project_id>", methods=["GET"])
 def view_project(project_id):
@@ -60,6 +62,7 @@ def view_project(project_id):
         return render_template("projects.html", project=result["project"])
     return result.get("error", "Project not found."), 404
 
+
 @project_bp.route("/project/delete/<int:project_id>", methods=["POST"])
 def delete_project_route(project_id):
     """Delete a project by ID.
@@ -74,6 +77,7 @@ def delete_project_route(project_id):
     if "success" in result:
         return redirect(url_for("dashboard"))
     return result.get("error", "Delete failed."), 404
+
 
 @project_bp.route("/project/edit/<int:project_id>", methods=["GET", "POST"])
 def edit_project_route(project_id):
@@ -124,7 +128,7 @@ def api_projects():
             type=type_,
             time_limit_hours=time_limit_hours,
             due_date=due_date,
-            user_id=current_user.user_id
+            user_id=current_user.user_id,
         )
 
         db.session.add(project)
@@ -142,18 +146,21 @@ def api_projects():
                 "type": p.type.name if hasattr(p.type, "name") else str(p.type),
                 "time_limit_hours": p.time_limit_hours,
                 "current_hours": 0,
-                "due_date": p.due_date.isoformat() if p.due_date else None
+                "due_date": p.due_date.isoformat() if p.due_date else None,
             }
             for p in projects
         ]
     }
+
 
 @project_bp.route("/api/projects/<int:project_id>", methods=["PATCH", "DELETE"])
 def api_project_detail(project_id):
     if not current_user.is_authenticated:
         return {"error": "Not authorized"}, 401
 
-    project = Project.query.filter_by(project_id=project_id, user_id=current_user.user_id).first()
+    project = Project.query.filter_by(
+        project_id=project_id, user_id=current_user.user_id
+    ).first()
     if not project:
         return {"error": "Project not found"}, 404
 

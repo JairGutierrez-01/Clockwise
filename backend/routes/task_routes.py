@@ -30,7 +30,7 @@ def task_list():
     return render_template("task_list.html", tasks=tasks)
 
 
-@task_bp.route("/tasks/create", methods=["GET","POST"])
+@task_bp.route("/tasks/create", methods=["GET", "POST"])
 def task_create():
     """Handle the creation of a new task.
 
@@ -47,7 +47,7 @@ def task_create():
 
         description = request.form.get("description")
         due_date = request.form.get("due_date")
-        status = request.form.get("status","todo")
+        status = request.form.get("status", "todo")
         project_id = request.form.get("project_id")
         user_id = request.form.get("user_id")
 
@@ -57,14 +57,14 @@ def task_create():
             due_date=due_date,
             status=status,
             project_id=project_id,
-            user_id=user_id
+            user_id=user_id,
         )
         return redirect(url_for("tasks.task_list"))
 
     return render_template("task_form.html")
 
 
-@task_bp.route("/tasks/edit/<int:task_id>", methods=["GET","POST"])
+@task_bp.route("/tasks/edit/<int:task_id>", methods=["GET", "POST"])
 def task_edit(task_id):
     """Edit an existing task.
 
@@ -109,4 +109,3 @@ def task_delete(task_id):
     """
     delete_task(task_id)
     return redirect(url_for("tasks.task_list"))
-

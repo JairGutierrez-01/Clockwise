@@ -4,7 +4,14 @@ from backend.models.task import Task
 from datetime import datetime
 
 
-def create_time_entry(user_id, task_id, start_time=None, end_time=None, duration_minutes=None, comment=None):
+def create_time_entry(
+    user_id,
+    task_id,
+    start_time=None,
+    end_time=None,
+    duration_minutes=None,
+    comment=None,
+):
     """
     Create a new time entry for a task.
 
@@ -35,7 +42,11 @@ def create_time_entry(user_id, task_id, start_time=None, end_time=None, duration
     )
     db.session.add(new_entry)
     db.session.commit()
-    return {"success": True, "message": "Time entry created successfully", "time_entry_id": new_entry.time_entry_id}
+    return {
+        "success": True,
+        "message": "Time entry created successfully",
+        "time_entry_id": new_entry.time_entry_id,
+    }
 
 
 def get_time_entry_by_id(time_entry_id):
@@ -79,13 +90,22 @@ def update_time_entry(time_entry_id, **kwargs):
     if not entry:
         return {"error": "Time entry not found"}
 
-    ALLOWED_TIME_ENTRY_FIELDS = ["start_time", "end_time", "duration_minutes", "comment"]
+    ALLOWED_TIME_ENTRY_FIELDS = [
+        "start_time",
+        "end_time",
+        "duration_minutes",
+        "comment",
+    ]
 
     for key, value in kwargs.items():
         if key in ALLOWED_TIME_ENTRY_FIELDS:
             setattr(entry, key, value)
     db.session.commit()
-    return {"success": True, "message": "Time entry updated successfully", "time_entry_id": time_entry_id}
+    return {
+        "success": True,
+        "message": "Time entry updated successfully",
+        "time_entry_id": time_entry_id,
+    }
 
 
 def delete_time_entry(time_entry_id):
@@ -132,7 +152,11 @@ def start_time_entry(user_id, task_id, comment=None):
     )
     db.session.add(new_entry)
     db.session.commit()
-    return {"success": True, "message": "Time tracking started successfully", "time_entry_id": new_entry.time_entry_id}
+    return {
+        "success": True,
+        "message": "Time tracking started successfully",
+        "time_entry_id": new_entry.time_entry_id,
+    }
 
 
 def stop_time_entry(time_entry_id):
@@ -157,7 +181,11 @@ def stop_time_entry(time_entry_id):
         current_duration = int((entry.end_time - entry.start_time).total_seconds() / 60)
         entry.duration_minutes = (entry.duration_minutes or 0) + current_duration
     db.session.commit()
-    return {"success": True, "message": "Time tracking stopped successfully", "duration_minutes": entry.duration_minutes}
+    return {
+        "success": True,
+        "message": "Time tracking stopped successfully",
+        "duration_minutes": entry.duration_minutes,
+    }
 
 
 def pause_time_entry(time_entry_id):
@@ -183,7 +211,11 @@ def pause_time_entry(time_entry_id):
     entry.duration_minutes = (entry.duration_minutes or 0) + current_duration
     entry.start_time = None
     db.session.commit()
-    return {"success" : True, "message": "Time tracking paused successfully", "duration_minutes": entry.duration_minutes}
+    return {
+        "success": True,
+        "message": "Time tracking paused successfully",
+        "duration_minutes": entry.duration_minutes,
+    }
 
 
 def resume_time_entry(time_entry_id):
@@ -204,4 +236,8 @@ def resume_time_entry(time_entry_id):
 
     entry.start_time = datetime.now()
     db.session.commit()
-    return {"success": True, "message": "Time tracking resumed successfully", "start_time": entry.start_time}
+    return {
+        "success": True,
+        "message": "Time tracking resumed successfully",
+        "start_time": entry.start_time,
+    }

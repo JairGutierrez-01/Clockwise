@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<Array>} A promise that resolves with an array of project objects.
    */
   async function fetchProjects() {
-    return Promise.resolve(mockProjects.map(p => ({ ...p })));
+    return Promise.resolve(mockProjects.map((p) => ({ ...p })));
   }
 
   /**
@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
       type: data.type,
       time_limit_hours: data.time_limit_hours,
       current_hours: 0,
-      due_date: data.due_date
+      due_date: data.due_date,
     };
     mockProjects.push(project);
     return Promise.resolve({ ...project });
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<Object>} A promise that resolves with the updated project object.
    */
   async function updateProject(id, data) {
-    const idx = mockProjects.findIndex(p => p.project_id === id);
+    const idx = mockProjects.findIndex((p) => p.project_id === id);
     if (idx > -1) {
       mockProjects[idx] = { ...mockProjects[idx], ...data };
       return Promise.resolve({ ...mockProjects[idx] });
@@ -166,12 +166,12 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function renderProjectList() {
     projectListEl.innerHTML = "";
-    projects.forEach(proj => {
+    projects.forEach((proj) => {
       if (activeFilter !== "all" && proj.type !== activeFilter) return;
 
       const card = document.createElement("div");
-      card.className   = "project-card";
-      card.dataset.id  = proj.project_id;
+      card.className = "project-card";
+      card.dataset.id = proj.project_id;
       card.dataset.type = proj.type;
       card.innerHTML = `
         <h2 class="project-card__name">${proj.name}</h2>
@@ -208,11 +208,15 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ───────────── Filter logic ───────────── */
   function setActiveFilter(filter) {
     activeFilter = filter;
-    document.querySelector("#filter-controls .active")?.classList.remove("active");
-    [...filterBtns].find(b => b.dataset.filter === filter)?.classList.add("active");
+    document
+      .querySelector("#filter-controls .active")
+      ?.classList.remove("active");
+    [...filterBtns]
+      .find((b) => b.dataset.filter === filter)
+      ?.classList.add("active");
     renderProjectList();
   }
-  filterBtns.forEach(btn => {
+  filterBtns.forEach((btn) => {
     btn.addEventListener("click", () => setActiveFilter(btn.dataset.filter));
   });
 
