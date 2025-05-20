@@ -24,3 +24,56 @@
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   </body>
 </html>
+<div class="team-management card">
+  <div class="header-row">
+    <h2>Team Management</h2>
+    <div class="project-selector">
+      <button class="project-button">Choose Project</button>
+      <button class="project-button secondary">▼Clockwise</button>
+    </div>
+  </div>
+
+  <div class="member-section card">
+    <div class="table-header">
+      <span>Member</span>
+      <span>Email</span>
+    </div>
+
+    <div class="member-row">
+      <span class="dot red"></span>
+      <span>Name 1</span>
+      <span class="email">name.name@example.com</span>
+    </div>
+    <div class="member-row">
+      <span class="dot blue"></span>
+      <span>Name 2</span>
+      <span class="email">name1.name1@example.com</span>
+    </div>
+    <div class="member-row">
+      <span class="dot green"></span>
+      <span>Name 3</span>
+      <span class="email">name2.name2@example.com</span>
+    </div>
+
+    <div class="member-buttons">
+      <button class="add-btn">Add Member</button>
+      <button class="delete-btn">Delete Member</button>
+    </div>
+  </div>
+
+  <div class="task-section card">
+    <div class="table-header">
+      <span>Tasks</span>
+      <span>Assigned To</span>
+    </div>
+
+    <div class="task-row">
+      <span>Task 1</span>
+      <span><span class="dot red"></span>Name 1</span>
+    </div>
+    <div class="task-row">
+      <span>Task 2</span>
+      <span><span class="dot green"></span>Name 3</span>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,101 @@
 .teams-container {
   padding: 3rem 5rem;
 }
+.team-management {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.project-button {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--card-shadow-light);
+}
+
+.project-button.secondary {
+  background: #eee;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.member-row,
+.task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.member-row span,
+.task-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.email {
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.red {
+  background-color: #b6382c;
+}
+.blue {
+  background-color: #5da4d1;
+}
+.green {
+  background-color: #c7da4f;
+}
+
+.member-buttons {
+  margin-top: 1.5rem;
+}
+
+.add-btn,
+.delete-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--card-shadow-light);
+  margin-right: 1rem;
+}
+
+.add-btn {
+  background-color: #8eaadc;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #aa5a5a;
+  color: white;
+}
+
+.task-section {
+  background-color: var(--project-details-bg);
+}
