@@ -1,27 +1,27 @@
-"""
-
 import pytest
-from backend import create_app, db
+from app import app
 
 
 @pytest.fixture()
-def app():
-    app = create_app(
+def flask_app():
+    app.config.update(
         {
             "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-            "SECRET_KEY": "test",
         }
     )
 
-    with app.app_context():
-        db.create_all()
-        yield app
-        db.session.remove()
-        db.drop_all()
+    # other setup can go here
+
+    yield app
+
+    # clean up / reset resources here
 
 
 @pytest.fixture()
-def client(app):
-    return app.test_client()
-"""
+def client(flask_app):
+    return flask_app.test_client()
+
+
+@pytest.fixture()
+def runner(flask_app):
+    return flask_app.test_cli_runner()
