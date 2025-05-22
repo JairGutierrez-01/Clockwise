@@ -38,6 +38,23 @@
         color: white;
         vertical-align: middle;
       }
+
+      .name-with-dot {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .dot.red { background-color: #e74c3c; }
+      .dot.blue { background-color: #3498db; }
+      .dot.green { background-color: #2ecc71; }
     </style>
   </head>
   <body class="dark-mode">
@@ -57,25 +74,21 @@
           <table class="member-table">
             <thead>
               <tr>
-                <th>Farbe</th>
                 <th>Member</th>
                 <th>Email</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td><span class="dot red"></span></td>
-                <td>Name 1</td>
+                <td><span class="name-with-dot"><span class="dot red"></span>Name 1</span></td>
                 <td class="email">name.name@example.com</td>
               </tr>
               <tr>
-                <td><span class="dot blue"></span></td>
-                <td>Name 2</td>
+                <td><span class="name-with-dot"><span class="dot blue"></span>Name 2</span></td>
                 <td class="email">name1.name1@example.com</td>
               </tr>
               <tr>
-                <td><span class="dot green"></span></td>
-                <td>Name 3</td>
+                <td><span class="name-with-dot"><span class="dot green"></span>Name 3</span></td>
                 <td class="email">name2.name2@example.com</td>
               </tr>
             </tbody>
@@ -87,7 +100,6 @@
           </div>
         </div>
 
-        <!-- TASK SECTION BLEIBT GLEICH -->
         <div class="task-section card">
           <div class="table-header">
             <span>Tasks</span>
