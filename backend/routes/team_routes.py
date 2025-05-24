@@ -7,6 +7,37 @@ from backend.models.notification import Notification
 
 team_bp = Blueprint("teams", __name__)
 
+@team_bp.route("/", methods=["GET"])
+@jwt_required()
+def get_user_teams():
+    """
+    Returns all teams the authenticated user is a member of.
+    """
+    try:
+        user_id = get_jwt_identity()
+
+        user_teams = (
+            db.session.query(UserTeam)
+            .filter_by(user_id=user_id)
+            .join(Team)
+            .order_by(Team.created_at.desc())
+            .all()
+        )
+
+        result = [
+            {
+                "team_id": ut.team.team_id,
+                "team_name": ut.team.name,
+                "role": ut.role,
+                "created_at": ut.team.created_at.isoformat(),
+            }
+            for ut in user_teams
+        ]
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @team_bp.route("/", methods=["POST"])
 @jwt_required()
@@ -43,7 +74,6 @@ def create_team():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
 
 """
     Creates a new team and assigns the current user as admin.

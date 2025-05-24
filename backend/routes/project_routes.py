@@ -73,6 +73,7 @@ def delete_project_route(project_id):
     Returns:
         Response: Redirect or error.
     """
+
     result = delete_project(project_id)
     if "success" in result:
         return redirect(url_for("dashboard"))
