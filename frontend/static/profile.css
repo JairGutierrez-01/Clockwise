@@ -227,3 +227,31 @@ body.light-mode .delete-form button:hover {
   justify-content: center;
   margin-top: 2rem;
 }
+
+.project-card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  box-shadow: var(--card-shadow-light);
+  transition: background-color 0.3s, transform 0.2s;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  color: var(--foreground-color);
+}
+
+.project-card:hover {
+  background-color: rgba(255, 255, 255, 0.08); /* Für Dark Mode sichtbar */
+  transform: translateY(-2px);
+}
+
+.project-card__name {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.project-card__meta p {
+  margin: 0.2rem 0;
+  font-size: 14px;
+}

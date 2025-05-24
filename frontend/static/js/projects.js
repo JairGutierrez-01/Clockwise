@@ -272,10 +272,17 @@ taskForm.addEventListener("submit", async (event) => {
    * Loads projects from the backend and renders them.
    *
    */
-  async function loadProjects() {
+ async function loadProjects() {
     projects = await fetchProjects();
     renderProjectList();
     detailSection.classList.add("hidden");
+
+    // Richtig: Nach dem Laden & Rendern prüfen, ob URL eine project_id enthält
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedId = parseInt(urlParams.get("project_id"), 10);
+    if (selectedId) {
+      showProjectDetail(selectedId);
+    }
   }
 
   loadProjects();
