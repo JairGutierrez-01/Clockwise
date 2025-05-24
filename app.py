@@ -142,7 +142,11 @@ def load_user(user_id):
 
 @app.route("/notifications")
 def notifications():
-    return render_template("notifications.html")
+    if not current_user.is_authenticated:
+        return redirect(url_for("login"))
+
+    user_notifications = Notification.query.filter_by(user_id=current_user.user_id).order_by(Notification.created_at.desc()).all()
+    return render_template("notifications.html", notifications=user_notifications)
 
 
 @app.route("/notifications/delete/<int:notification_id>", methods=["POST"])
@@ -156,6 +160,21 @@ def delete_notification(notification_id):
         db.session.commit()
         return "", 200
     return "", 404
+
+#Test notification erstellen
+@app.route("/trigger-test-notification")
+def trigger_test_notification():
+    if not current_user.is_authenticated:
+        return "Not logged in", 403
+
+    from backend.services.notifications import create_notification
+
+    create_notification(
+        user_id=current_user.user_id,
+        message="🎉 Testbenachrichtigung erfolgreich erstellt!",
+        notif_type="info"
+    )
+    return redirect(url_for("notifications"))
 
 if __name__ == "__main__":
     app.run(debug=True)
