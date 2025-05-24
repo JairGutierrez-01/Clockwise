@@ -1,6 +1,9 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, current_user, login_user, logout_user
+from flask_login import current_user
+from datetime import datetime
+from backend.services.task_service import create_task
 from flask_mail import Mail
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -45,7 +48,7 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/teams")
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
-app.register_blueprint(task_bp, url_prefix="/tasks")
+app.register_blueprint(task_bp, url_prefix="/api")
 app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
 # Für HTML-Formulare
 app.register_blueprint(project_bp)
@@ -153,7 +156,6 @@ def delete_notification(notification_id):
         db.session.commit()
         return "", 200
     return "", 404
-
 
 if __name__ == "__main__":
     app.run(debug=True)

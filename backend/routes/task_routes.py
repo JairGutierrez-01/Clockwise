@@ -1,4 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from flask import jsonify
+from flask_login import current_user
+from datetime import datetime
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -109,3 +112,35 @@ def task_delete(task_id):
     """
     delete_task(task_id)
     return redirect(url_for("tasks.task_list"))
+
+@task_bp.route("/tasks", methods=["POST"])
+def api_create_task():
+    """JSON-API zum Erstellen eines Tasks"""
+    data = request.get_json()
+
+    title = data.get("name", "Untitled Task")
+    description = data.get("description")
+    status = "todo" if data.get("type") == "ActiveTask" else "done"
+
+    due_date_str = data.get("due_date")
+    due_date = None
+    if due_date_str:
+        from datetime import datetime
+        try:
+            due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
+        except ValueError:
+            return jsonify({"error": "Invalid date format"}), 400
+
+    project_id = data.get("project_id")
+    user_id = data.get("user_id") or None
+
+    result = create_task(
+        title=title,
+        description=description,
+        status=status,
+        due_date=due_date,
+        project_id=project_id,
+        user_id=user_id,
+    )
+
+    return jsonify(result), 201

@@ -55,6 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
 //                          API Calls Section
 // Defines functions to interact with the backend
 // ============================================================================
+
+//API Calls Projects
 async function fetchProjects() {
   const res = await fetch("/api/projects");
   if (!res.ok) throw new Error("Failed to fetch projects");
@@ -87,6 +89,17 @@ async function deleteProject(id) {
     method: "DELETE"
   });
   if (!res.ok) throw new Error("Failed to delete project");
+}
+
+//API Calls Tasks
+  async function createTask(data) {
+  const res = await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error("Failed to create task");
+  return res.json();
 }
 
   /**
@@ -237,15 +250,21 @@ taskForm.addEventListener("submit", async (event) => {
   const taskPayload = {
     name: taskNameInput.value.trim(),
     description: taskDescInput.value.trim(),
-    type: taskTypeSelect.value,
+    type: taskTypeSelect.value, // "ActiveTask" | "InactiveTask"
     due_date: taskDueDateInput.value || null,
+    project_id: editingProjectId,
   };
 
-  console.log("Task gespeichert (simuliert):", taskPayload);
-  taskModal.classList.add("hidden");
-
-  // TODO: API call to actually save task
+  try {
+    await createTask(taskPayload);
+    console.log("Task gespeichert:", taskPayload);
+    taskModal.classList.add("hidden");
+    // Optional: Reload or render tasks here
+  } catch (error) {
+    console.error("Fehler beim Speichern des Tasks:", error);
+  }
 });
+
 
 
   // --- Initialization ---
