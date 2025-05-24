@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskForm = document.getElementById("task-form");
   const taskNameInput = document.getElementById("task-name");
   const taskDescInput = document.getElementById("task-description");
-  const taskTypeSelect = document.getElementById("task-type");
+  const taskCategorySelect = document.getElementById("task-category");
   const taskDueDateInput = document.getElementById("task-due-date");
   const cancelTaskBtn = document.getElementById("cancel-task-btn");
   let projects = [];
@@ -250,9 +250,10 @@ taskForm.addEventListener("submit", async (event) => {
   const taskPayload = {
     name: taskNameInput.value.trim(),
     description: taskDescInput.value.trim(),
-    type: taskTypeSelect.value, // "ActiveTask" | "InactiveTask"
+    category_id: parseInt(taskCategorySelect.value, 10) || null,
     due_date: taskDueDateInput.value || null,
     project_id: editingProjectId,
+    created_from_tracking: false,
   };
 
   try {
