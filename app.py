@@ -47,7 +47,10 @@ app.register_blueprint(team_bp, url_prefix="/teams")
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
 app.register_blueprint(task_bp, url_prefix="/tasks")
 app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
+# Für HTML-Formulare
 app.register_blueprint(project_bp)
+# Für API-Zugriffe
+app.register_blueprint(project_bp, url_prefix="/api/projects", name="project_api")
 app.register_blueprint(category_bp, url_prefix="/categories")
 
 # Create tables if not exist

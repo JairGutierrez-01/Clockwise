@@ -1,48 +1,25 @@
 // static/projects.js
 
-// ============================================================================
-//                          API Calls Section
-// Defines functions to interact with the backend
-// ============================================================================
-/* === Comment for taking API calls out ===
-// --- API Calls ---
-async function fetchProjects() {
-  const res = await fetch("/projects");
-  if (!res.ok) throw new Error("Failed to fetch projects");
-  return res.json();
+// Convert Date to match Frontend input with backend expectations*/
+function formatDateForBackend(isoDateStr) {
+  if (!isoDateStr) return null;
+  const [year, month, day] = isoDateStr.split("-");
+  return `${day}.${month}.${year}`;
 }
 
-async function createProject(data) {
-  const res = await fetch("/projects", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error("Failed to create project");
-  return res.json();
+function formatDateForInputField(dateString) {
+  const date = new Date(dateString);
+  return date.toISOString().split("T")[0]; // yyyy-mm-dd
 }
-
-async function updateProject(id, data) {
-  const res = await fetch(`/projects/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error("Failed to update project");
-  return res.json();
-}
-
-async function deleteProject(id) {
-  const res = await fetch(`/projects/${id}`, { method: "DELETE" });
-  if (!res.ok) throw new Error("Failed to delete project");
-}
-// === End API block === */
 
 // ============================================================================
 // Sets up event listeners, state management, and UI update routines after DOM load.
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
   // --- DOM Elements ---
+  let projects = [];
+  let editingProjectId = null;
+  let activeFilter = "all";
   const projectListEl = document.getElementById("project-list");
   const createBtn = document.getElementById("create-project-btn");
   const modal = document.getElementById("project-form-modal");
@@ -67,70 +44,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskListEl = document.getElementById("task-list");
   const filterBtns = document.querySelectorAll("#filter-controls button");
 
-  // === Mock Backend Implementation ===
-  const mockProjects = [];
-  let nextProjectId = 1;
+// ============================================================================
+//                          API Calls Section
+// Defines functions to interact with the backend
+// ============================================================================
+async function fetchProjects() {
+  const res = await fetch("/api/projects");
+  if (!res.ok) throw new Error("Failed to fetch projects");
+  const json = await res.json();
+  return json.projects;
+}
 
-  /**
-   * Fetches all projects from the backend.
-   *
-   * @returns {Promise<Array>} A promise that resolves with an array of project objects.
-   */
-  async function fetchProjects() {
-    return Promise.resolve(mockProjects.map((p) => ({ ...p })));
-  }
+async function createProject(data) {
+  const res = await fetch("/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error("Failed to create project");
+  return res.json();
+}
 
-  /**
-   * Creates a new project in the backend.
-   *
-   * @param {Object} data - The project data including name, description, type, time_limit_hours, and due_date.
-   * @returns {Promise<Object>} A promise that resolves with the created project object.
-   */
-  async function createProject(data) {
-    const project = {
-      project_id: nextProjectId++,
-      name: data.name,
-      description: data.description || "",
-      type: data.type,
-      time_limit_hours: data.time_limit_hours,
-      current_hours: 0,
-      due_date: data.due_date,
-    };
-    mockProjects.push(project);
-    return Promise.resolve({ ...project });
-  }
+async function updateProject(id, data) {
+  const res = await fetch(`/api/projects/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error("Failed to update project");
+  return res.json();
+}
 
-  /**
-   * Updates an existing project by its ID in the backend.
-   *
-   * @param {number} id - The unique identifier of the project to update.
-   * @param {Object} data - The updated project data.
-   * @returns {Promise<Object>} A promise that resolves with the updated project object.
-   */
-  async function updateProject(id, data) {
-    const idx = mockProjects.findIndex((p) => p.project_id === id);
-    if (idx > -1) {
-      mockProjects[idx] = { ...mockProjects[idx], ...data };
-      return Promise.resolve({ ...mockProjects[idx] });
-    }
-    return Promise.reject(new Error("Not found"));
-  }
-
-  /**
-   * Deletes a project by its unique identifier from the Projects array.
-   *
-   * @param {number} id - The unique identifier of the project to delete.
-   * @returns {Promise<void>} A promise that resolves once the deletion is complete.
-   */
-  async function deleteProject(id) {
-    const idx = mockProjects.findIndex((p) => p.project_id === id);
-    if (idx > -1) mockProjects.splice(idx, 1);
-    return Promise.resolve();
-  }
-
-  let activeFilter = "all";
-  let projects = [];
-  let editingProjectId = null;
+async function deleteProject(id) {
+  const res = await fetch(`/api/projects/${id}`, {
+    method: "DELETE"
+  });
+  if (!res.ok) throw new Error("Failed to delete project");
+}
 
   /**
    * Opens the project form modal.
@@ -231,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
       description: descInput.value.trim(),
       type: typeSelect.value,
       time_limit_hours: parseInt(timeLimitInput.value, 10),
-      due_date: dueDateInput.value || null,
+      due_date: formatDateForBackend(dueDateInput.value),
     };
 
     if (editingProjectId) {
@@ -245,22 +195,25 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   projectListEl.addEventListener("click", (event) => {
-    const card = event.target.closest(".project-card");
-    if (!card) return;
+  const card = event.target.closest(".project-card");
+  if (!card) return;
+
+  const viewBtn = event.target.closest(".project-card__view");
+  if (viewBtn) {
     const id = parseInt(card.dataset.id, 10);
-    if (event.target.classList.contains("project-card__view")) {
-      showProjectDetail(id);
-    }
-  });
+    showProjectDetail(id);
+  }
+});
 
   editProjBtn.addEventListener("click", () => openModal(true));
   deleteProjBtn.addEventListener("click", async () => {
-    if (!editingProjectId) return;
-    await deleteProject(editingProjectId);
-    detailSection.classList.add("hidden");
-    await loadProjects();
-  });
+  console.log("Deleting project:", editingProjectId); // Debug
+  if (!editingProjectId) return;
 
+  await deleteProject(editingProjectId);
+  detailSection.classList.add("hidden");
+  await loadProjects();
+});
   // Placeholder for task creation inside project detail
   createTaskBtn.addEventListener("click", () => {
     // TODO: task creation
