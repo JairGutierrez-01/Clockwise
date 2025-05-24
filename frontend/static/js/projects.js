@@ -17,6 +17,13 @@ function formatDateForInputField(dateString) {
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
   // --- DOM Elements ---
+  const taskModal = document.getElementById("task-form-modal");
+  const taskForm = document.getElementById("task-form");
+  const taskNameInput = document.getElementById("task-name");
+  const taskDescInput = document.getElementById("task-description");
+  const taskTypeSelect = document.getElementById("task-type");
+  const taskDueDateInput = document.getElementById("task-due-date");
+  const cancelTaskBtn = document.getElementById("cancel-task-btn");
   let projects = [];
   let editingProjectId = null;
   let activeFilter = "all";
@@ -170,7 +177,7 @@ async function deleteProject(id) {
     btn.addEventListener("click", () => setActiveFilter(btn.dataset.filter));
   });
 
-  /* ───────────── Event listeners ───────────── */
+  /* ───────────── Event listeners Projects ───────────── */
   createBtn.addEventListener("click", () => openModal(false));
   cancelBtn.addEventListener("click", closeModal);
 
@@ -214,11 +221,32 @@ async function deleteProject(id) {
   detailSection.classList.add("hidden");
   await loadProjects();
 });
-  // Placeholder for task creation inside project detail
-  createTaskBtn.addEventListener("click", () => {
-    // TODO: task creation
-    alert("Task creation not implemented yet.");
-  });
+
+/* ───────────── Event listeners Tasks ───────────── */
+createTaskBtn.addEventListener("click", () => {
+  taskForm.reset();
+  taskModal.classList.remove("hidden");
+});
+
+cancelTaskBtn.addEventListener("click", () => {
+  taskModal.classList.add("hidden");
+});
+
+taskForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const taskPayload = {
+    name: taskNameInput.value.trim(),
+    description: taskDescInput.value.trim(),
+    type: taskTypeSelect.value,
+    due_date: taskDueDateInput.value || null,
+  };
+
+  console.log("Task gespeichert (simuliert):", taskPayload);
+  taskModal.classList.add("hidden");
+
+  // TODO: API call to actually save task
+});
+
 
   // --- Initialization ---
   /**

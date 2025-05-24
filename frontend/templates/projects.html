@@ -105,6 +105,33 @@
       </section>
     </div>
 
+    <!-- Task Creation Modal -->
+<div id="task-form-modal" class="modal hidden">
+  <form id="task-form" class="project-form">
+    <h2 id="task-form-title">New Task</h2>
+
+    <label for="task-name">Name *</label>
+    <input type="text" id="task-name" name="name" required />
+
+    <label for="task-description">Description</label>
+    <textarea id="task-description" name="description"></textarea>
+
+    <label for="task-type">Type *</label>
+    <select id="task-type" name="type">
+      <option value="ActiveTask">Active Task</option>
+      <option value="InactiveTask">Inactive Task</option>
+    </select>
+
+    <label for="task-due-date">Due Date</label>
+    <input type="date" id="task-due-date" name="due_date" />
+
+    <div class="form-actions">
+      <button type="submit" id="save-task-btn">Save</button>
+      <button type="button" id="cancel-task-btn">Cancel</button>
+    </div>
+  </form>
+</div>
+
     <!-- Include theme toggle and projects scripts -->
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/projects.js') }}"></script>
