@@ -27,6 +27,7 @@ class Task(db.Model):
         due_date (datetime, optional): Deadline for the task.
         status (enum): Task status (todo, in_progress, done).
         created_at (datetime): Timestamp when the task was created.
+        created_from_tracking (bool): Indicates if the task was created via the time tracking interface.
         category_id (int): Foreign key identifying the category of the tasks.
         time_entries (relationship):  All time entries associated with this task.
         assigned_user (relationship): The user currently assigned to this task.
@@ -37,18 +38,15 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     task_id = db.Column(db.Integer, primary_key=True, index=True)
-    project_id = db.Column(
-        db.Integer, db.ForeignKey("projects.project_id"), nullable=True
-    )
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.project_id"), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
-    category_id = db.Column(
-        db.Integer, db.ForeignKey("categories.category_id"), nullable=True
-    )
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"), nullable=True)
     title = db.Column(db.String, nullable=True)
     description = db.Column(db.String, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)
     status = db.Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    created_from_tracking = db.Column(db.Boolean, default=False, nullable=False)
 
     time_entries = db.relationship("TimeEntry", back_populates="task", uselist=False)
     assigned_user = db.relationship("User", back_populates="assigned_task")
@@ -63,5 +61,21 @@ class Task(db.Model):
         category_name = self.category.name if self.category else "None"
         return (
             f"<Task(id={self.task_id}, title={self.title}, project={project_part}, "
-            f"user_id={self.user_id}, category={category_name}, status={self.status})>"
+            f"user_id={self.user_id}, category={category_name}, status={self.status},"
+            f"tracking={self.created_from_tracking})>"
         )
+
+    def to_dict(self):
+        """Convert task to dictionary format for JSON output."""
+        return {
+            "task_id": self.task_id,
+            "title": self.title,
+            "description": self.description,
+            "due_date": self.due_date.strftime("%Y-%m-%d") if self.due_date else None,
+            "status": self.status.value,
+            "project_id": self.project_id,
+            "user_id": self.user_id,
+            "category_id": self.category_id,
+            "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "created_from_tracking": self.created_from_tracking
+        }

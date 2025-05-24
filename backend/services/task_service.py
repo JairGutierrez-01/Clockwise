@@ -1,5 +1,6 @@
 from backend.database import db
 from backend.models.task import Task, TaskStatus
+from backend.models.time_entry import TimeEntry
 
 
 def create_task(
@@ -10,6 +11,7 @@ def create_task(
     project_id=None,
     user_id=None,
     category_id=None,
+    created_from_tracking=False,
 ):
     """Create a new task with optional project, user, and category assignment.
 
@@ -21,18 +23,20 @@ def create_task(
         project_id (int, optional): ID of the project the task belongs to.
         user_id (int, optional): ID of the user assigned to the task.
         category_id (int, optional): ID of the category assigned to the task.
+        created_from_tracking (bool, optional): Whether the task was created from time tracking.
 
     Returns:
         dict: Success message with ID of the created task.
     """
     new_task = Task(
-        title=title,
+        title=title or "Untitled Task",
         description=description,
         due_date=due_date,
         status=TaskStatus[status],
         project_id=project_id,
         user_id=user_id,
         category_id=category_id,
+        created_from_tracking=created_from_tracking,
     )
     db.session.add(new_task)
     db.session.commit()
@@ -127,6 +131,36 @@ def delete_task(task_id):
     db.session.commit()
     return {
         "success": True,
-        "message": "User deleted successfully",
+        "message": "Task deleted successfully",
         "deleted_task_id": task_id,
+    }
+
+def get_tasks_without_time_entries():
+    """Retrieve all tasks that do not have any associated time entries.
+
+    This is useful for displaying tasks that are available for new time tracking.
+
+    Returns:
+        list: A list of Task objects without any time entries.
+    """
+    return Task.query.outerjoin(Task.time_entries).filter(Task.time_entries == None).all()
+
+
+def get_task_with_time_entry(task_id):
+    """Retrieve a task along with its associated time entry.
+
+    Args:
+        task_id (int): ID of the task to retrieve.
+
+    Returns:
+        dict: Dictionary containing task details and its time entry (if exists),
+              or None if the task does not exist.
+    """
+    task = Task.query.get(task_id)
+    if not task:
+        return None
+
+    return {
+        "task": task.to_dict(),
+        "time_entry": task.time_entries.to_dict() if task.time_entries else None
     }
