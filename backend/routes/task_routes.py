@@ -1,4 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from flask import jsonify
+from flask_login import current_user
+from datetime import datetime
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -8,104 +11,134 @@ from backend.services.task_service import (
     delete_task,
 )
 
-task_bp = Blueprint("tasks", __name__)
+task_bp = Blueprint("tasks", __name__, url_prefix="/api")
 
 
-@task_bp.route("/tasks")
-def task_list():
-    """Display a list of tasks.
+@task_bp.route("/tasks", methods=["GET"])
+def get_tasks():
+    """
+    Return a list of tasks.
 
     If a project ID is provided via query parameters, only tasks belonging to that
-    project are shown. Otherwise, default tasks (without a project) are listed.
+    project are returned. Otherwise, default tasks (without a project) are listed.
 
     Returns:
-        Response: Rendered HTML page with a list of tasks.
+        JSON: A list of tasks as dictionaries.
     """
-    project_id_str = request.args.get("project_id")
-    if project_id_str:
-        project_id = int(project_id_str)
-        tasks = get_task_by_project(project_id)
+    project_id = request.args.get("project_id")
+    if project_id:
+        tasks = get_task_by_project(int(project_id))
     else:
         tasks = get_default_tasks()
-    return render_template("task_list.html", tasks=tasks)
+    return jsonify([task.to_dict() for task in tasks])
 
 
-@task_bp.route("/tasks/create", methods=["GET", "POST"])
-def task_create():
-    """Handle the creation of a new task.
+@task_bp.route("/tasks", methods=["POST"])
+def create_task_api():
+    """
+    Create a new task using a JSON request.
 
-    GET: Render the task creation form.
-    POST: Create the task and redirect to task list.
+    Expected JSON:
+        {
+            "name": "Task title",
+            "description": "Optional description",
+            "category_id": int,
+            "due_date": "YYYY-MM-DD",
+            "project_id": int,
+            "created_from_tracking": bool (optional)
+        }
 
     Returns:
-        Response: Form page on GET, redirect to task list on POST.
+        JSON: Success message with created task ID.
     """
-    if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        if not title:
-            title = "Untitled task"
+    data = request.get_json()
 
-        description = request.form.get("description")
-        due_date = request.form.get("due_date")
-        status = request.form.get("status", "todo")
-        project_id = request.form.get("project_id")
-        user_id = request.form.get("user_id")
+    title = data.get("name", "").strip()
+    if not title:
+        title = "Untitled Task"
+    description = data.get("description")
+    category_id = data.get("category_id")
+    status = "todo"
 
-        create_task(
-            title=title,
-            description=description,
-            due_date=due_date,
-            status=status,
-            project_id=project_id,
-            user_id=user_id,
-        )
-        return redirect(url_for("tasks.task_list"))
+    due_date_str = data.get("due_date")
+    due_date = None
+    if due_date_str:
+        try:
+            due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
+        except ValueError:
+            return jsonify({"error": "Invalid date format"}), 400
 
-    return render_template("task_form.html")
+    project_id = data.get("project_id")
+    created_from_tracking = data.get("created_from_tracking", False)
+    user_id = current_user.user_id if current_user.is_authenticated else None
 
+    result = create_task(
+        title=title,
+        description=description,
+        status=status,
+        due_date=due_date,
+        project_id=project_id,
+        user_id=user_id,
+        category_id=category_id,
+        created_from_tracking=created_from_tracking
 
-@task_bp.route("/tasks/edit/<int:task_id>", methods=["GET", "POST"])
-def task_edit(task_id):
-    """Edit an existing task.
+    )
+
+    return jsonify(result), 201
+
+@task_bp.route("/tasks/<int:task_id>", methods=["PUT"])
+def update_task_api(task_id):
+    """
+    Edit an existing task via JSON.
 
     Args:
         task_id (int): ID of the task to edit.
 
+    Expected JSON fields (any subset):
+        - title
+        - description
+        - category_id
+        - status
+        - due_date (YYYY-MM-DD)
+        - project_id
+
     Returns:
-        Response: Render edit form on GET, perform update on POST.
+        JSON: Success message with updated task ID or error.
     """
-    task = get_task_by_id(task_id)
-    if not task:
-        return "Task not found", 404
+    data = request.get_json()
 
-    if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        if not title:
-            title = "Untitled task"
+    if "due_date" in data and data["due_date"]:
+        try:
+            data["due_date"] = datetime.strptime(data["due_date"], "%Y-%m-%d")
+        except ValueError:
+            return jsonify({"error": "Invalid date format"}), 400
 
-        update_task(
-            task_id,
-            title=title,
-            description=request.form.get("description"),
-            due_date=request.form.get("due_date"),
-            status=request.form.get("status", "todo"),
-            project_id=request.form.get("project_id"),
-            user_id=request.form.get("user_id"),
-        )
-        return redirect(url_for("tasks.task_list"))
-
-    return render_template("task_form.html")
+    result = update_task(task_id, **data)
+    return jsonify(result)
 
 
-@task_bp.route("/tasks/delete/<int:task_id>", methods=["POST"])
-def task_delete(task_id):
-    """Delete a task.
+@task_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
+def delete_task_api(task_id):
+    """
+    Delete a task by its ID.
 
     Args:
         task_id (int): ID of the task to delete.
 
     Returns:
-        Response: Redirects to the task list after deletion.
+        JSON: Success or error message.
     """
-    delete_task(task_id)
-    return redirect(url_for("tasks.task_list"))
+    result = delete_task(task_id)
+    return jsonify(result)
+
+
+@task_bp.route("/tasks/unassigned", methods=["GET"])
+def get_unassigned_tasks():
+    """
+    Return tasks without project assignment (default tasks).
+
+    Returns:
+        JSON: List of unassigned tasks.
+    """
+    tasks = get_default_tasks()
+    return jsonify([task.to_dict() for task in tasks])
