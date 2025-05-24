@@ -137,19 +137,16 @@ def api_projects():
 
         return {"project_id": project.project_id}, 201
 
+    # calendar frontend
     projects = Project.query.filter_by(user_id=current_user.user_id).all()
     return {
         "projects": [
             {
-                "project_id": p.project_id,
-                "name": p.name,
-                "description": p.description,
-                "type": p.type.name if hasattr(p.type, "name") else str(p.type),
-                "time_limit_hours": p.time_limit_hours,
-                "current_hours": 0,
-                "due_date": p.due_date.isoformat() if p.due_date else None,
+                "title": p.name,
+                "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
+                "color": "#f44336"
             }
-            for p in projects
+            for p in projects if p.due_date
         ]
     }
 
