@@ -160,7 +160,7 @@ def load_tasks_from_db():
     for task in tasks:
         result.append(
             {
-                "project": task.project_id.name,
+                "project": task.project.name,
                 "status": task.status,
             }
         )
@@ -177,9 +177,9 @@ def load_target_times_from_db():
     if not current_user.is_authenticated:
         return {}
 
-    projects = Project.query.filter_by(user_id=current_user.id).all()
+    projects = Project.query.filter_by(user_id=current_user.user_id).all()
 
     result = {}
     for project in projects:
-        result[project.project] = project.time_limit_hours
+        result[project.project_id] = project.time_limit_hours
     return result
