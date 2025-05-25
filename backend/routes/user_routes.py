@@ -88,7 +88,7 @@ def user_delete(user_id):
         result = delete_user(user_id)
 
         if result.get("success"):
-            return redirect(url_for("dashboard"))
+            return redirect(url_for("homepage"))
         else:
             return result.get("error", "Delete user failed.")
     return render_template("deleteuser.html", user_id=user_id)

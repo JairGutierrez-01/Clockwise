@@ -233,7 +233,9 @@ body.light-mode .delete-form button:hover {
   border-radius: 8px;
   padding: 1rem 1.5rem;
   box-shadow: var(--card-shadow-light);
-  transition: background-color 0.3s, transform 0.2s;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
   margin-bottom: 1rem;
   cursor: pointer;
   color: var(--foreground-color);

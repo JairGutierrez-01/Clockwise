@@ -19,6 +19,7 @@ from backend.routes.task_routes import task_bp
 from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.project_routes import project_bp
 from backend.routes.category_routes import category_bp
+from backend.routes.analysis_routes import analysis_bp
 
 from flask_jwt_extended import JWTManager
 
@@ -50,11 +51,12 @@ app.register_blueprint(team_bp, url_prefix="/teams")
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
 app.register_blueprint(task_bp, url_prefix="/api")
 app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
-# Für HTML-Formulare
+# For HTML Tempaltes
 app.register_blueprint(project_bp)
-# Für API-Zugriffe
+# For API-Zugriffe
 app.register_blueprint(project_bp, url_prefix="/api/projects", name="project_api")
 app.register_blueprint(category_bp, url_prefix="/categories")
+app.register_blueprint(analysis_bp, url_prefix="/analysis")
 
 # Create tables if not exist
 with app.app_context():
@@ -145,7 +147,11 @@ def notifications():
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
 
-    user_notifications = Notification.query.filter_by(user_id=current_user.user_id).order_by(Notification.created_at.desc()).all()
+    user_notifications = (
+        Notification.query.filter_by(user_id=current_user.user_id)
+        .order_by(Notification.created_at.desc())
+        .all()
+    )
     return render_template("notifications.html", notifications=user_notifications)
 
 
@@ -161,7 +167,8 @@ def delete_notification(notification_id):
         return "", 200
     return "", 404
 
-#Test notification erstellen
+
+# Test notification erstellen
 @app.route("/trigger-test-notification")
 def trigger_test_notification():
     if not current_user.is_authenticated:
@@ -172,9 +179,10 @@ def trigger_test_notification():
     create_notification(
         user_id=current_user.user_id,
         message="🎉 Testbenachrichtigung erfolgreich erstellt!",
-        notif_type="info"
+        notif_type="info",
     )
     return redirect(url_for("notifications"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

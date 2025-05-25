@@ -80,11 +80,11 @@ def create_task_api():
         project_id=project_id,
         user_id=user_id,
         category_id=category_id,
-        created_from_tracking=created_from_tracking
-
+        created_from_tracking=created_from_tracking,
     )
 
     return jsonify(result), 201
+
 
 @task_bp.route("/tasks/<int:task_id>", methods=["PUT"])
 def update_task_api(task_id):

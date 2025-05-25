@@ -1,62 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analysis - ClockWise</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='analysis.css') }}" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   <!-- FullCalendar CSS & JS -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/multimonth@6.1.8/index.global.min.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analysis - ClockWise</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='projects.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='analysis.css') }}"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FullCalendar CSS & JS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/multimonth@6.1.8/index.global.min.js"></script>
+  </head>
 
-</head>
+  <body class="dark-mode">
+    {% include 'navbar.html' %}
 
-<body class="dark-mode">
-  {% include 'navbar.html' %}
-
-  <!-- Hauptcontainer -->
-  <main class="analysis-container">
-  <div class="analysis-header">
-    <h1>Analysis</h1>
-    <div id="analysis-controls" class="filter-style">
-      <button data-view="weekly" class="active">Weekly</button>
-      <button data-view="calendar">Calendar</button>
-      <button data-view="progress">Progress</button>
-    </div>
-  </div>
-
-    <!-- Inhalt (Charts / Kalender / Progress) -->
-    <div class="dashboard-columns">
-      <!-- Weekly Chart -->
-      <div id="view-weekly" class="card reports">
-        <h3>Weekly Time per Project</h3>
-        <canvas id="timeChart"></canvas>
+    <!-- Hauptcontainer -->
+    <main class="analysis-container">
+      <div class="analysis-header">
+        <h1>Analysis</h1>
+        <div id="analysis-controls" class="filter-style">
+          <button data-view="weekly" class="active">Weekly</button>
+          <button data-view="calendar">Calendar</button>
+          <button data-view="progress">Progress</button>
+        </div>
       </div>
 
-      <!-- Calendar View -->
-      <div id="view-calendar" class="card calendar hidden">
-  <div class="calendar-header">
-    <h3>Calendar View</h3>
-    <div id="calendar-mode-switch">
-      <button id="month-view-btn" class="active">Month</button>
-      <button id="year-view-btn">Year</button>
-    </div>
-  </div>
-  <div id="calendar"></div>
-</div>
+      <!-- Inhalt (Charts / Kalender / Progress) -->
+      <div class="dashboard-columns">
+        <!-- Weekly Chart -->
+        <div id="view-weekly" class="card reports">
+          <h3>Weekly Time per Project</h3>
+          <canvas id="timeChart"></canvas>
+        </div>
 
-      <!-- Progress Overview (ToDo) -->
-      <div id="view-progress" class="card hidden">
-        <h3>Progress Overview</h3>
-        <p>Coming soon...</p>
+        <!-- Calendar View -->
+        <div id="view-calendar" class="card calendar hidden">
+          <div class="calendar-header">
+            <h3>Calendar View</h3>
+            <div id="calendar-mode-switch">
+              <button id="month-view-btn" class="active">Month</button>
+              <button id="year-view-btn">Year</button>
+            </div>
+          </div>
+          <div id="calendar"></div>
+        </div>
+
+        <!-- Progress Overview (ToDo) -->
+        <div id="view-progress" class="card hidden">
+          <h3>Progress Overview</h3>
+          <p>Coming soon...</p>
+        </div>
       </div>
-    </div>
-  </main>
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
-</body>
+    </main>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+  </body>
 </html>

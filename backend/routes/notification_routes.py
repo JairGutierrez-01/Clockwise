@@ -6,6 +6,7 @@ from backend.models.notification import Notification
 # Blueprint for notification-related endpoints
 notification_bp = Blueprint("notifications", __name__)
 
+
 # For CHANTAL:
 # Endpoint: GET /notifications
 # Returns all notifications for the current user
@@ -46,6 +47,7 @@ def get_notifications():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 # For CHANTAL:
 # Endpoint: PATCH /notifications/<notification_id>
 # Marks a single notification as "read"
@@ -59,7 +61,9 @@ def mark_notification_as_read(notification_id):
     """Mark a specific notification as read."""
     user_id = get_jwt_identity()
 
-    notification = Notification.query.filter_by(id=notification_id, user_id=user_id).first()
+    notification = Notification.query.filter_by(
+        id=notification_id, user_id=user_id
+    ).first()
 
     if not notification:
         return jsonify({"error": "Notification not found"}), 404

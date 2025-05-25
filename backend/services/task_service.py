@@ -135,6 +135,7 @@ def delete_task(task_id):
         "deleted_task_id": task_id,
     }
 
+
 def get_tasks_without_time_entries():
     """Retrieve all tasks that do not have any associated time entries.
 
@@ -143,7 +144,9 @@ def get_tasks_without_time_entries():
     Returns:
         list: A list of Task objects without any time entries.
     """
-    return Task.query.outerjoin(Task.time_entries).filter(Task.time_entries == None).all()
+    return (
+        Task.query.outerjoin(Task.time_entries).filter(Task.time_entries == None).all()
+    )
 
 
 def get_task_with_time_entry(task_id):
@@ -162,5 +165,5 @@ def get_task_with_time_entry(task_id):
 
     return {
         "task": task.to_dict(),
-        "time_entry": task.time_entries.to_dict() if task.time_entries else None
+        "time_entry": task.time_entries.to_dict() if task.time_entries else None,
     }

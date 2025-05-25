@@ -51,56 +51,56 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskListEl = document.getElementById("task-list");
   const filterBtns = document.querySelectorAll("#filter-controls button");
 
-// ============================================================================
-//                          API Calls Section
-// Defines functions to interact with the backend
-// ============================================================================
+  // ============================================================================
+  //                          API Calls Section
+  // Defines functions to interact with the backend
+  // ============================================================================
 
-//API Calls Projects
-async function fetchProjects() {
-  const res = await fetch("/api/projects");
-  if (!res.ok) throw new Error("Failed to fetch projects");
-  const json = await res.json();
-  return json.projects;
-}
+  //API Calls Projects
+  async function fetchProjects() {
+    const res = await fetch("/api/projects");
+    if (!res.ok) throw new Error("Failed to fetch projects");
+    const json = await res.json();
+    return json.projects;
+  }
 
-async function createProject(data) {
-  const res = await fetch("/api/projects", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error("Failed to create project");
-  return res.json();
-}
+  async function createProject(data) {
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to create project");
+    return res.json();
+  }
 
-async function updateProject(id, data) {
-  const res = await fetch(`/api/projects/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error("Failed to update project");
-  return res.json();
-}
+  async function updateProject(id, data) {
+    const res = await fetch(`/api/projects/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update project");
+    return res.json();
+  }
 
-async function deleteProject(id) {
-  const res = await fetch(`/api/projects/${id}`, {
-    method: "DELETE"
-  });
-  if (!res.ok) throw new Error("Failed to delete project");
-}
+  async function deleteProject(id) {
+    const res = await fetch(`/api/projects/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to delete project");
+  }
 
-//API Calls Tasks
+  //API Calls Tasks
   async function createTask(data) {
-  const res = await fetch("/api/tasks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error("Failed to create task");
-  return res.json();
-}
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to create task");
+    return res.json();
+  }
 
   /**
    * Opens the project form modal.
@@ -215,65 +215,63 @@ async function deleteProject(id) {
   });
 
   projectListEl.addEventListener("click", (event) => {
-  const card = event.target.closest(".project-card");
-  if (!card) return;
+    const card = event.target.closest(".project-card");
+    if (!card) return;
 
-  const viewBtn = event.target.closest(".project-card__view");
-  if (viewBtn) {
-    const id = parseInt(card.dataset.id, 10);
-    showProjectDetail(id);
-  }
-});
+    const viewBtn = event.target.closest(".project-card__view");
+    if (viewBtn) {
+      const id = parseInt(card.dataset.id, 10);
+      showProjectDetail(id);
+    }
+  });
 
   editProjBtn.addEventListener("click", () => openModal(true));
   deleteProjBtn.addEventListener("click", async () => {
-  console.log("Deleting project:", editingProjectId); // Debug
-  if (!editingProjectId) return;
+    console.log("Deleting project:", editingProjectId); // Debug
+    if (!editingProjectId) return;
 
-  await deleteProject(editingProjectId);
-  detailSection.classList.add("hidden");
-  await loadProjects();
-});
+    await deleteProject(editingProjectId);
+    detailSection.classList.add("hidden");
+    await loadProjects();
+  });
 
-/* ───────────── Event listeners Tasks ───────────── */
-createTaskBtn.addEventListener("click", () => {
-  taskForm.reset();
-  taskModal.classList.remove("hidden");
-});
+  /* ───────────── Event listeners Tasks ───────────── */
+  createTaskBtn.addEventListener("click", () => {
+    taskForm.reset();
+    taskModal.classList.remove("hidden");
+  });
 
-cancelTaskBtn.addEventListener("click", () => {
-  taskModal.classList.add("hidden");
-});
-
-taskForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const taskPayload = {
-    name: taskNameInput.value.trim(),
-    description: taskDescInput.value.trim(),
-    category_id: parseInt(taskCategorySelect.value, 10) || null,
-    due_date: taskDueDateInput.value || null,
-    project_id: editingProjectId,
-    created_from_tracking: false,
-  };
-
-  try {
-    await createTask(taskPayload);
-    console.log("Task gespeichert:", taskPayload);
+  cancelTaskBtn.addEventListener("click", () => {
     taskModal.classList.add("hidden");
-    // Optional: Reload or render tasks here
-  } catch (error) {
-    console.error("Fehler beim Speichern des Tasks:", error);
-  }
-});
+  });
 
+  taskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const taskPayload = {
+      name: taskNameInput.value.trim(),
+      description: taskDescInput.value.trim(),
+      category_id: parseInt(taskCategorySelect.value, 10) || null,
+      due_date: taskDueDateInput.value || null,
+      project_id: editingProjectId,
+      created_from_tracking: false,
+    };
 
+    try {
+      await createTask(taskPayload);
+      console.log("Task gespeichert:", taskPayload);
+      taskModal.classList.add("hidden");
+      // Optional: Reload or render tasks here
+    } catch (error) {
+      console.error("Fehler beim Speichern des Tasks:", error);
+    }
+  });
 
   // --- Initialization ---
   /**
    * Loads projects from the backend and renders them.
    *
    */
- async function loadProjects() {
+  async function loadProjects() {
     projects = await fetchProjects();
     renderProjectList();
     detailSection.classList.add("hidden");

@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const views = {
     weekly: document.getElementById("view-weekly"),
     calendar: document.getElementById("view-calendar"),
-    progress: document.getElementById("view-progress")
+    progress: document.getElementById("view-progress"),
   };
 
   let chartInstance = null;
@@ -24,31 +24,31 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             label: "Analysis",
             data: [2, 3, 0, 0, 0, 0, 0],
-            backgroundColor: "#4dd0e1"
+            backgroundColor: "#4dd0e1",
           },
           {
             label: "SEP",
             data: [1, 0, 2, 1, 0, 0, 0],
-            backgroundColor: "#f06292"
-          }
-        ]
+            backgroundColor: "#f06292",
+          },
+        ],
       },
       options: {
         responsive: true,
         animation: {
           duration: 800,
-          easing: "easeOutQuart"
+          easing: "easeOutQuart",
         },
         scales: {
           y: {
             beginAtZero: true,
             title: {
               display: true,
-              text: "Hours"
-            }
-          }
-        }
-      }
+              text: "Hours",
+            },
+          },
+        },
+      },
     });
   }
 
@@ -59,9 +59,9 @@ document.addEventListener("DOMContentLoaded", () => {
       calendarInstance.destroy();
     }
 
-    fetch("/api/projects")
-      .then(res => res.json())
-      .then(data => {
+    fetch("/projects")
+      .then((res) => res.json())
+      .then((data) => {
         const events = data.projects || [];
 
         calendarInstance = new FullCalendar.Calendar(calendarEl, {
@@ -69,32 +69,40 @@ document.addEventListener("DOMContentLoaded", () => {
           headerToolbar: {
             left: "prev",
             center: "title",
-            right: "next"
+            right: "next",
           },
           views: {
             multiMonthYear: {
               type: "multiMonth",
-              duration: { months: 12 }
-            }
+              duration: { months: 12 },
+            },
           },
-          events: events
+          events: events,
         });
 
         calendarInstance.render();
 
-        document.getElementById("month-view-btn")?.addEventListener("click", () => {
-          calendarInstance.changeView("dayGridMonth");
-          setActiveView("month");
-        });
+        document
+          .getElementById("month-view-btn")
+          ?.addEventListener("click", () => {
+            calendarInstance.changeView("dayGridMonth");
+            setActiveView("month");
+          });
 
-        document.getElementById("year-view-btn")?.addEventListener("click", () => {
-          calendarInstance.changeView("multiMonthYear");
-          setActiveView("year");
-        });
+        document
+          .getElementById("year-view-btn")
+          ?.addEventListener("click", () => {
+            calendarInstance.changeView("multiMonthYear");
+            setActiveView("year");
+          });
 
         function setActiveView(view) {
-          document.getElementById("month-view-btn")?.classList.toggle("active", view === "month");
-          document.getElementById("year-view-btn")?.classList.toggle("active", view === "year");
+          document
+            .getElementById("month-view-btn")
+            ?.classList.toggle("active", view === "month");
+          document
+            .getElementById("year-view-btn")
+            ?.classList.toggle("active", view === "year");
         }
 
         // Set default active button
@@ -106,9 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === View Switching ===
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelector("#analysis-controls .active")?.classList.remove("active");
+      document
+        .querySelector("#analysis-controls .active")
+        ?.classList.remove("active");
       btn.classList.add("active");
 
       const selected = btn.dataset.view;

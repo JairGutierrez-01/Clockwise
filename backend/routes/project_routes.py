@@ -151,7 +151,7 @@ def api_projects():
                 # Diese 3 Felder extra für FullCalendar:
                 "title": p.name,
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
-                "color": "#f44336"  # oder projektabhängig
+                "color": "#f44336",  # oder projektabhängig
             }
             for p in projects
         ]
