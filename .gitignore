@@ -5,7 +5,6 @@ __pycache__/
 *.py[cod]
 .env
 
-
 # Lokale SQLite-Datenbank
 backend/database.db
 
