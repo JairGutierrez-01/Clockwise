@@ -12,6 +12,7 @@ function formatDateForInputField(dateString) {
   return date.toISOString().split("T")[0]; // yyyy-mm-dd
 }
 
+
 // ============================================================================
 // Sets up event listeners, state management, and UI update routines after DOM load.
 // ============================================================================
@@ -63,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const json = await res.json();
     return json.projects;
   }
+
 
   async function createProject(data) {
     const res = await fetch("/api/projects", {
@@ -155,14 +157,26 @@ document.addEventListener("DOMContentLoaded", () => {
       projectListEl.appendChild(card);
     });
   }
-
+ async function fetchTasks(projectId) {
+    const res = await fetch(`/api/tasks?project_id=${projectId}`);
+    if (!res.ok) throw new Error("Fehler beim Laden der Tasks");
+    return res.json();
+  }
   /**
    * Displays the details of a selected project.
    *
    * @param {number} id - The unique identifier of the project to display.
    */
-  function showProjectDetail(id) {
+  async function showProjectDetail(id) {
+  try {
+    // 1. Projekt aus local state holen
     const proj = projects.find((p) => p.project_id === id);
+    if (!proj) {
+      console.error("Projekt nicht gefunden für ID:", id);
+      return;
+    }
+
+    // 2. Projektdetails ins UI einfügen
     detailName.textContent = proj.name;
     detailDesc.textContent = proj.description || "-";
     detailType.textContent = proj.type;
@@ -171,9 +185,20 @@ document.addEventListener("DOMContentLoaded", () => {
     detailDueDate.textContent = proj.due_date
       ? new Date(proj.due_date).toLocaleDateString()
       : "-";
+
+    // 3. Detailbereich anzeigen
     detailSection.classList.remove("hidden");
     editingProjectId = id;
+
+    // 4. Tasks vom Backend laden
+    const tasks = await fetchTasks(id);
+
+    // 5. UI aktualisieren
+    renderTaskList(tasks);
+  } catch (error) {
+    console.error("Fehler beim Laden der Projektdetails:", error);
   }
+}
 
   /* ───────────── Filter logic ───────────── */
   function setActiveFilter(filter) {
@@ -256,11 +281,14 @@ document.addEventListener("DOMContentLoaded", () => {
       created_from_tracking: false,
     };
 
-    try {
+     try {
       await createTask(taskPayload);
       console.log("Task gespeichert:", taskPayload);
       taskModal.classList.add("hidden");
-      // Optional: Reload or render tasks here
+
+      // Nach Speichern Tasks neu laden und anzeigen
+      const tasks = await fetchTasks(editingProjectId);
+      renderTaskList(tasks);
     } catch (error) {
       console.error("Fehler beim Speichern des Tasks:", error);
     }
@@ -283,6 +311,16 @@ document.addEventListener("DOMContentLoaded", () => {
       showProjectDetail(selectedId);
     }
   }
+
+  function renderTaskList(tasks) {
+  taskListEl.innerHTML = "";
+  tasks.forEach((task) => {
+    const li = document.createElement("li");
+    li.className = "task-item";
+    li.textContent = `${task.title} – Due: ${task.due_date || "No date"}`;
+    taskListEl.appendChild(li);
+  });
+}
 
   loadProjects();
 });
