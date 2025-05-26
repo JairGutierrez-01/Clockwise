@@ -138,7 +138,7 @@ def load_time_entries_from_db():
             {
                 "start": entry.start_time,
                 "end": entry.end_time,
-                "project": entry.task.title,
+                "task": entry.task.title,
             }
         )
     return result
