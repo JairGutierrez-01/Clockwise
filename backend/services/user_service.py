@@ -102,7 +102,6 @@ def new_password(user_id, password):
         return {"success": False, "error": "Invalid username or password."}
 
 
-# TODO: forgot password
 def password_forget(email):
     """Trigger the forgot password process by sending a reset link via email.
 
@@ -124,7 +123,6 @@ def password_forget(email):
     return {"success": True, "message": "Password reset instructions sent"}
 
 
-# TODO: delete user
 def delete_user(user_id):
     """Delete a user account by username.
 
@@ -142,7 +140,6 @@ def delete_user(user_id):
     return {"success": True, "message": "User deleted successfully"}
 
 
-# TODO: edit user
 def edit_user(
     user_id, username, email, first_name, last_name, password, profile_picture=None
 ):

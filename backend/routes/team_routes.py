@@ -7,6 +7,7 @@ from backend.models.notification import Notification
 
 team_bp = Blueprint("teams", __name__)
 
+
 @team_bp.route("/", methods=["GET"])
 @jwt_required()
 def get_user_teams():
@@ -38,6 +39,7 @@ def get_user_teams():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @team_bp.route("/", methods=["POST"])
 @jwt_required()
@@ -74,6 +76,7 @@ def create_team():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
 
 """
     Creates a new team and assigns the current user as admin.

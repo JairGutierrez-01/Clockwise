@@ -1,3 +1,63 @@
 .analysis-container {
   padding: 3rem 5rem;
 }
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.analysis-container h1 {
+  margin: 0;
+  font-size: var(--font-xl);
+}
+
+#analysis-controls {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+#analysis-controls button {
+  background-color: var(--color-card-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-accent);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: var(--font-base);
+  transition: background 0.2s;
+}
+
+#analysis-controls button.active,
+#analysis-controls button:hover {
+  background-color: var(--color-accent);
+  color: var(--color-card-bg);
+}
+
+#calendar-mode-switch {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#calendar-mode-switch button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-card-bg);
+  color: var(--color-fg);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#calendar-mode-switch button.active {
+  background-color: var(--color-accent);
+  color: var(--color-card-bg);
+}
+
+.fc-toolbar-title {
+  text-align: center;
+  width: 100%;
+  font-size: 1.5rem;
+}

@@ -28,11 +28,15 @@ def create_notification(user_id, message, notif_type="info", project_id=None):
     db.session.add(notification)
     db.session.commit()
 
+
 # Used in: task_routes.py
 # Trigger: A task is assigned to a user (F60)
 def notify_task_assigned(user_id, task_name, project_name):
-    message = f"You were assigned the task '{task_name}' in the project '{project_name}'."
+    message = (
+        f"You were assigned the task '{task_name}' in the project '{project_name}'."
+    )
     create_notification(user_id, message, notif_type="task")
+
 
 # Used in: task_routes.py
 # Trigger: Task was edited and reassigned to a new user (F60)
@@ -40,11 +44,13 @@ def notify_task_reassigned(user_id, task_name, project_name):
     message = f"You are now responsible for the task '{task_name}' in the project '{project_name}'."
     create_notification(user_id, message, notif_type="task")
 
+
 # Used in: user_team_routes.py
 # Trigger: A user is added to a team (F100)
 def notify_user_added_to_team(user_id, team_name):
     message = f"You were added to the team '{team_name}'."
     create_notification(user_id, message, notif_type="team")
+
 
 # Used in: Soon analysis_routes.py
 # Trigger: Progress deviates from weekly goal (F90 / RC6)
@@ -52,15 +58,16 @@ def notify_progress_deviation(user_id, project_name, deviation_percentage):
     message = f"Your progress in '{project_name}' deviates by {deviation_percentage}% from your weekly goal."
     create_notification(user_id, message, notif_type="progress")
 
+
 # Used in: project_routes.py
 # Trigger: User creates a new project (F50)
 def notify_project_created(user_id, project_name):
     message = f"The project '{project_name}' was successfully created."
     create_notification(user_id, message, notif_type="project")
 
+
 # Used in: analysis_service.py
 # Trigger: Weekly goal reached (RC6)
 def notify_weekly_goal_achieved(user_id, project_name):
     message = f"You reached your weekly goal for project! '{project_name}'."
     create_notification(user_id, message, notif_type="progress")
-

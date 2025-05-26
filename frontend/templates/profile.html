@@ -156,13 +156,23 @@
 
         <div class="projects">
           <h3>My Projects</h3>
-          <ul>
+          <div class="project-list">
             {% for project in user.project %}
-            <li>{{ project.name }} – {{ project.type.value }}</li>
+            <div
+              class="project-card"
+              onclick="window.location.href='{{ url_for('projects') }}?project_id={{ project.project_id }}'"
+            >
+              <h2 class="project-card__name">{{ project.name }}</h2>
+              <div class="project-card__meta">
+                <p>Type: {{ project.type.value }}</p>
+                <p>Limit: {{ project.time_limit_hours }} h</p>
+                <p>Spent: {{ project.current_hours or 0 }} h</p>
+              </div>
+            </div>
             {% else %}
-            <li>No projects found</li>
+            <p>No projects found</p>
             {% endfor %}
-          </ul>
+          </div>
         </div>
 
         <form
