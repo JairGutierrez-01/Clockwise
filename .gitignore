@@ -2,9 +2,10 @@
 venv/
 .venv/
 __pycache__/
+migrations/
 *.py[cod]
 .env
-migrations/
+
 
 # Lokale SQLite-Datenbank
 backend/database.db
