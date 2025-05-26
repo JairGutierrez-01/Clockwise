@@ -1,4 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, request, jsonify
+from flask_login import current_user
+import backend.models.task as task_model
+import backend.services.task_service as task_service
 from backend.services.time_entry_service import (
     create_time_entry,
     get_time_entry_by_id,
@@ -10,176 +13,195 @@ from backend.services.time_entry_service import (
     pause_time_entry,
     resume_time_entry,
 )
-from backend.services.task_service import get_default_tasks, get_task_by_id, create_task
+from backend.services.task_service import get_tasks_without_time_entries
 
-time_entry_bp = Blueprint("time_entries", __name__)
+time_entry_bp = Blueprint("time_entries", __name__, url_prefix="/api/time_entries")
 
 
-@time_entry_bp.route("/time-tracking", methods=["GET"])
-def time_tracking_list():
+@time_entry_bp.route("/", methods=["POST"])
+def create_time_entry_api():
     """
-    Display the time tracking page.
+    Create a new time entry manually.
+
+    Expected JSON:
+        {
+            "task_id": int,
+            "start_time": "YYYY-MM-DD HH:MM",
+            "end_time": "YYYY-MM-DD HH:MM",
+            "duration_minutes": int,
+            "comment": "Optional comment"
+        }
 
     Returns:
-        Response: Rendered HTML page for time tracking.
+        JSON response with status or error.
     """
-    tasks = get_default_tasks()
-    return render_template("timeTracking.html", tasks=tasks)
+    data = request.get_json()
+    user_id = current_user.user_id
 
-
-@time_entry_bp.route("/time-tracking/create", methods=["POST"])
-def time_entry_create():
-    """
-    Handle manual creation of a time entry.
-
-    Returns:
-        Response: Redirect to time tracking page after creation.
-    """
-    user_id = int(request.form.get("user_id"))
-    task_id = int(request.form.get("task_id"))
-    start_time = request.form.get("start_time")
-    end_time = request.form.get("end_time")
-    duration = request.form.get("duration")
-    comment = request.form.get("comment")
-
-    create_time_entry(
-        task_id=task_id,
+    result = create_time_entry(
         user_id=user_id,
-        start_time=start_time,
-        end_time=end_time,
-        duration_minutes=duration,
-        comment=comment,
+        task_id=data.get("task_id"),
+        start_time=data.get("start_time"),
+        end_time=data.get("end_time"),
+        duration_minutes=data.get("duration_minutes"),
+        comment=data.get("comment"),
     )
-    return redirect(url_for("time_entries.time_tracking_list"))
+    return jsonify(result)
 
 
-@time_entry_bp.route(
-    "/time-tracking/update/<int:time_entry_id>", methods=["GET", "POST"]
-)
-def time_entry_update(time_entry_id):
+@time_entry_bp.route("/<int:entry_id>", methods=["GET"])
+def get_entry(entry_id):
     """
-    Edit an existing time entry.
+    Get a single time entry by its ID.
 
     Args:
-        time_entry_id (int): ID of the time entry to update.
+        entry_id (int): Time entry ID.
 
     Returns:
-        Response: Render update form on GET, perform update on POST.
+        JSON: Time entry data or error.
     """
-    entry = get_time_entry_by_id(time_entry_id)
-    if not entry:
-        return "Time entry not found", 404
+    entry = get_time_entry_by_id(entry_id)
+    return jsonify(entry.to_dict()) if entry else (jsonify({"error": "Not found"}), 404)
 
-    if request.method == "POST":
-        start_time = request.form.get("start_time")
-        end_time = request.form.get("end_time")
-        duration_minutes = request.form.get("duration_minutes")
-        comment = request.form.get("comment")
 
-        update_time_entry(
-            time_entry_id=time_entry_id,
-            start_time=start_time,
-            end_time=end_time,
-            duration_minutes=duration_minutes,
-            comment=comment,
+@time_entry_bp.route("/task/<int:task_id>", methods=["GET"])
+def get_entry_by_task(task_id):
+    """
+    Get the time entry associated with a specific task.
+
+    Args:
+        task_id (int): Task ID.
+
+    Returns:
+        JSON: Time entry data or error.
+    """
+    entry = get_time_entry_by_task(task_id)
+    return jsonify(entry.to_dict()) if entry else (jsonify({"error": "Not found"}), 404)
+
+
+@time_entry_bp.route("/available-tasks", methods=["GET"])
+def get_tasks_without_entries():
+    """
+    Get all tasks that do not have a time entry yet.
+    These are shown on the time tracking page.
+
+    Returns:
+        JSON: List of available tasks.
+    """
+    tasks = get_tasks_without_time_entries()
+    return jsonify([task.to_dict() for task in tasks])
+
+
+@time_entry_bp.route("/start", methods=["POST"])
+def start_entry():
+    """
+    Start a new time entry for a given task or create an untitled task if none provided.
+
+    JSON Payload:
+        {
+            "task_id": int (optional),
+            "comment": str (optional)
+        }
+
+    Returns:
+        JSON: Success message or error.
+    """
+    data = request.get_json()
+    task_id = data.get("task_id")
+    comment = data.get("comment")
+
+    user_id = current_user.user_id if current_user.is_authenticated else None
+    if not user_id:
+        return jsonify({"error": "Authentication required"}), 401
+
+    # If no task is provided → create a new "Untitled Task #n"
+    if not task_id:
+        # Count existing untitled tasks for this user
+        count = task_model.Task.query.filter(
+            task_model.Task.user_id == user_id,
+            task_model.Task.title.like("Untitled Task%")
+        ).count()
+
+        title = f"Untitled Task #{count + 1}"
+
+        task_result = task_service.create_task(
+            title=title,
+            user_id=user_id,
+            created_from_tracking=True
         )
-        return redirect(url_for("time_entries.time_tracking_list"))
-    return render_template("time_entry_form.html", entry=entry)
+        task_id = task_result["task_id"]
+
+    return jsonify(start_time_entry(user_id=user_id, task_id=task_id, comment=comment))
 
 
-@time_entry_bp.route("/time-tracking/start", methods=["POST"])
-def time_entry_start():
+@time_entry_bp.route("/stop/<int:entry_id>", methods=["POST"])
+def stop_entry(entry_id):
     """
-    Start a time entry for a given task or create an untitled task if none is provided.
-
-    Returns:
-        Response: Redirect to time tracking page after starting.
-    """
-    user_id = int(request.form.get("user_id"))
-    task_id = request.form.get("task_id")
-    comment = request.form.get("comment")
-
-    if task_id:
-        task = get_task_by_id(int(task_id))
-        if not task:
-            return "Task not found", 404
-    else:
-        task = create_task(title="Untitled Task", user_id=user_id)
-
-    start_time_entry(user_id=user_id, task_id=task.task_id, comment=comment)
-    return redirect(url_for("time_entries.time_tracking_list"))
-
-
-@time_entry_bp.route("/time-tracking/stop/<int:time_entry_id>", methods=["POST"])
-def time_entry_stop(time_entry_id):
-    """
-    Stop a running time entry and calculate duration.
+    Stop a running time entry.
 
     Args:
-        time_entry_id (int): ID of the time entry to stop.
+        entry_id (int): ID of the entry to stop.
 
     Returns:
-        Response: Redirect to time tracking page after stopping.
+        JSON: Success message or error.
     """
-    stop_time_entry(time_entry_id)
-    return redirect(url_for("time_entries.time_tracking_list"))
+    return jsonify(stop_time_entry(entry_id))
 
 
-@time_entry_bp.route("/time-tracking/pause/<int:time_entry_id>", methods=["POST"])
-def time_entry_pause(time_entry_id):
+@time_entry_bp.route("/pause/<int:entry_id>", methods=["POST"])
+def pause_entry(entry_id):
     """
     Pause a running time entry.
 
     Args:
-        time_entry_id (int): ID of the time entry to pause.
+        entry_id (int): ID of the entry to pause.
 
     Returns:
-        Response: Redirect to time tracking page after pausing.
+        JSON: Success message or error.
     """
-    pause_time_entry(time_entry_id)
-    return redirect(url_for("time_entries.time_tracking_list"))
+    return jsonify(pause_time_entry(entry_id))
 
 
-@time_entry_bp.route("/time-tracking/resume/<int:time_entry_id>", methods=["POST"])
-def time_entry_resume(time_entry_id):
+@time_entry_bp.route("/resume/<int:entry_id>", methods=["POST"])
+def resume_entry(entry_id):
     """
     Resume a paused time entry.
 
     Args:
-        time_entry_id (int): ID of the time entry to resume.
+        entry_id (int): ID of the entry to resume.
 
     Returns:
-        Response: Redirect to time tracking page after resuming.
+        JSON: Success message or error.
     """
-    resume_time_entry(time_entry_id)
-    return redirect(url_for("time_entries.time_tracking_list"))
+    return jsonify(resume_time_entry(entry_id))
 
 
-@time_entry_bp.route("/time-tracking/delete/<int:time_entry_id>", methods=["POST"])
-def time_entry_delete(time_entry_id):
+@time_entry_bp.route("/<int:entry_id>", methods=["DELETE"])
+def delete_entry(entry_id):
     """
-    Delete a time entry.
-
-    Args:
-        time_entry_id (int): ID of the time entry to delete.
+    Delete a time entry by its ID.
 
     Returns:
-        Response: Redirect to time tracking page after deletion.
+        JSON: Success or error message.
     """
-    delete_time_entry(time_entry_id)
-    return redirect(url_for("time_entries.time_tracking_list"))
+    return jsonify(delete_time_entry(entry_id))
 
 
-@time_entry_bp.route("/time-tracking/task/<int:task_id>", methods=["GET"])
-def time_entry_by_task(task_id):
+@time_entry_bp.route("/<int:entry_id>", methods=["PUT"])
+def update_entry(entry_id):
     """
-    Display the time entry for a specific task, if it exists.
+    Update fields of a time entry.
 
-    Args:
-        task_id (int): ID of the task.
+    JSON Payload: Any subset of:
+        - start_time
+        - end_time
+        - duration_minutes
+        - comment
 
     Returns:
-        Response: Rendered HTML page showing the time entry.
+        JSON: Success message or error.
     """
-    entry = get_time_entry_by_task(task_id)
-    return render_template("time_entry_detail.html", entry=entry, task_id=task_id)
+    data = request.get_json()
+    return jsonify(update_time_entry(entry_id, **data))
+
+

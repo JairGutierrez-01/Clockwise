@@ -37,3 +37,21 @@ class TimeEntry(db.Model):
         Returns a string representation of the TimeEntry instance.
         """
         return f"<TimeEntry(id={self.time_entry_id}, user={self.user_id}, task={self.task_id}, start={self.start_time}, end={self.end_time})>"
+
+
+    def to_dict(self):
+        """
+        Convert the time entry instance into a dictionary for JSON responses.
+
+        Returns:
+            dict: A dictionary representation of the time entry.
+        """
+        return {
+            "time_entry_id": self.time_entry_id,
+            "user_id": self.user_id,
+            "task_id": self.task_id,
+            "start_time": self.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "end_time": self.end_time.strftime("%Y-%m-%d %H:%M:%S") if self.end_time else None,
+            "duration_minutes": self.duration_minutes,
+            "comment": self.comment,
+        }

@@ -77,5 +77,6 @@ class Task(db.Model):
             "user_id": self.user_id,
             "category_id": self.category_id,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "created_from_tracking": self.created_from_tracking
+            "created_from_tracking": self.created_from_tracking,
+            "is_untitled": self.title.startswith("Untitled Task") if self.title else False
         }
