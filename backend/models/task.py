@@ -38,13 +38,9 @@ class Task(db.Model):
     __tablename__ = "tasks"
 
     task_id = db.Column(db.Integer, primary_key=True, index=True)
-    project_id = db.Column(
-        db.Integer, db.ForeignKey("projects.project_id"), nullable=True
-    )
+    project_id = db.Column(db.Integer, db.ForeignKey("projects.project_id"), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
-    category_id = db.Column(
-        db.Integer, db.ForeignKey("categories.category_id"), nullable=True
-    )
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.category_id"), nullable=True)
     title = db.Column(db.String, nullable=True)
     description = db.Column(db.String, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)
@@ -82,4 +78,5 @@ class Task(db.Model):
             "category_id": self.category_id,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "created_from_tracking": self.created_from_tracking,
+            "is_untitled": self.title.startswith("Untitled Task") if self.title else False
         }
