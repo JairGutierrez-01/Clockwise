@@ -66,8 +66,8 @@
         <div class="header-row">
           <h2>Team Management</h2>
           <div class="project-selector">
-            <button class="project-button">Choose Project</button>
-            <button class="project-button secondary">▼Clockwise</button>
+             <button id="chooseProjectBtn" class="project-button">Choose Project</button>
+             <button class="project-button secondary">▼Clockwise</button>
           </div>
         </div>
 
@@ -98,8 +98,9 @@
           </table>
 
           <div class="member-buttons">
-            <button class="add-btn">Add Member</button>
-            <button class="delete-btn">Delete Member</button>
+            <button id="addMemberBtn" class="add-btn">Add Member</button>
+            <button id="deleteMemberBtn" class="delete-btn">Delete Member</button>
+
           </div>
         </div>
 
@@ -122,6 +123,7 @@
       </div>
     </main>
 
+     <script src="{{ url_for('static', filename='js/teams.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   </body>
 </html>
