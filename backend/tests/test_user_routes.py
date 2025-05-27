@@ -25,15 +25,15 @@ def test_register_post_success(monkeypatch, client):
         "first_name": "John",
         "last_name": "Doe",
         "password": "<PASSWORD>",
+        "profile_picture": (io.BytesIO(b"fake image data"), "test.jpg"),
     }
-    data["profile_picture"] = (io.BytesIO(b"fake image data"), "test.jpg")
     response = client.post(
         "/auth/register",
         data=data,
         content_type="multipart/form-data",
         follow_redirects=False,
     )
-    assert response.status_code == 302  # Redirect to login
+    assert response.status_code == 302  # Redirect to log in
 
 
 def test_login_get(client):
@@ -91,8 +91,8 @@ def test_edit_profile_post_success(monkeypatch, client):
         "first_name": "John",
         "last_name": "Doe",
         "password": "<PASSWORD>",
+        "profile_picture": (io.BytesIO(b"new image data"), "new.jpg"),
     }
-    data["profile_picture"] = (io.BytesIO(b"new image data"), "new.jpg")
     response = client.post(
         "/auth/edit/profile/1",
         data=data,
