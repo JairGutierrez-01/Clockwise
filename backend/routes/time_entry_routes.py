@@ -143,7 +143,31 @@ def stop_entry(entry_id):
     Returns:
         JSON: Success message or error.
     """
-    return jsonify(stop_time_entry(entry_id))
+    result = stop_time_entry(entry_id)
+
+    # if an error occurs, stop the process
+    if not result.get("success"):
+        return jsonify(result), 400
+
+    # get the TimeEntry
+    from backend.models.time_entry import TimeEntry
+    from backend.models.task import Task
+    from backend.models.project import Project
+    from backend.database import db
+
+    time_entry = TimeEntry.query.get(entry_id)
+    if not time_entry or not time_entry.task_id:
+        return jsonify(result)
+
+    task = Task.query.get(time_entry.task_id)
+    if task and task.project_id:
+        project = Project.query.get(task.project_id)
+        if project:
+            duration_hours = (time_entry.duration_minutes or 0) / 60.0
+            project.current_hours = (project.current_hours or 0) + duration_hours
+            db.session.commit()
+
+    return jsonify(result)
 
 
 @time_entry_bp.route("/pause/<int:entry_id>", methods=["POST"])

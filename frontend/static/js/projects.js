@@ -362,8 +362,20 @@ document.addEventListener("DOMContentLoaded", () => {
         : "kein Datum";
 
       // Linker Textteil (Taskname + Datum)
-      const textSpan = document.createElement("span");
-      textSpan.textContent = `${task.title} – Due Date: ${formattedDate}`;
+      // Formatierung wie in TimeTracking: HH:MM:SS
+        function minutesToHHMMSS(minutes) {
+          const totalSeconds = Math.floor(minutes * 60);
+          const h = Math.floor(totalSeconds / 3600);
+          const m = Math.floor((totalSeconds % 3600) / 60);
+          const s = totalSeconds % 60;
+          return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+        }
+
+        const duration = task.duration_hours || 0;
+        const formattedTime = minutesToHHMMSS(duration * 60);
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = `${task.title} – ${formattedTime} – Due Date: ${formattedDate}`;
 
       // Delete-Button
       const deleteBtn = document.createElement("button");

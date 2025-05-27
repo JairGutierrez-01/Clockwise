@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from backend.models.time_entry import TimeEntry
 from flask import jsonify
 from flask_login import current_user
 from datetime import datetime
@@ -17,20 +18,24 @@ task_bp = Blueprint("tasks", __name__, url_prefix="/api")
 @task_bp.route("/tasks", methods=["GET"])
 def get_tasks():
     """
-    Return a list of tasks.
-
-    If a project ID is provided via query parameters, only tasks belonging to that
-    project are returned. Otherwise, default tasks (without a project) are listed.
-
-    Returns:
-        JSON: A list of tasks as dictionaries.
+    Return a list of tasks (optionally filtered by project_id),
+    and include duration_hours in the response.
     """
     project_id = request.args.get("project_id")
     if project_id:
         tasks = get_task_by_project(int(project_id))
     else:
         tasks = get_default_tasks()
-    return jsonify([task.to_dict() for task in tasks])
+
+    task_list = []
+    for task in tasks:
+        time_entry = TimeEntry.query.filter_by(task_id=task.task_id).first()
+        duration_minutes = time_entry.duration_minutes if time_entry else 0
+        task_dict = task.to_dict()
+        task_dict["duration_hours"] = round(duration_minutes / 60.0, 2)
+        task_list.append(task_dict)
+
+    return jsonify(task_list)
 
 
 @task_bp.route("/tasks", methods=["POST"])
