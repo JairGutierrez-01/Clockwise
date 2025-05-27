@@ -14,7 +14,7 @@ from backend.models.task import Task
 from backend.services.task_service import get_task_by_project
 
 from backend.database import db
-from backend.models.notification import Notification 
+from backend.models.notification import Notification
 from backend.models.user import User
 from backend.models.project import Project
 from backend.models.team import Team
@@ -129,21 +129,16 @@ def projects():
     return render_template("projects.html", projects=user_projects)
 
 @app.route("/teams")
-@login_required                 # Seite ist nur für eingeloggte User erreichbar
+@login_required
 def teams():
     user_teams = (
         db.session.query(UserTeam)
-        .filter_by(user_id=current_user.user_id)   # Teams des aktuellen Users
+        .filter_by(user_id=current_user.user_id)
         .join(Team)
         .order_by(Team.created_at.desc())
         .all()
     )
     return render_template("teams.html", user_teams=user_teams)
-
-#@app.route("/teams")
-#def teams():
-   # return render_template("teams.html")
-
 
 @app.route("/logout")
 def logout():
@@ -180,7 +175,7 @@ def delete_notification(notification_id):
         return "", 403
 
     notification = Notification.query.get(notification_id)
-    if notification and notification.user_id == current_user.id:
+    if notification and notification.user_id == current_user.user_id:  # <- Fix hier
         db.session.delete(notification)
         db.session.commit()
         return "", 200
