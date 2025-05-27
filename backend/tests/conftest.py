@@ -1,5 +1,5 @@
 import pytest
-from backend.database import db
+from app import db
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from app import app as flask_app
@@ -24,19 +24,19 @@ def app():
 
 @pytest.fixture()
 def db_session(app):
-    engine = db.get_engine(app)
-    connection = engine.connect()
+    connection = db.engine.connect()
     transaction = connection.begin()
 
-    Session = scoped_session(sessionmaker(bind=connection))
+    session_factory = sessionmaker(bind=connection)
+    session = scoped_session(session_factory)
 
-    db.session = Session()
+    db.session = session
 
-    yield db.session
+    yield session
 
-    db.session.remove()
     transaction.rollback()
     connection.close()
+    session.remove()
 
 
 @pytest.fixture()
