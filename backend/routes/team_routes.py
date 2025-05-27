@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+
 from backend.database import db
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
@@ -154,7 +155,11 @@ def get_team_members(team_id):
         return jsonify(result), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500 
+
+    
+
+    
 
 """
     Creates a new team and assigns the current user as admin.
