@@ -3,12 +3,23 @@ from backend.database import db, Base
 
 
 class Team(db.Model):
-    """Database model for a team within the system."""
+    """
+        Database model for a team within the system.
+
+        Attributes:
+            team_id: Primary key identifier for the team.
+            name: Name of the team (required).
+            description: Optional textual description.
+            created_at: Timestamp of team creation.
+            members: Relationship to UserTeam (team members).
+            project: Projects that belong to this team.
+        """
 
     __tablename__ = "teams"
     # - Attributes:
     team_id = db.Column(db.Integer, primary_key=True, index=True)
     name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     # - Relationships:
     members = db.relationship("UserTeam", back_populates="team", cascade="all, delete")
