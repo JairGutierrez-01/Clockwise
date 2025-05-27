@@ -46,12 +46,12 @@ def projects_events():
     Endpoint to get all time entries as calendar events.
 
     Returns:
-        JSON: A dictionary with key "projects" containing a list of event dictionaries.
+        JSON: A dictionary with key "time_entries" containing a list of event dictionaries.
               Each event has 'title', 'start' (ISO8601 string), and 'end' (ISO8601 string).
     """
     time_entries = load_time_entries_from_db()
     events = calendar_events(time_entries)
-    return jsonify({"projects": events})
+    return jsonify({"time_entries": events})
 
 
 @analysis_bp.route("/progress")
