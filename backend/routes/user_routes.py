@@ -164,7 +164,7 @@ def forgot_password():
         email = request.form["email"]
         result = password_forget(email)
         if result.get("success"):
-            return "Reset instructions have been sent to your email.."
+            return "Reset instructions have been sent to your email."
         else:
             return result.get("error", "Error resetting the password.")
 
