@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Notifications - ClockWise</title>
+    <title>Teams - ClockWise</title>
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='navbar.css') }}"
@@ -52,14 +53,8 @@
         display: inline-block;
       }
 
-      .dot.red {
-        background-color: #e74c3c;
-      }
       .dot.blue {
         background-color: #3498db;
-      }
-      .dot.green {
-        background-color: #2ecc71;
       }
     </style>
   </head>
@@ -80,35 +75,25 @@
           <table class="member-table">
             <thead>
               <tr>
-                <th>Member</th>
-                <th>Email</th>
+                <th>Team</th>
+                <th>Rolle</th>
               </tr>
             </thead>
             <tbody>
+              {% for ut in user_teams %}
               <tr>
                 <td>
-                  <span class="name-with-dot"
-                    ><span class="dot red"></span>Name 1</span
-                  >
+                  <span class="name-with-dot">
+                    <span class="dot blue"></span>{{ ut.team.name }}
+                  </span>
                 </td>
-                <td class="email">name.name@example.com</td>
+                <td class="email">{{ ut.role }}</td>
               </tr>
+              {% else %}
               <tr>
-                <td>
-                  <span class="name-with-dot"
-                    ><span class="dot blue"></span>Name 2</span
-                  >
-                </td>
-                <td class="email">name1.name1@example.com</td>
+                <td colspan="2">Du bist noch in keinem Team.</td>
               </tr>
-              <tr>
-                <td>
-                  <span class="name-with-dot"
-                    ><span class="dot green"></span>Name 3</span
-                  >
-                </td>
-                <td class="email">name2.name2@example.com</td>
-              </tr>
+              {% endfor %}
             </tbody>
           </table>
 
@@ -124,13 +109,14 @@
             <span>Assigned To</span>
           </div>
 
+          <!-- Optional: Kannst du später dynamisch machen -->
           <div class="task-row">
             <span>Task 1</span>
-            <span><span class="dot red"></span>Name 1</span>
+            <span><span class="dot blue"></span>Max</span>
           </div>
           <div class="task-row">
             <span>Task 2</span>
-            <span><span class="dot green"></span>Name 3</span>
+            <span><span class="dot blue"></span>Lisa</span>
           </div>
         </div>
       </div>
