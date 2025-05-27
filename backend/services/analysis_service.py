@@ -181,5 +181,5 @@ def load_target_times_from_db():
 
     result = {}
     for project in projects:
-        result[project.project_id] = project.time_limit_hours
+        result[project.name] = project.time_limit_hours
     return result
