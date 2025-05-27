@@ -1,13 +1,7 @@
-/* timeTracking.css - Styles for ClockWise Time Tracking Page */
-
-/*============================================
-=            Design Tokens Section           =
-Define reusable variables for colors, spacing, typography, and border radius.
-============================================*/
-
-/* Design tokens: colors, spacing, typography variables */
+/*--------------------------------------------
+  Design Tokens
+--------------------------------------------*/
 :root {
-  /* Colors */
   --color-bg: #f5f5f5;
   --color-fg: #333333;
   --color-tracker-bg: #ffffff;
@@ -15,29 +9,23 @@ Define reusable variables for colors, spacing, typography, and border radius.
   --color-accent: #95a6b5;
   --color-card-shadow: rgba(0, 0, 0, 0.1);
 
-  /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 32px;
   --space-xl: 64px;
 
-  /* Border radius */
   --radius: 8px;
 
-  /* Typography */
   --font-base: 1.5rem;
   --font-lg: 1.75rem;
   --font-xl: 2rem;
   --line-height: 1.5;
 }
 
-/*============================================
-=             Dark Mode Overrides            =
-Customize theme and background gradient for the dark Mode.
-============================================*/
-
-/* Dark mode: background gradient and text color */
+/*--------------------------------------------
+  Dark Mode Overrides
+--------------------------------------------*/
 body.dark-mode {
   --color-bg: #081520;
   --color-fg: #e0e0e0;
@@ -53,33 +41,26 @@ body.dark-mode {
     #12395f 70%,
     #1e4f85 100%
   );
-
   background-attachment: fixed;
   background-size: cover;
   color: var(--color-fg);
 }
 
-/*============================================
-=             Light Mode Base Styles         =
-Set up base typography, background, and text color for the default theme.
-============================================*/
-
-/* Light mode: background and base typography */
+/*--------------------------------------------
+  Light Mode Base Styles
+--------------------------------------------*/
 body {
   margin: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: var(--font-base);
   line-height: var(--line-height);
   background-color: #ffffff;
   color: var(--color-fg);
 }
-/*============================================
-=         Tracker Component Layout           =
-Style and align the timer input, display, and controls.
-============================================*/
 
-/* Tracker container: input, timer display, and control buttons */
+/*--------------------------------------------
+  Tracker Component Layout
+--------------------------------------------*/
 .tracker {
   border-radius: var(--radius);
   width: 100%;
@@ -89,12 +70,9 @@ Style and align the timer input, display, and controls.
   color: var(--color-fg);
 }
 
-/*============================================
-=       Time Tracking Container Wrapper      =
-Center and constrain the main time-tracking section.
-============================================*/
-
-/* Container wrapper for tracker and project list */
+/*--------------------------------------------
+  Time Tracking Container Wrapper
+--------------------------------------------*/
 .time-tracking {
   width: 100%;
   max-width: 1300px;
@@ -102,12 +80,9 @@ Center and constrain the main time-tracking section.
   padding: 0 var(--space-md);
 }
 
-/*============================================
-=         Tracker Panel Styling              =
-Apply background, padding, and shadow to the tracker panel.
-============================================*/
-
-/* Styling for the tracker panel */
+/*--------------------------------------------
+  Tracker Panel Styling
+--------------------------------------------*/
 .tracker-wrapper {
   background-color: var(--color-tracker-bg);
   border-radius: var(--radius);
@@ -116,12 +91,9 @@ Apply background, padding, and shadow to the tracker panel.
   box-shadow: 0 4px 12px var(--color-card-shadow);
 }
 
-/*============================================
-=        Project Name Input Field            =
-Style the text input for entering project names.
-============================================*/
-
-/* Project name input field styles */
+/*--------------------------------------------
+  Project Name Input Field
+--------------------------------------------*/
 .tracker input {
   padding: var(--space-sm);
   width: 60%;
@@ -129,34 +101,56 @@ Style the text input for entering project names.
   border: none;
   font-size: var(--font-base);
   background-color: var(--color-accent);
+  position: relative;
 }
-/*============================================
-=       Placeholder Text Styling             =
-Adjust color and opacity for input placeholders.
-============================================*/
-
-/* Placeholder text styling for project input */
 .tracker input::placeholder {
   color: var(--color-bg);
   opacity: 0.6;
 }
-/*============================================
-=           Timer Display Styling            =
-timer text with bold weight and larger font size.
-============================================*/
 
-/* Timer display text styling */
-.tracker .time {
+/*--------------------------------------------
+  Input Wrapper and Suggestions Dropdown
+--------------------------------------------*/
+.input-wrapper {
+  position: relative;
+  width: 60%;
+}
+
+.input-wrapper .suggestions {
+  position: absolute;
+  left: 0;
+  background-color: var(--color-tracker-bg);
+  border-radius: var(--radius);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-sm) 0;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 60%;
+  z-index: 10;
+}
+.suggestions li {
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  color: var(--color-fg);
+}
+.suggestions li:hover {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/*--------------------------------------------
+  Timer Display Styling
+--------------------------------------------*/
+.tracker .time-display {
   font-weight: bold;
   font-size: var(--font-lg);
   margin: 0 var(--space-md);
 }
-/*============================================
-=         Button Base Styling               =
-Define default button appearance and interactive transitions.
-============================================*/
 
-/* Base button styling for tracker and project actions */
+/*--------------------------------------------
+  Button Base Styling
+--------------------------------------------*/
 .tracker button,
 .project button {
   background-color: var(--color-accent);
@@ -166,9 +160,7 @@ Define default button appearance and interactive transitions.
   border-radius: var(--radius);
   font-size: var(--font-base);
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 .tracker button:hover,
 .project button:hover {
@@ -179,23 +171,17 @@ Define default button appearance and interactive transitions.
   transform: translateY(0);
 }
 
-/*============================================
-=       Section Heading Styling             =
-Style headings for sections like Latest Projects.
-============================================*/
-
-/* Latest Projects section styling */
+/*--------------------------------------------
+  Section Heading Styling
+--------------------------------------------*/
 h2 {
-  /* Section heading styles */
   font-size: var(--font-lg);
   margin-left: var(--space-lg);
 }
-/*============================================
-=       Project List Layout                 =
-Arrange project cards in a vertical list with spacing.
-============================================*/
 
-/* Project list container: align cards in a column */
+/*--------------------------------------------
+  Project List Layout
+--------------------------------------------*/
 .project-list {
   display: flex;
   flex-direction: column;
@@ -205,47 +191,9 @@ Arrange project cards in a vertical list with spacing.
   padding: 0 var(--space-md);
 }
 
-/*============================================
-=      Table Cell Styling (optional)        =
-Define padding and alignment for table elements if used.
-============================================*/
-
-/* Table cell padding (if applicable) */
-.project-list th,
-.project-list td {
-  padding: var(--space-sm);
-  text-align: center;
-}
-
-/*============================================
-=         Project Card Entry Layout         =
-Define layout and spacing for individual project entries.
-============================================*/
-
-/* Project card content layout */
-.project {
-  color: var(--color-fg);
-  background-color: transparent;
-  padding: var(--space-md) var(--space-lg);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--font-base);
-}
-
-/* Project entry layout */
-.project {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-}
-
-/*============================================
-=      Project Card Container Styling       =
-Apply background, border-radius, and shadow to project cards.
-============================================*/
-
-/* Project card container styling */
+/*--------------------------------------------
+  Project Card Entry Layout
+--------------------------------------------*/
 .project-wrapper {
   background-color: var(--color-project-bg);
   border-radius: var(--radius);
@@ -255,93 +203,46 @@ Apply background, border-radius, and shadow to project cards.
   max-width: 1200px;
   margin-bottom: var(--space-md);
 }
+.project {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
-/*============================================
-=         Project Name Styling              =
-Highlight project names with bold typography.
-============================================*/
-
-/* Project name styling within entry */
+/*--------------------------------------------
+  Project Name Text Styling
+--------------------------------------------*/
 .project-name {
-  flex: 2;
-  font-weight: bold;
-}
-
-/*============================================
-=       Time Range and Duration Styling     =
-Format start/end times and durations uniformly.
-============================================*/
-
-/* Styling for start/end times and duration */
-.time-range,
-.duration {
   flex: 1;
-  text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Action buttons within project cards */
-.project button {
+/*--------------------------------------------
+  Duration Styling
+--------------------------------------------*/
+.duration {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  text-align: center;
+}
+
+/*--------------------------------------------
+  Action Buttons Spacing
+--------------------------------------------*/
+.project .resume-btn,
+.project .edit-btn,
+.project .delete-btn {
   margin-left: var(--space-sm);
   flex-shrink: 0;
 }
-.project button:hover {
-  opacity: 0.8;
-}
 
-/*============================================
-=        Empty State Message Styling        =
-Center and style the message shown when no data.
-============================================*/
-
-/* Empty state message styling */
-#empty-message {
-  text-align: center;
-  margin: var(--space-md) 0;
-  font-size: var(--font-base);
-  color: #aaa;
-}
-
-/*============================================
-=       Control Buttons Default State       =
-Hide pause, resume, and stop buttons until needed.
-============================================*/
-
-/* Default hidden state for control buttons */
-.btn-pause,
-.btn-resume,
-.btn-stop {
-  opacity: 0;
-}
-
-/* Control button hover and active animations */
-#tracker-start,
-.btn-pause,
-.btn-resume,
-.btn-stop {
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-}
-#tracker-start:hover,
-.btn-pause:hover,
-.btn-resume:hover,
-.btn-stop:hover {
-  transform: scale(1.1);
-}
-#tracker-start:active,
-.btn-pause:active,
-.btn-resume:active,
-.btn-stop:active {
-  transform: scale(0.95);
-}
-
-/*============================================
-=     Animation: Smooth Slide-In Effect      =
-a smooth effect for control buttons.
-============================================*/
-
-/* Keyframes for control button slide-in effect */
+/*--------------------------------------------
+  Animation Slide-In Effect
+--------------------------------------------*/
 @keyframes slideInSmooth {
   0% {
     opacity: 0;
@@ -368,12 +269,9 @@ a smooth effect for control buttons.
   animation-delay: 0.3s;
 }
 
-/*============================================
-=    Animation: New Entry Slide-In Effect    =
-Animate new project cards entering from left with bounce.
-============================================*/
-
-/* Keyframes for new project entry slide-in from left with bounce */
+/*--------------------------------------------
+  New Entry & Page Load Animations
+--------------------------------------------*/
 @keyframes slideInFromLeft {
   0% {
     opacity: 0;
@@ -388,17 +286,9 @@ Animate new project cards entering from left with bounce.
     transform: translateX(0) scale(1);
   }
 }
-/* Only use slideInFromLeft for .project-wrapper.new-entry */
 .project-wrapper.new-entry {
   animation: slideInFromLeft 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
-
-/*============================================
-=      Animation: Page Load Fade-Down       =
-Animate the time-tracking section appearing from above.
-============================================*/
-
-/* Keyframes for page load fade-down effect */
 @keyframes fadeInDown {
   0% {
     opacity: 0;
@@ -409,14 +299,12 @@ Animate the time-tracking section appearing from above.
     transform: translateY(0);
   }
 }
-
-/* Initial state for page load */
+/* Initial hidden state of time tracking container */
 .time-tracking {
   opacity: 0;
   transform: translateY(-20px);
 }
-
-/* Apply animation when page has loaded */
+/* Animate time tracking container on page load */
 .time-tracking.page-loaded {
   animation: fadeInDown 0.6s ease-out forwards;
 }
