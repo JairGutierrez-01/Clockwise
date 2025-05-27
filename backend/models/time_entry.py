@@ -24,7 +24,7 @@ class TimeEntry(db.Model):
     time_entry_id = db.Column(db.Integer, primary_key=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.task_id"), nullable=False)
-    start_time = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    start_time = db.Column(db.DateTime, nullable=True)
     end_time = db.Column(db.DateTime, nullable=True)
     duration_minutes = db.Column(db.Integer, nullable=True)
     comment = db.Column(db.String, nullable=True)
@@ -49,7 +49,7 @@ class TimeEntry(db.Model):
             "time_entry_id": self.time_entry_id,
             "user_id": self.user_id,
             "task_id": self.task_id,
-            "start_time": self.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "start_time": self.start_time.strftime("%Y-%m-%d %H:%M:%S") if self.start_time else None,
             "end_time": (
                 self.end_time.strftime("%Y-%m-%d %H:%M:%S") if self.end_time else None
             ),
