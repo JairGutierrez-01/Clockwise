@@ -167,6 +167,22 @@ body {
   opacity: 0.8;
 }
 
+.btn-secondary {
+  background-color: #95a6b5;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: var(--font-base);
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
 /*============================================
 =                 Modal Styling              =
 ============================================*/
@@ -296,4 +312,23 @@ body {
   cursor: pointer;
   font-size: var(--font-base);
   margin-left: var(--space-sm);
+}
+
+.task-item {
+  background-color: var(--color-bg);
+  border-radius: var(--radius);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
+}
+
+.task-item:hover {
+  background-color: rgba(255, 255, 255, 0.08); /* sichtbar im Dark Mode */
+  transform: translateY(-2px);
 }

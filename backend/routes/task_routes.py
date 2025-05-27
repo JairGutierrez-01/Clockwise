@@ -40,7 +40,7 @@ def create_task_api():
 
     Expected JSON:
         {
-            "name": "Task title",
+            "title": "Task title",
             "description": "Optional description",
             "category_id": int,
             "due_date": "YYYY-MM-DD",
@@ -53,7 +53,7 @@ def create_task_api():
     """
     data = request.get_json()
 
-    title = data.get("name", "").strip()
+    title = data.get("title", "").strip()
     if not title:
         title = "Untitled Task"
     description = data.get("description")
@@ -115,6 +115,16 @@ def update_task_api(task_id):
 
     result = update_task(task_id, **data)
     return jsonify(result)
+
+@task_bp.route("/tasks/<int:task_id>", methods=["GET"])
+def get_task_by_id_api(task_id):
+    """
+    Returns the task with the given ID.
+    """
+    task = get_task_by_id(task_id)
+    if task:
+        return jsonify(task.to_dict())
+    return jsonify({"error": "Task not found"}), 404
 
 
 @task_bp.route("/tasks/<int:task_id>", methods=["DELETE"])

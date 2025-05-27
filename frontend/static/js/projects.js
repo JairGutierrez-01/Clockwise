@@ -267,38 +267,80 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   cancelTaskBtn.addEventListener("click", () => {
-    taskModal.classList.add("hidden");
-  });
+  taskModal.classList.add("hidden");
+  delete taskForm.dataset.editingTaskId;
+  document.getElementById("task-form-title").textContent = "New Task";
+});
+
+  taskListEl.addEventListener("click", (event) => {
+  const li = event.target.closest(".task-item");
+  if (!li) return;
+
+  const taskId = parseInt(li.dataset.id, 10);
+  openTaskEditModal(taskId);
+});
 
   taskForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const taskPayload = {
-      name: taskNameInput.value.trim(),
-      description: taskDescInput.value.trim(),
-      category_id: parseInt(taskCategorySelect.value, 10) || null,
-      due_date: taskDueDateInput.value || null,
-      project_id: editingProjectId,
-      created_from_tracking: false,
-    };
+  event.preventDefault();
 
-     try {
+  const taskPayload = {
+    title: taskNameInput.value.trim(),
+    description: taskDescInput.value.trim(),
+    category_id: parseInt(taskCategorySelect.value, 10) || null,
+    due_date: taskDueDateInput.value || null,
+    project_id: editingProjectId,
+    created_from_tracking: false,
+  };
+
+  const editingTaskId = taskForm.dataset.editingTaskId;
+
+  try {
+    if (editingTaskId) {
+      await fetch(`/api/tasks/${editingTaskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskPayload),
+      });
+      delete taskForm.dataset.editingTaskId;
+    } else {
       await createTask(taskPayload);
-      console.log("Task gespeichert:", taskPayload);
-      taskModal.classList.add("hidden");
-
-      // Nach Speichern Tasks neu laden und anzeigen
-      const tasks = await fetchTasks(editingProjectId);
-      renderTaskList(tasks);
-    } catch (error) {
-      console.error("Fehler beim Speichern des Tasks:", error);
     }
-  });
+
+    taskModal.classList.add("hidden");
+    const tasks = await fetchTasks(editingProjectId);
+    renderTaskList(tasks);
+  } catch (error) {
+    console.error("Fehler beim Speichern der Task:", error);
+  }
+});
 
   // --- Initialization ---
   /**
    * Loads projects from the backend and renders them.
    *
    */
+  async function openTaskEditModal(taskId) {
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`);
+    if (!res.ok) throw new Error("Task konnte nicht geladen werden");
+
+    const task = await res.json();
+    document.getElementById("task-form-title").textContent = "Edit Task";
+    taskNameInput.value = task.title;
+    taskDescInput.value = task.description || "";
+    taskCategorySelect.value = task.category_id || "";
+    taskDueDateInput.value = task.due_date || "";
+
+    taskModal.classList.remove("hidden");
+
+    // Vorübergehend Task-ID speichern
+    taskForm.dataset.editingTaskId = taskId;
+
+  } catch (error) {
+    console.error("Fehler beim Laden der Task:", error);
+  }
+}
+
   async function loadProjects() {
     projects = await fetchProjects();
     renderProjectList();
@@ -317,10 +359,39 @@ document.addEventListener("DOMContentLoaded", () => {
   tasks.forEach((task) => {
     const li = document.createElement("li");
     li.className = "task-item";
-    li.textContent = `${task.title} – Due: ${task.due_date || "No date"}`;
+
+    const formattedDate = task.due_date
+      ? new Date(task.due_date).toLocaleDateString("de-DE")
+      : "kein Datum";
+
+    // Linker Textteil (Taskname + Datum)
+    const textSpan = document.createElement("span");
+    textSpan.textContent = `${task.title} – Due Date: ${formattedDate}`;
+
+    // Delete-Button
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.className = "task-delete-btn";
+    deleteBtn.addEventListener("click", async () => {
+      if (!confirm("Möchtest du diese Aufgabe wirklich löschen?")) return;
+
+      try {
+        const res = await fetch(`/api/tasks/${task.task_id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Löschen fehlgeschlagen");
+        const updatedTasks = await fetchTasks(editingProjectId);
+        renderTaskList(updatedTasks);
+      } catch (err) {
+        console.error("Fehler beim Löschen:", err);
+      }
+    });
+
+    // Zusammenfügen
+    li.appendChild(textSpan);
+    li.appendChild(deleteBtn);
     taskListEl.appendChild(li);
   });
 }
-
   loadProjects();
 });
