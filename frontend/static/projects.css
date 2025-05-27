@@ -328,7 +328,11 @@ body {
     transform 0.2s;
 }
 
-.task-item:hover {
-  background-color: rgba(255, 255, 255, 0.08); /* sichtbar im Dark Mode */
+.task-item:hover:not(:has(button:hover)) {
+  background-color: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
+}
+
+.task-delete-btn:hover {
+  color: black;
 }

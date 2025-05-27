@@ -292,8 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
     created_from_tracking: false,
   };
 
-  const editingTaskId = taskForm.dataset.editingTaskId;
-
+const editingTaskId = taskForm.dataset.editingTaskId;
   try {
     if (editingTaskId) {
       await fetch(`/api/tasks/${editingTaskId}`, {
@@ -359,6 +358,7 @@ document.addEventListener("DOMContentLoaded", () => {
   tasks.forEach((task) => {
     const li = document.createElement("li");
     li.className = "task-item";
+    li.dataset.taskId = task.task_id;
 
     const formattedDate = task.due_date
       ? new Date(task.due_date).toLocaleDateString("de-DE")
@@ -390,6 +390,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // Zusammenfügen
     li.appendChild(textSpan);
     li.appendChild(deleteBtn);
+    li.addEventListener("click", async (event) => {
+  // Wenn auf den Delete-Button geklickt wurde, nichts tun:
+  if (event.target.tagName.toLowerCase() === "button") return;
+
+  const taskId = li.dataset.taskId;
+  try {
+    const res = await fetch(`/api/tasks/${taskId}`);
+    if (!res.ok) throw new Error("Task nicht gefunden");
+
+    const taskData = await res.json();
+
+    // Formular mit Task-Daten befüllen
+    taskForm.reset();
+    document.getElementById("task-form-title").textContent = "Edit Task";
+    taskNameInput.value = taskData.title;
+    taskDescInput.value = taskData.description || "";
+    taskCategorySelect.value = taskData.category_id || "";
+    taskDueDateInput.value = taskData.due_date || "";
+
+    taskModal.classList.remove("hidden");
+    taskForm.dataset.editingTaskId = taskId;
+  } catch (err) {
+    console.error("Fehler beim Laden des Tasks:", err);
+  }
+});
     taskListEl.appendChild(li);
   });
 }
