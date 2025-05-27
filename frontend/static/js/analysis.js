@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       calendarInstance.destroy();
     }
 
-    fetch("/projects")
+    fetch("/analysis/projects")
       .then((res) => res.json())
       .then((data) => {
         const events = data.projects || [];
