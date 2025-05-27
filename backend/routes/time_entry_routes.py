@@ -119,15 +119,13 @@ def start_entry():
         # Count existing untitled tasks for this user
         count = task_model.Task.query.filter(
             task_model.Task.user_id == user_id,
-            task_model.Task.title.like("Untitled Task%")
+            task_model.Task.title.like("Untitled Task%"),
         ).count()
 
         title = f"Untitled Task #{count + 1}"
 
         task_result = task_service.create_task(
-            title=title,
-            user_id=user_id,
-            created_from_tracking=True
+            title=title, user_id=user_id, created_from_tracking=True
         )
         task_id = task_result["task_id"]
 
@@ -203,5 +201,3 @@ def update_entry(entry_id):
     """
     data = request.get_json()
     return jsonify(update_time_entry(entry_id, **data))
-
-

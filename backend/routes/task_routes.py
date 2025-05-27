@@ -116,6 +116,7 @@ def update_task_api(task_id):
     result = update_task(task_id, **data)
     return jsonify(result)
 
+
 @task_bp.route("/tasks/<int:task_id>", methods=["GET"])
 def get_task_by_id_api(task_id):
     """
