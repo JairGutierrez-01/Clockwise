@@ -28,7 +28,7 @@ def create_time_entry_api():
             "task_id": int,
             "start_time": "YYYY-MM-DD HH:MM",
             "end_time": "YYYY-MM-DD HH:MM",
-            "duration_minutes": int,
+            "duration_seconds": int,
             "comment": "Optional comment"
         }
 
@@ -43,7 +43,7 @@ def create_time_entry_api():
         task_id=data.get("task_id"),
         start_time=data.get("start_time"),
         end_time=data.get("end_time"),
-        duration_minutes=data.get("duration_minutes"),
+        duration_seconds=data.get("duration_seconds"),
         comment=data.get("comment"),
     )
     return jsonify(result)
@@ -114,18 +114,18 @@ def start_entry():
     if not user_id:
         return jsonify({"error": "Authentication required"}), 401
 
-    # If no task is provided → create a new "Untitled Task #n"
-    if not task_id:
-        # Count existing untitled tasks for this user
+    # If no task_id is provided or is empty → create new "Untitled Task"
+    if not task_id or str(task_id).strip() == "":
         count = task_model.Task.query.filter(
             task_model.Task.user_id == user_id,
-            task_model.Task.title.like("Untitled Task%"),
+            task_model.Task.title.like("Untitled Task%")
         ).count()
 
         title = f"Untitled Task #{count + 1}"
-
         task_result = task_service.create_task(
-            title=title, user_id=user_id, created_from_tracking=True
+            title=title,
+            user_id=user_id,
+            created_from_tracking=True
         )
         task_id = task_result["task_id"]
 
@@ -138,7 +138,7 @@ def stop_entry(entry_id):
     Stop a running time entry.
 
     Args:
-        entry_id (int): ID of the entry to stop.
+        entry_id (int): ID of  the entry to stop.
 
     Returns:
         JSON: Success message or error.
@@ -163,7 +163,7 @@ def stop_entry(entry_id):
     if task and task.project_id:
         project = Project.query.get(task.project_id)
         if project:
-            duration_hours = (time_entry.duration_minutes or 0) / 60.0
+            duration_hours = (time_entry.duration_seconds or 0) / 3600.0
             project.current_hours = (project.current_hours or 0) + duration_hours
             db.session.commit()
 
@@ -217,7 +217,7 @@ def update_entry(entry_id):
     JSON Payload: Any subset of:
         - start_time
         - end_time
-        - duration_minutes
+        - duration_seconds
         - comment
 
     Returns:

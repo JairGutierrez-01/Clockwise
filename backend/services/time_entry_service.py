@@ -9,7 +9,7 @@ def create_time_entry(
     task_id,
     start_time=None,
     end_time=None,
-    duration_minutes=None,
+    duration_seconds=None,
     comment=None,
 ):
     """
@@ -20,7 +20,7 @@ def create_time_entry(
         task_id (int): ID of the task associated with the time entry.
         start_time (datetime, optional): Start time of the entry.
         end_time (datetime, optional): End time of the entry.
-        duration_minutes (int, optional): Total duration in minutes.
+        duration_seconds (int, optional): Total duration in seconds.
         comment (str, optional): Optional comment.
 
     Returns:
@@ -37,7 +37,7 @@ def create_time_entry(
         task_id=task_id,
         start_time=start_time or datetime.now(),
         end_time=end_time,
-        duration_minutes=duration_minutes,
+        duration_seconds=duration_seconds,
         comment=comment,
     )
     db.session.add(new_entry)
@@ -93,7 +93,7 @@ def update_time_entry(time_entry_id, **kwargs):
     ALLOWED_TIME_ENTRY_FIELDS = [
         "start_time",
         "end_time",
-        "duration_minutes",
+        "duration_seconds",
         "comment",
     ]
 
@@ -121,10 +121,21 @@ def delete_time_entry(time_entry_id):
     entry = TimeEntry.query.get(time_entry_id)
     if not entry:
         return {"error": "Time entry not found"}
+
+    task = entry.task  # Task merken, bevor der Entry gelöscht wird
+
     db.session.delete(entry)
     db.session.commit()
-    return {"success": True, "message": "Time entry deleted successfully"}
 
+    # Wenn der Task leer und automatisch erstellt wurde → Task auch löschen
+    if task and task.created_from_tracking and not task.time_entries:
+        db.session.delete(task)
+        db.session.commit()
+
+    return {
+        "success": True,
+        "message": "Time entry deleted successfully"
+    }
 
 def start_time_entry(user_id, task_id, comment=None):
     """
@@ -178,13 +189,13 @@ def stop_time_entry(time_entry_id):
     entry.end_time = datetime.now()
 
     if entry.start_time:
-        current_duration = int((entry.end_time - entry.start_time).total_seconds() / 60)
-        entry.duration_minutes = (entry.duration_minutes or 0) + current_duration
+        current_duration = int((entry.end_time - entry.start_time).total_seconds())
+        entry.duration_seconds = (entry.duration_seconds or 0) + current_duration
     db.session.commit()
     return {
         "success": True,
         "message": "Time tracking stopped successfully",
-        "duration_minutes": entry.duration_minutes,
+        "duration_seconds": entry.duration_seconds,
     }
 
 
@@ -207,14 +218,14 @@ def pause_time_entry(time_entry_id):
         return {"error": "Time entry is already paused"}
 
     now = datetime.now()
-    current_duration = int((now - entry.start_time).total_seconds() / 60)
-    entry.duration_minutes = (entry.duration_minutes or 0) + current_duration
+    current_duration = int((now - entry.start_time).total_seconds())
+    entry.duration_seconds = (entry.duration_seconds or 0) + current_duration
     entry.start_time = None
     db.session.commit()
     return {
         "success": True,
         "message": "Time tracking paused successfully",
-        "duration_minutes": entry.duration_minutes,
+        "duration_seconds": entry.duration_seconds,
     }
 
 

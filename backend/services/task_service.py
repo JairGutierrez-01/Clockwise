@@ -150,13 +150,13 @@ def get_tasks_without_time_entries():
 
 
 def get_task_with_time_entry(task_id):
-    """Retrieve a task along with its associated time entry.
+    """Retrieve a task along with all associated time entries.
 
     Args:
         task_id (int): ID of the task to retrieve.
 
     Returns:
-        dict: Dictionary containing task details and its time entry (if exists),
+        dict: Dictionary containing task details and all time entries (if exist),
               or None if the task does not exist.
     """
     task = Task.query.get(task_id)
@@ -165,5 +165,5 @@ def get_task_with_time_entry(task_id):
 
     return {
         "task": task.to_dict(),
-        "time_entry": task.time_entries.to_dict() if task.time_entries else None,
+        "time_entries": [entry.to_dict() for entry in task.time_entries] if task.time_entries else [],
     }

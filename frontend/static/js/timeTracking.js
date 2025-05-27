@@ -351,12 +351,16 @@ document.addEventListener("DOMContentLoaded", () => {
   startBtn.addEventListener("click", async () => {
     let taskId = input.dataset.taskId;
     const title = input.value.trim();
-    if (!title) return;
 
-    // if no existing task chosen, create one
-    if (!taskId) {
+    // Wenn kein Task ausgewählt wurde, aber Titel eingegeben → neuen Task erstellen
+    if (!taskId && title) {
       const { task_id } = await createTaskAPI(title);
       taskId = task_id;
+    }
+
+    // Wenn kein Titel eingegeben wurde UND kein bestehender Task → später im Backend "Untitled Task"
+    if (!taskId && !title) {
+      taskId = null;
     }
 
     // UI prep
@@ -377,9 +381,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1000);
 
     // backend start
-    const { time_entry_id } = await startEntryAPI(parseInt(taskId));
+    const { time_entry_id } = await startEntryAPI(taskId ? parseInt(taskId) : null);
     currentEntryId = time_entry_id;
     startDisplay = new Date().toLocaleTimeString();
+
   });
 
   /**

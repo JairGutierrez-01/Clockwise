@@ -20,6 +20,12 @@ def get_tasks():
     """
     Return a list of tasks (optionally filtered by project_id),
     and include duration_hours in the response.
+
+    Query Parameters:
+        project_id (int, optional): ID of the project whose tasks should be returned.
+
+    Returns:
+        JSON: List of task objects including duration_hours.
     """
     project_id = request.args.get("project_id")
     if project_id:
@@ -29,10 +35,9 @@ def get_tasks():
 
     task_list = []
     for task in tasks:
-        time_entry = TimeEntry.query.filter_by(task_id=task.task_id).first()
-        duration_minutes = time_entry.duration_minutes if time_entry else 0
+        duration_seconds = sum(entry.duration_seconds or 0 for entry in task.time_entries)
         task_dict = task.to_dict()
-        task_dict["duration_hours"] = round(duration_minutes / 60.0, 2)
+        task_dict["duration_hours"] = round(duration_seconds / 3600.0, 2)
         task_list.append(task_dict)
 
     return jsonify(task_list)

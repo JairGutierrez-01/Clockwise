@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timedelta
 from backend.database import Base, db
 
 
@@ -13,7 +13,7 @@ class TimeEntry(db.Model):
         task_id (int): Foreign key to Task.
         start_time (datetime): When the time tracking started.
         end_time (datetime): When it ended.
-        duration_minutes (int): Total duration in minutes.
+        duration_seconds (int): Total duration in seconds.
         comment (str, optional): Optional note.
         user (relationship): The user who created the time entry.
         task (relationship): The task to which this time entry is assigned.
@@ -26,7 +26,7 @@ class TimeEntry(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.task_id"), nullable=False)
     start_time = db.Column(db.DateTime, nullable=True)
     end_time = db.Column(db.DateTime, nullable=True)
-    duration_minutes = db.Column(db.Integer, nullable=True)
+    duration_seconds = db.Column(db.Integer, nullable=True)
     comment = db.Column(db.String, nullable=True)
 
     user = db.relationship("User", back_populates="time_entries")
@@ -53,6 +53,7 @@ class TimeEntry(db.Model):
             "end_time": (
                 self.end_time.strftime("%Y-%m-%d %H:%M:%S") if self.end_time else None
             ),
-            "duration_minutes": self.duration_minutes,
+            "duration_seconds": self.duration_seconds,
+            "duration": str(timedelta(seconds=self.duration_seconds or 0)),
             "comment": self.comment,
         }

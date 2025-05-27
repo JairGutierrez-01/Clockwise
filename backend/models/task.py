@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, String, Enum
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timedelta
 from backend.database import Base, db
 import enum
 
@@ -52,7 +52,7 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     created_from_tracking = db.Column(db.Boolean, default=False, nullable=False)
 
-    time_entries = db.relationship("TimeEntry", back_populates="task", uselist=False)
+    time_entries = db.relationship("TimeEntry", back_populates="task")
     assigned_user = db.relationship("User", back_populates="assigned_task")
     project = db.relationship("Project", back_populates="task")
     category = db.relationship("Category", back_populates="task")
@@ -85,4 +85,10 @@ class Task(db.Model):
             "is_untitled": (
                 self.title.startswith("Untitled Task") if self.title else False
             ),
+            "total_duration_seconds": sum(
+                entry.duration_seconds or 0 for entry in self.time_entries
+            ) if self.time_entries else 0,
+            "total_duration": str(timedelta(seconds=sum(
+                entry.duration_seconds or 0 for entry in self.time_entries
+            ))) if self.time_entries else "0:00:00",
         }
