@@ -180,7 +180,7 @@ def delete_notification(notification_id):
         return "", 403
 
     notification = Notification.query.get(notification_id)
-    if notification and notification.user_id == current_user.id:
+    if notification and notification.user_id == current_user.user_id:  # <- Fix hier
         db.session.delete(notification)
         db.session.commit()
         return "", 200
