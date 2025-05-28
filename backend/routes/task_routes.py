@@ -35,9 +35,14 @@ def get_tasks():
 
     task_list = []
     for task in tasks:
-        duration_seconds = sum(entry.duration_seconds or 0 for entry in task.time_entries)
+        duration_seconds = sum(
+            (entry.duration_seconds if entry.duration_seconds is not None else int((entry.duration_minutes or 0) * 60))
+            for entry in task.time_entries
+        )
+
         task_dict = task.to_dict()
-        task_dict["duration_hours"] = round(duration_seconds / 3600.0, 2)
+        total_minutes = duration_seconds // 60
+        task_dict["duration_readable"] = f"{total_minutes // 60}h {total_minutes % 60}min"
         task_list.append(task_dict)
 
     return jsonify(task_list)
@@ -162,4 +167,16 @@ def get_unassigned_tasks():
         JSON: List of unassigned tasks.
     """
     tasks = get_default_tasks()
-    return jsonify([task.to_dict() for task in tasks])
+    task_list = []
+
+    for task in tasks:
+        duration_seconds = sum(
+            (entry.duration_seconds if entry.duration_seconds is not None else int((entry.duration_minutes or 0) * 60))
+            for entry in task.time_entries
+        )
+        task_dict = task.to_dict()
+        total_minutes = duration_seconds // 60
+        task_dict["duration_readable"] = f"{total_minutes // 60}h {total_minutes % 60}min"
+        task_list.append(task_dict)
+
+    return jsonify(task_list)

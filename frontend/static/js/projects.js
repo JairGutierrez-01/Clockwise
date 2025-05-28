@@ -141,14 +141,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const card = document.createElement("div");
       card.className = "project-card";
-      card.dataset.id = proj.project_id;
+      card.dataset.id = String(proj.project_id);
       card.dataset.type = proj.type;
       card.innerHTML = `
         <h2 class="project-card__name">${proj.name}</h2>
         <div class="project-card__meta">
     <p>Type: ${proj.type}</p>
     <p>Limit: ${proj.time_limit_hours} h</p>
-    <p>Spent: ${proj.current_hours || 0} h</p>
+    <p>Spent: ${proj.duration_readable || "0h 0min"}</p>
   </div>
         <button class="project-card__view">View</button>
       `;
@@ -361,21 +361,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ? new Date(task.due_date).toLocaleDateString("de-DE")
         : "kein Datum";
 
-      // Linker Textteil (Taskname + Datum)
-      // Formatierung wie in TimeTracking: HH:MM:SS
-        function minutesToHHMMSS(minutes) {
-          const totalSeconds = Math.floor(minutes * 60);
-          const h = Math.floor(totalSeconds / 3600);
-          const m = Math.floor((totalSeconds % 3600) / 60);
-          const s = totalSeconds % 60;
-          return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
-        }
-
-        const duration = task.duration_hours || 0;
-        const formattedTime = minutesToHHMMSS(duration * 60);
-
+        const durationText = task.duration_readable || "0h 0min";
         const textSpan = document.createElement("span");
-        textSpan.textContent = `${task.title} – ${formattedTime} – Due Date: ${formattedDate}`;
+        textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
+
 
       // Delete-Button
       const deleteBtn = document.createElement("button");
