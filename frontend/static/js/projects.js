@@ -12,6 +12,20 @@ function formatDateForInputField(dateString) {
   return date.toISOString().split("T")[0]; // yyyy-mm-dd
 }
 
+async function fetchTasks(projectId) {
+  try {
+    const response = await fetch(`/api/tasks?project_id=${projectId}`);
+    if (!response.ok) {
+      throw new Error("Fehler beim Laden der Aufgaben");
+    }
+    const tasks = await response.json();
+    return tasks;
+  } catch (error) {
+    console.error("fetchTasks Fehler:", error);
+    return [];
+  }
+}
+
 // ============================================================================
 // Sets up event listeners, state management, and UI update routines after DOM load.
 // ============================================================================
@@ -484,5 +498,6 @@ async function renderUnassignedTasks() {
       taskListEl.appendChild(li);
     });
   }
+
   loadProjects();
 });
