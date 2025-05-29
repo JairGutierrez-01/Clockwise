@@ -326,14 +326,14 @@ async function renderUnassignedTasks() {
 
   /* ───────────── Event listeners Tasks ───────────── */
   createTaskBtn.addEventListener("click", () => {
-    taskForm.reset();
-    taskModal.classList.remove("hidden");
+  openTaskModal(null, editingProjectId);
   });
 
   cancelTaskBtn.addEventListener("click", () => {
     taskModal.classList.add("hidden");
     delete taskForm.dataset.editingTaskId;
     document.getElementById("task-form-title").textContent = "New Task";
+    projectSelect.disabled = false;
   });
 
   taskListEl.addEventListener("click", (event) => {
@@ -497,6 +497,45 @@ async function renderUnassignedTasks() {
       });
       taskListEl.appendChild(li);
     });
+  }
+
+  function openTaskModal(task = null, defaultProjectId = null) {
+    // Reset
+    taskForm.reset();
+    document.getElementById("task-form-title").textContent = task ? "Edit Task" : "New Task";
+
+    const projectSelect = document.getElementById("task-project");
+
+    // Projektliste neu befüllen (falls sie dynamisch ist)
+    projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
+    projects.forEach((proj) => {
+      const option = document.createElement("option");
+      option.value = proj.project_id;
+      option.textContent = proj.name;
+      projectSelect.appendChild(option);
+    });
+
+    if (task) {
+      // Bearbeiten: Werte setzen
+      taskNameInput.value = task.title;
+      taskDescInput.value = task.description || "";
+      taskCategorySelect.value = task.category_id || "";
+      taskDueDateInput.value = task.due_date || "";
+      projectSelect.value = task.project_id;
+      projectSelect.disabled = false;
+      taskForm.dataset.editingTaskId = task.task_id;
+    } else {
+      // Neu: Projekt vorbelegen, Dropdown deaktivieren
+      if (defaultProjectId) {
+        projectSelect.value = defaultProjectId;
+        projectSelect.disabled = true;
+      } else {
+        projectSelect.disabled = false;
+      }
+      delete taskForm.dataset.editingTaskId;
+    }
+
+    taskModal.classList.remove("hidden");
   }
 
   loadProjects();
