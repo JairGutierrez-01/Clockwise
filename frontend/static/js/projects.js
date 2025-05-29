@@ -160,6 +160,22 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     projectListEl.appendChild(card);
   });
+
+  // Detail-Panel schließen, wenn außerhalb geklickt wird
+document.addEventListener("click", (event) => {
+  const detailPanel = document.getElementById("project-detail");
+
+  // Falls Panel nicht existiert oder nicht sichtbar ist, abbrechen
+  if (!detailPanel || detailPanel.classList.contains("hidden")) return;
+
+  const isInsideDetail = detailPanel.contains(event.target);
+  const clickedViewButton = event.target.classList.contains("project-card__view");
+
+  // Wenn außerhalb geklickt und nicht auf View-Button → Panel schließen
+  if (!isInsideDetail && !clickedViewButton) {
+    detailPanel.classList.add("hidden");
+  }
+});
 }
 
 async function renderUnassignedTasks() {
