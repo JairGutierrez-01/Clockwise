@@ -191,14 +191,19 @@ async function renderUnassignedTasks() {
 
     tasks.forEach((task) => {
       const card = document.createElement("div");
-      card.className = "project-card";
+      card.className = "project-card unassigned-task-card";
       card.innerHTML = `
-        <h2 class="project-card__name">${task.name}</h2>
+        <h2 class="project-card__name">${task.title}</h2>
         <div class="project-card__meta">
           <p>Description: ${task.description || "-"}</p>
           <p>Due: ${task.due_date || "N/A"}</p>
         </div>
       `;
+
+        card.addEventListener("click", () => {
+        openTaskEditModal(task.task_id);
+      });
+
       projectListEl.appendChild(card);
     });
   } catch (err) {
