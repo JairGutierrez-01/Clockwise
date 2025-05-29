@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskCategorySelect = document.getElementById("task-category");
   const taskDueDateInput = document.getElementById("task-due-date");
   const cancelTaskBtn = document.getElementById("cancel-task-btn");
+  const projectSelect = document.getElementById("task-project");
   let projects = [];
   let editingProjectId = null;
   let activeFilter = "all";
@@ -337,7 +338,7 @@ async function renderUnassignedTasks() {
       description: taskDescInput.value.trim(),
       category_id: parseInt(taskCategorySelect.value, 10) || null,
       due_date: taskDueDateInput.value || null,
-      project_id: editingProjectId,
+      project_id: parseInt(projectSelect.value, 10) || null,  // <-- neu!
       created_from_tracking: false,
     };
 
@@ -355,8 +356,12 @@ async function renderUnassignedTasks() {
       }
 
       taskModal.classList.add("hidden");
-      const tasks = await fetchTasks(editingProjectId);
-      renderTaskList(tasks);
+      if (activeFilter === "unassigned") {
+        await renderUnassignedTasks();
+      } else if (editingProjectId) {
+        const tasks = await fetchTasks(editingProjectId);
+        renderTaskList(tasks);
+      }
     } catch (error) {
       console.error("Fehler beim Speichern der Task:", error);
     }
@@ -378,6 +383,18 @@ async function renderUnassignedTasks() {
       taskDescInput.value = task.description || "";
       taskCategorySelect.value = task.category_id || "";
       taskDueDateInput.value = task.due_date || "";
+
+      const projectSelect = document.getElementById("task-project");
+      projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
+      projects.forEach((proj) => {
+        const option = document.createElement("option");
+        option.value = proj.project_id;
+        option.textContent = proj.name;
+        projectSelect.appendChild(option);
+      });
+
+      // Beim Bearbeiten: vorausgewähltes Projekt setzen
+      projectSelect.value = task.project_id || "";
 
       taskModal.classList.remove("hidden");
 
