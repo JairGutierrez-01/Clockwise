@@ -28,7 +28,12 @@ def get_tasks():
         JSON: List of task objects including duration_hours.
     """
     project_id = request.args.get("project_id")
-    if project_id:
+    unassigned = request.args.get("unassigned")
+
+    if unassigned == "true":
+        from backend.services.task_service import get_unassigned_tasks
+        tasks = get_unassigned_tasks()
+    elif project_id:
         tasks = get_task_by_project(int(project_id))
     else:
         tasks = get_default_tasks()

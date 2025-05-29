@@ -167,3 +167,12 @@ def get_task_with_time_entry(task_id):
         "task": task.to_dict(),
         "time_entries": [entry.to_dict() for entry in task.time_entries] if task.time_entries else [],
     }
+
+def get_unassigned_tasks():
+    """
+     Retrieve all tasks that are not assigned to any project.
+
+     Returns:
+         list: List of Task objects where project_id is None.
+     """
+    return Task.query.filter(Task.project_id == None).all()

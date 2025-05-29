@@ -136,30 +136,60 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function renderProjectList() {
     projectListEl.innerHTML = "";
-    projects.forEach((proj) => {
-      if (activeFilter !== "all" && proj.type !== activeFilter) return;
 
+  if (activeFilter === "unassigned") {
+    renderUnassignedTasks();
+    return;
+  }
+
+  projects.forEach((proj) => {
+    if (activeFilter !== "all" && proj.type !== activeFilter) return;
+
+    const card = document.createElement("div");
+    card.className = "project-card";
+    card.dataset.id = String(proj.project_id);
+    card.dataset.type = proj.type;
+    card.innerHTML = `
+      <h2 class="project-card__name">${proj.name}</h2>
+      <div class="project-card__meta">
+        <p>Type: ${proj.type}</p>
+        <p>Limit: ${proj.time_limit_hours} h</p>
+        <p>Spent: ${proj.duration_readable || "0h 0min"}</p>
+      </div>
+      <button class="project-card__view">View</button>
+    `;
+    projectListEl.appendChild(card);
+  });
+}
+
+async function renderUnassignedTasks() {
+  try {
+    const res = await fetch("/api/tasks?unassigned=true");
+    if (!res.ok) throw new Error("Failed to fetch unassigned tasks");
+    const tasks = await res.json();
+
+    if (tasks.length === 0) {
+      projectListEl.innerHTML = "<p>No unassigned tasks found.</p>";
+      return;
+    }
+
+    tasks.forEach((task) => {
       const card = document.createElement("div");
       card.className = "project-card";
-      card.dataset.id = String(proj.project_id);
-      card.dataset.type = proj.type;
       card.innerHTML = `
-        <h2 class="project-card__name">${proj.name}</h2>
+        <h2 class="project-card__name">${task.name}</h2>
         <div class="project-card__meta">
-    <p>Type: ${proj.type}</p>
-    <p>Limit: ${proj.time_limit_hours} h</p>
-    <p>Spent: ${proj.duration_readable || "0h 0min"}</p>
-  </div>
-        <button class="project-card__view">View</button>
+          <p>Description: ${task.description || "-"}</p>
+          <p>Due: ${task.due_date || "N/A"}</p>
+        </div>
       `;
       projectListEl.appendChild(card);
     });
+  } catch (err) {
+    console.error("Error loading unassigned tasks:", err);
+    projectListEl.innerHTML = "<p>Error loading unassigned tasks.</p>";
   }
-  async function fetchTasks(projectId) {
-    const res = await fetch(`/api/tasks?project_id=${projectId}`);
-    if (!res.ok) throw new Error("Fehler beim Laden der Tasks");
-    return res.json();
-  }
+}
   /**
    * Displays the details of a selected project.
    *
