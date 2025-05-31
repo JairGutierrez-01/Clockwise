@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
+
+from backend.services import time_entry_service
 from backend.services.time_entry_service import get_time_entry_by_task
 import backend.models.task as task_model
 import backend.services.task_service as task_service
@@ -233,3 +235,11 @@ def get_time_entries_for_task(task_id):
     """Get all time entries for a specific task."""
     entries = get_time_entry_by_task(task_id)
     return jsonify([entry.to_dict() for entry in entries]), 200
+
+@time_entry_bp.route("/latest_sessions", methods=["GET"])
+def get_latest_sessions():
+    """
+    Get all tasks that have at least one time entry (Latest Sessions).
+    """
+    tasks = time_entry_service.get_tasks_with_time_entries()
+    return jsonify([task.to_dict() for task in tasks])

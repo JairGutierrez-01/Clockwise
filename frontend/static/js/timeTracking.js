@@ -119,6 +119,16 @@ async function fetchEntryAPI(entryId) {
 }
 
 /**
+ * Fetch tasks that have at least one time entry (latest sessions).
+ * @returns {Promise<Array>} Array of tasks
+ */
+async function fetchLatestSessions() {
+  const res = await fetch('/api/time_entries/latest_sessions');
+  if (!res.ok) throw new Error('Failed to fetch latest sessions');
+  return res.json(); // Array of task objects
+}
+
+/**
  * Deletes the time entry with the given entry ID.
  * @async
  * @function deleteEntryAPI
@@ -204,35 +214,12 @@ function removeEntryId(id) {
 // Sets up event listeners, state variables, and UI rendering on page load
 // ============================================================================
 
+
 /**
  * Initializes the time tracking page on DOMContentLoaded.
  * Hydrates persisted entries, sets up UI and event handlers.
  */
 document.addEventListener("DOMContentLoaded", () => {
-  /**
-   * Hydrates persisted time entries from localStorage and renders them.
-   * @async
-   * @function hydrate
-   */
-  (async function hydrate() {
-    const ids = loadEntryIds();
-    for (let id of ids) {
-      try {
-        const e = await fetchEntryAPI(id);
-        // fetch the task to get its title
-        const task = await fetch(`/api/tasks/${e.task_id}`).then(r => r.json());
-        e.name = task.title;
-        e.start_time = new Date(e.start_time).toLocaleTimeString();
-        e.end_time   = e.end_time ? new Date(e.end_time).toLocaleTimeString() : '';
-        e.duration   = formatTime((e.duration_minutes||0) * 60000);
-        renderEntry(e);
-      } catch (err) {
-        console.warn('Could not load entry', id, err);
-      }
-    }
-    updateEmptyState();
-  })();
-
   // DOM refs
   /** @type {HTMLElement} */
   const trackerEl    = document.querySelector(".tracker");
@@ -256,6 +243,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const emptyMessage = document.getElementById("empty-message");
   /** @type {HTMLTemplateElement} */
   const tpl          = document.getElementById("entry-template");
+
+
+  (async () => {
+    try {
+      const latestSessions = await fetchLatestSessions();
+      if (latestSessions.length > 0) {
+        emptyMessage.style.display = "none";
+        latestSessions.forEach(task => {
+          renderEntry({
+            time_entry_id: task.task_id,
+            task_id: task.task_id,
+            name: task.title,
+            duration: "duration"
+          });
+        });
+      }
+    } catch (err) {
+      console.error("Error loading latest sessions:", err);
+    }
+  })();
+
 
   // state
   /** @type {Array<Object>} */

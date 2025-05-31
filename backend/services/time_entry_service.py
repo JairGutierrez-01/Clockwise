@@ -252,3 +252,29 @@ def resume_time_entry(time_entry_id):
         "message": "Time tracking resumed successfully",
         "start_time": entry.start_time,
     }
+
+
+def get_tasks_with_time_entries():
+    """
+    Retrieve all tasks that have at least one time entry.
+
+    Returns:
+        list: A list of Task objects with time entries.
+    """
+    from backend.models.task import Task
+    from backend.models.time_entry import TimeEntry
+
+    # Alle gültigen (nicht-null) Task-IDs mit TimeEntries
+    task_ids_with_entries = (
+        db.session.query(TimeEntry.task_id)
+        .filter(TimeEntry.task_id != None)
+        .distinct()
+        .all()
+    )
+
+    task_ids = [tid[0] for tid in task_ids_with_entries if tid[0] is not None]
+
+    if not task_ids:
+        return []
+
+    return Task.query.filter(Task.task_id.in_(task_ids)).all()
