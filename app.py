@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_login import LoginManager, current_user, login_user, logout_user
 from flask_login import current_user
 from flask_login import login_required
+from backend.services.task_service import get_task_by_id
+
 
 from datetime import datetime
 from backend.services.task_service import create_task
@@ -199,8 +201,10 @@ def trigger_test_notification():
 
 @app.route('/time_entries')
 def time_entry_page():
-    task_id = request.args.get('id')
-    return render_template('time_entries.html', task_id=task_id)
+    task_id = int(request.args.get('id'))
+    task = get_task_by_id(task_id)
+    task_title = task.title if task else "Unbekannte Aufgabe"
+    return render_template('time_entries.html', task_id=task_id, task_title=task_title)
 
 
 if __name__ == "__main__":
