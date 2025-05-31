@@ -111,6 +111,12 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch((err) => {
         console.error("Fehler beim Laden der Kalenderdaten:", err);
       });
+
+    fetch('/calendar-due-dates')
+    .then(res => res.json())
+    .then(events => {
+      calendar.addEventSource(events);  // Fügt die Due-Dates hinzu
+    });
   }
 
   // === View Switching ===

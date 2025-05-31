@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
+from backend.services.analysis_service import calendar_due_dates
 from backend.services.analysis_service import (
     aggregate_weekly_time,
     calendar_events,
@@ -81,3 +82,15 @@ def actual_target():
 
     comparison = actual_target_comparison(time_entries, target)
     return jsonify(comparison)
+
+
+@analysis_bp.route("/calendar-due-dates")
+def get_calendar_due_dates():
+    """
+    API endpoint that returns all project and task due dates for calendar display.
+
+    Returns:
+        Response: JSON list of calendar event dictionaries including title, date, and color.
+    """
+    events = calendar_due_dates()
+    return jsonify(events)
