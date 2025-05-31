@@ -308,3 +308,13 @@ h2 {
 .time-tracking.page-loaded {
   animation: fadeInDown 0.6s ease-out forwards;
 }
+
+.track-btn {
+  margin-left: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}

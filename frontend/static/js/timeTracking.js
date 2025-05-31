@@ -279,6 +279,32 @@ document.addEventListener("DOMContentLoaded", () => {
   /** @type {string} */
   let startDisplay  = "";
 
+  async function startTrackingForTask(taskId, title) {
+  // UI vorbereiten
+  input.value = title;
+  input.dataset.taskId = taskId;
+  input.disabled = true;
+  startBtn.hidden  = true;
+  pauseBtn.hidden  = false;
+  stopBtn.hidden   = false;
+  resumeBtn.hidden = true;
+  trackerEl.classList.add("animate-controls");
+
+  // Timer starten
+  startTime   = Date.now();
+  elapsedTime = 0;
+  display.textContent = "00:00:00";
+  timerInterval = setInterval(() => {
+    elapsedTime = Date.now() - startTime;
+    display.textContent = formatTime(elapsedTime);
+  }, 1000);
+
+  // Backend start
+  const { time_entry_id } = await startEntryAPI(parseInt(taskId));
+  currentEntryId = time_entry_id;
+  startDisplay = new Date().toLocaleTimeString();
+}
+
   // load tasks for suggestions
   fetchTasks().then(tasks => allTasks = tasks);
 
@@ -315,11 +341,38 @@ document.addEventListener("DOMContentLoaded", () => {
     clone.querySelector(".project-name").textContent = e.name;
     // Removed time-range population
     clone.querySelector(".duration").textContent  = e.duration;
-    const editBtn = clone.querySelector(".edit-btn");
-      if (editBtn) {
-        editBtn.setAttribute("data-task-id", e.task_id);
-      }
-    list.appendChild(clone);
+     const resumeBtn = clone.querySelector(".resume-btn");
+  const deleteBtn = clone.querySelector(".delete-btn");
+  if (resumeBtn) resumeBtn.remove();
+  if (deleteBtn) deleteBtn.remove();
+
+  // Setze Edit-Button
+  const editBtn = clone.querySelector(".edit-btn");
+  if (editBtn) {
+    editBtn.setAttribute("data-task-id", e.task_id);
+  }
+
+  // Füge neuen Track-Button hinzu
+  const trackBtn = document.createElement("button");
+    trackBtn.textContent = "Track";
+    trackBtn.className = "track-btn";
+    trackBtn.addEventListener("click", async () => {
+  // Beende ggf. vorherige Sessions (Timer stoppen und ID löschen)
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+
+  currentEntryId = null;
+  elapsedTime = 0;
+  display.textContent = "00:00:00";
+
+  await startTrackingForTask(e.task_id, e.name);
+});
+
+  clone.querySelector(".project").appendChild(trackBtn);
+
+  list.appendChild(clone);
     w.classList.add("new-entry");
     w.addEventListener("animationend", ()=> w.classList.remove("new-entry"));
     updateEmptyState();
@@ -361,43 +414,21 @@ document.addEventListener("DOMContentLoaded", () => {
    * @async
    */
   startBtn.addEventListener("click", async () => {
-    let taskId = input.dataset.taskId;
-    const title = input.value.trim();
+  let taskId = input.dataset.taskId;
+  const title = input.value.trim();
 
-    // Wenn kein Task ausgewählt wurde, aber Titel eingegeben → neuen Task erstellen
-    if (!taskId && title) {
-      const { task_id } = await createTaskAPI(title);
-      taskId = task_id;
-    }
+  if (!taskId && title) {
+    const { task_id } = await createTaskAPI(title);
+    taskId = task_id;
+  }
 
-    // Wenn kein Titel eingegeben wurde UND kein bestehender Task → später im Backend "Untitled Task"
-    if (!taskId && !title) {
-      taskId = null;
-    }
+  if (!taskId && !title) {
+    alert("Bitte gib einen Tasknamen ein");
+    return;
+  }
 
-    // UI prep
-    input.disabled = true;
-    startBtn.hidden  = true;
-    pauseBtn.hidden  = false;
-    stopBtn.hidden   = false;
-    resumeBtn.hidden = true;
-    trackerEl.classList.add("animate-controls");
-
-    // start timer
-    startTime   = Date.now();
-    elapsedTime = 0;
-    display.textContent = "00:00:00";
-    timerInterval = setInterval(() => {
-      elapsedTime = Date.now() - startTime;
-      display.textContent = formatTime(elapsedTime);
-    }, 1000);
-
-    // backend start
-    const { time_entry_id } = await startEntryAPI(taskId ? parseInt(taskId) : null);
-    currentEntryId = time_entry_id;
-    startDisplay = new Date().toLocaleTimeString();
-
-  });
+  await startTrackingForTask(taskId, title);
+});
 
   /**
    * Pauses the current timer and backend time entry.
@@ -435,35 +466,42 @@ document.addEventListener("DOMContentLoaded", () => {
    * @async
    */
   stopBtn.addEventListener("click", async () => {
-    clearInterval(timerInterval);
-    timerInterval = null;
+  clearInterval(timerInterval);
+  timerInterval = null;
 
-    // tell backend to stop & then fetch full entry
+  if (!currentEntryId) {
+    console.warn("No currentEntryId – stopping without entry");
+    return;
+  }
+
+  try {
     await stopEntryAPI(currentEntryId);
     const e = await fetchEntryAPI(currentEntryId);
 
-    // massage for UI
     e.name       = input.value;
     e.start_time = startDisplay;
     e.end_time   = new Date(e.end_time).toLocaleTimeString();
-    e.duration = formatTime(elapsedTime);
+    e.duration   = formatTime(elapsedTime);
 
     renderEntry(e);
     addEntryId(currentEntryId);
+  } catch (err) {
+    console.error("Failed to stop or fetch entry:", err);
+  }
 
-    // reset UI
-    trackerEl.classList.remove("animate-controls");
-    stopBtn.hidden  = true;
-    pauseBtn.hidden = true;
-    resumeBtn.hidden = true;
-    startBtn.hidden = false;
-    input.disabled  = false;
-    input.value     = "";
-    delete input.dataset.taskId;
-    currentEntryId  = null;
-    elapsedTime     = 0;
-    display.textContent = "00:00:00";
-  });
+  // Reset UI
+  trackerEl.classList.remove("animate-controls");
+  stopBtn.hidden  = true;
+  pauseBtn.hidden = true;
+  resumeBtn.hidden = true;
+  startBtn.hidden = false;
+  input.disabled  = false;
+  input.value     = "";
+  delete input.dataset.taskId;
+  currentEntryId  = null;
+  elapsedTime     = 0;
+  display.textContent = "00:00:00";
+});
 
   /**
    * Handles click events on the project list for delete, resume, and edit actions.
