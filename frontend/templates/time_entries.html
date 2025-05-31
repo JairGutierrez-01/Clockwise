@@ -6,12 +6,40 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='time_entries.css') }}">
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
     <main class="notification-container">
       <h1>Time entries from the task "{{ task_title }}"</h1>
-      <h2>Zeiteinträge für Task ID: {{ task_id }}</h2>
+      {% if time_entries %}
+        <table>
+          <thead>
+            <tr>
+              <th>Datum</th>
+              <th>Startzeit</th>
+              <th>Endzeit</th>
+              <th>Dauer</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in time_entries %}
+            <tr>
+              <td>{{ entry.start_time.strftime('%Y-%m-%d') }}</td>
+              <td>{{ entry.start_time.strftime('%H:%M') }}</td>
+              <td>{{ entry.end_time.strftime('%H:%M') }}</td>
+              <td>{{ entry.duration_seconds // 3600 }}h {{ (entry.duration_seconds % 3600) // 60 }}m</td>
+              <td>
+                <button type="button" class="delete-btn">Delete</button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No time entries for this task.</p>
+      {% endif %}
     </main>
   </body>
 </html>

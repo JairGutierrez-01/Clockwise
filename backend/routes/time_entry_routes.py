@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
+from backend.services.time_entry_service import get_time_entry_by_task
 import backend.models.task as task_model
 import backend.services.task_service as task_service
 from backend.services.time_entry_service import (
@@ -225,3 +226,10 @@ def update_entry(entry_id):
     """
     data = request.get_json()
     return jsonify(update_time_entry(entry_id, **data))
+
+
+@time_entry_bp.route("/task/<int:task_id>", methods=["GET"])
+def get_time_entries_for_task(task_id):
+    """Get all time entries for a specific task."""
+    entries = get_time_entry_by_task(task_id)
+    return jsonify([entry.to_dict() for entry in entries]), 200

@@ -1,0 +1,55 @@
+ /* time_entries.css */
+
+body.dark-mode {
+  background-color: #121212;
+  color: #f1f1f1;
+  font-family: Arial, sans-serif;
+}
+
+.notification-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: auto;
+}
+
+.notification-container h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: transparent;
+  color: #ffffff;
+}
+
+th, td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #444;
+}
+
+th {
+  background-color: #0b1c2c;
+}
+
+p {
+  font-style: italic;
+  color: #ccc;
+}
+
+.delete-btn {
+  background-color: #BE1E3C;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.delete-btn:hover {
+  background-color: #9b1a33;
+}

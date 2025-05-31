@@ -64,15 +64,15 @@ def get_time_entry_by_id(time_entry_id):
 
 def get_time_entry_by_task(task_id):
     """
-    Retrieve the time entry assigned to a specific task.
+    Retrieve all time entries assigned to a specific task.
 
     Args:
         task_id (int): ID of the task.
 
     Returns:
-        TimeEntry or None: The associated time entry, if exists.
+        list of TimeEntry: All associated time entries.
     """
-    return TimeEntry.query.filter_by(task_id=task_id).first()
+    return TimeEntry.query.filter_by(task_id=task_id).all()
 
 
 def update_time_entry(time_entry_id, **kwargs):
