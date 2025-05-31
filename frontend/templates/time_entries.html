@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Time Entries - ClockWise</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+  </head>
+  <body class="dark-mode">
+    {% include 'navbar.html' %}
+    <main class="notification-container">
+      <h1>Time entries from the task {{ task_name }}</h1>
+        <h2>Zeiteinträge für Task ID: {{ task_id }}</h2>
+    </main>
+  </body>
+</html>

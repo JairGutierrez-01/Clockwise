@@ -307,6 +307,10 @@ document.addEventListener("DOMContentLoaded", () => {
     clone.querySelector(".project-name").textContent = e.name;
     // Removed time-range population
     clone.querySelector(".duration").textContent  = e.duration;
+    const editBtn = clone.querySelector(".edit-btn");
+      if (editBtn) {
+        editBtn.setAttribute("data-task-id", e.task_id);
+      }
     list.appendChild(clone);
     w.classList.add("new-entry");
     w.addEventListener("animationend", ()=> w.classList.remove("new-entry"));
@@ -500,21 +504,11 @@ document.addEventListener("DOMContentLoaded", () => {
       currentEntryId = entryId;
 
     } else if (e.target.classList.contains("edit-btn")) {
-      // prompt for new duration (HH:MM:SS)
-      const current = w.querySelector(".duration").textContent;
-      const newDur = prompt("Neue Dauer eingeben (HH:MM:SS):", current);
-      if (newDur) {
-        // parse HH:MM:SS into total minutes
-        const [hh, mm, ss] = newDur.split(":").map(n => parseInt(n, 10) || 0);
-        const minutes = hh * 60 + mm + Math.round(ss / 60);
-        // send update to backend
-        await fetch(`/api/time_entries/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ duration_minutes: minutes })
-        });
-        // update DOM immediately
-        w.querySelector(".duration").textContent = newDur;
+      const taskId = e.target.dataset.taskId;
+      if (taskId) {
+        window.location.href = `/time_entries?id=${taskId}`;
+      } else {
+        console.log("Task-ID nicht gefunden!");
       }
     }
   });

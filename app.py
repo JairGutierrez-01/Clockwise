@@ -197,6 +197,11 @@ def trigger_test_notification():
     )
     return redirect(url_for("notifications"))
 
+@app.route('/time_entries')
+def time_entry_page():
+    task_id = request.args.get('id')
+    return render_template('time_entries.html', task_id=task_id)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
