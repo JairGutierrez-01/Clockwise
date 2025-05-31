@@ -152,8 +152,9 @@ def start_time_entry(user_id, task_id, comment=None):
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
-    if task.time_entries:
-        return {"error": "Time entry for this task already exists"}
+    active_entry = TimeEntry.query.filter_by(task_id=task_id, user_id=user_id, end_time=None).first()
+    if active_entry:
+        return {"error": "There is already an active time entry for this task"}
 
     new_entry = TimeEntry(
         user_id=user_id,
