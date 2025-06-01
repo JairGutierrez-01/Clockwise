@@ -16,114 +16,118 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='teams.css') }}"
     />
-    <style>
-      .member-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-      }
-
-      .member-table th,
-      .member-table td {
-        padding: 0.5rem 1rem;
-        text-align: left;
-      }
-
-      .member-table th {
-        background-color: #333;
-        color: white;
-      }
-
-      .member-table td {
-        background-color: #222;
-        color: white;
-        vertical-align: middle;
-      }
-
-      .name-with-dot {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
-      }
-
-      .dot.blue {
-        background-color: #3498db;
-      }
-    </style>
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
 
     <main class="teams-container">
-      <div class="team-management card">
-        <div class="header-row">
-          <h2>Team Management</h2>
-          <div class="project-selector">
-             <button id="chooseProjectBtn" class="project-button">Choose Project</button>
-             <button class="project-button secondary">▼Clockwise</button>
-          </div>
+      <section class="team-card">
+        <div class="team-card-header">
+          <h2>Teams</h2>
+          <button class="create-team-btn">Create Team</button>
         </div>
 
-        <div class="member-section card">
-          <table class="member-table">
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Rolle</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for ut in user_teams %}
-              <tr>
-                <td>
-                  <span class="name-with-dot">
-                    <span class="dot blue"></span>{{ ut.team.name }}
-                  </span>
-                </td>
-                <td class="email">{{ ut.role }}</td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="2">Du bist noch in keinem Team.</td>
-              </tr>
-              {% endfor %}
+        <table class="team-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Created</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Algorithmen</td>
+              <td>20.04.2025</td>
+              <td class="role-admin">Admin</td> </tr>
+            <tr>
+              <td>SEP</td>
+              <td>21.04.2025</td>
+              <td class="role-member">Member</td> </tr>
+            <tr>
+              <td>TheoInfo2</td>
+              <td>22.04.2025</td>
+              <td class="role-admin">Admin</td> </tr>
             </tbody>
-          </table>
+        </table>
+      </section>
 
+      <section class="members-card">
+        <div class="members-card-header">
+          <h2>Members</h2>
           <div class="member-buttons">
-            <button id="addMemberBtn" class="add-btn">Add Member</button>
-            <button id="deleteMemberBtn" class="delete-btn">Delete Member</button>
-
+            <button class="add-member-btn">Add member</button>
+            <button class="delete-member-btn">Delete Member</button>
           </div>
         </div>
 
-        <div class="task-section card">
-          <div class="table-header">
-            <span>Tasks</span>
-            <span>Assigned To</span>
-          </div>
+        <div class="carousel-wrapper">
+          <div class="carousel-track">
+            <div class="member-team-card">
+              <h3>Team: SEP</h3>
+              <div class="members-grid">
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Jude Mawad</span>
+                    <span class="member-role">Member</span>
+                  </div>
+                </div>
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Sophie Ge.</span>
+                    <span class="member-role admin">Admin</span>
+                  </div>
+                </div>
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Cahntal Ebben</span>
+                    <span class="member-role admin">Admin</span>
+                  </div>
+                </div>
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Laden Zaynep</span>
+                    <span class="member-role">Member</span>
+                  </div>
+                </div>
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Merle</span>
+                    <span class="member-role">Member</span>
+                  </div>
+                </div>
+                </div>
+            </div>
 
-          <!-- Optional: Kannst du später dynamisch machen -->
-          <div class="task-row">
-            <span>Task 1</span>
-            <span><span class="dot blue"></span>Max</span>
-          </div>
-          <div class="task-row">
-            <span>Task 2</span>
-            <span><span class="dot blue"></span>Lisa</span>
-          </div>
+            <div class="member-team-card">
+              <h3>Team: Algorithmen</h3>
+              <div class="members-grid">
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Max</span>
+                    <span class="member-role admin">Admin</span>
+                  </div>
+                </div>
+                <div class="member-item">
+                  <div class="member-avatar"></div>
+                  <div class="member-info">
+                    <span class="member-name">Luisa</span>
+                    <span class="member-role">Member</span>
+                  </div>
+                </div>
+                </div>
+            </div>
+            </div>
         </div>
-      </div>
+      </section>
     </main>
-
-     <script src="{{ url_for('static', filename='js/teams.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/teams.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   </body>
 </html>
