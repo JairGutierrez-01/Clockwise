@@ -5,7 +5,9 @@ from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
 
+# Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
+
 
 @team_bp.route("/", methods=["GET"])
 @jwt_required()
