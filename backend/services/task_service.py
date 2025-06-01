@@ -71,14 +71,6 @@ def get_task_by_project(project_id):
     return Task.query.filter_by(project_id=project_id).all()
 
 
-def get_default_tasks():
-    """Retrieve all default tasks (not assigned to any project).
-
-    Returns:
-        list: A list of Task objects without project assignments.
-    """
-    return Task.query.filter_by(project_id=None).all()
-
 
 def update_task(task_id, **kwargs):
     """Update task attributes selectively.

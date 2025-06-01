@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from backend.models.time_entry import TimeEntry
+from backend.services.task_service import get_unassigned_tasks as get_unassigned_tasks_from_service
 from flask import jsonify
 from flask_login import current_user
 from datetime import datetime
@@ -7,7 +8,7 @@ from backend.services.task_service import (
     create_task,
     get_task_by_id,
     get_task_by_project,
-    get_default_tasks,
+    get_unassigned_tasks,
     update_task,
     delete_task,
 )
@@ -31,12 +32,11 @@ def get_tasks():
     unassigned = request.args.get("unassigned")
 
     if unassigned == "true":
-        from backend.services.task_service import get_unassigned_tasks
-        tasks = get_unassigned_tasks()
+        tasks = get_unassigned_tasks_from_service()
     elif project_id:
         tasks = get_task_by_project(int(project_id))
     else:
-        tasks = get_default_tasks()
+        tasks = []
 
     task_list = []
     for task in tasks:
@@ -166,12 +166,12 @@ def delete_task_api(task_id):
 @task_bp.route("/tasks/unassigned", methods=["GET"])
 def get_unassigned_tasks():
     """
-    Return tasks without project assignment (default tasks).
+    Return tasks without project assignment (unassigned tasks).
 
     Returns:
         JSON: List of unassigned tasks.
     """
-    tasks = get_default_tasks()
+    tasks = get_unassigned_tasks_from_service()
     task_list = []
 
     for task in tasks:
