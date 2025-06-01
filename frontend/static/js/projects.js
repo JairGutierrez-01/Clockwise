@@ -443,9 +443,14 @@ async function renderUnassignedTasks() {
         ? new Date(task.due_date).toLocaleDateString("de-DE")
         : "kein Datum";
 
-        const durationText = task.duration_readable || "0h 0min";
-        const textSpan = document.createElement("span");
-        textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
+      let durationText = "0h 0min";
+      if (task.total_duration) {
+        const [hours, minutes] = task.total_duration.split(":");
+        durationText = `${parseInt(hours)}h ${parseInt(minutes)}min`;
+      }
+
+      const textSpan = document.createElement("span");
+      textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
 
 
       // Delete-Button
