@@ -238,6 +238,72 @@ body {
   width: 100%;
 }
 
+
+
+/* Carousel Arrows */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, background-color 0.2s ease;
+}
+
+.carousel-arrow:hover {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+/* Arrow icon styling (pure CSS chevron) */
+.carousel-arrow::before {
+  content: '';
+  display: block;
+  width: 10px; /* Size of the chevron */
+  height: 10px;
+  border-style: solid;
+  border-color: var(--text-light); /* White/light color for the arrow */
+  border-width: 0 2px 2px 0; /* This creates a bottom-right corner shape */
+}
+
+/* Left arrow specific styles */
+.carousel-arrow.left {
+  left: 15px;
+}
+
+.carousel-arrow.left::before {
+  /* Rotate the bottom-right corner shape to point LEFT */
+  transform: rotate(135deg);
+  margin-right: 2px; /* Adjust position slightly for left arrow visual balance */
+}
+
+/* Right arrow specific styles */
+.carousel-arrow.right {
+  right: 15px;
+}
+
+.carousel-arrow.right::before {
+  /* Rotate the bottom-right corner shape to point RIGHT */
+  transform: rotate(-45deg);
+  margin-left: 2px; /* Adjust position slightly for right arrow visual balance */
+}
+
+/* Class to make arrows visible and clickable */
+.carousel-arrow.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+
 .carousel-wrapper.active {
   cursor: grabbing;
 }

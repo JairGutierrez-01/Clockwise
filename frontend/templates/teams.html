@@ -16,6 +16,9 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='teams.css') }}"
     />
+    <style>
+      /* This <style> block can likely be removed if all styles are in teams.css */
+    </style>
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
@@ -39,16 +42,19 @@
             <tr>
               <td>Algorithmen</td>
               <td>20.04.2025</td>
-              <td class="role-admin">Admin</td> </tr>
+              <td class="role-admin">Admin</td>
+            </tr>
             <tr>
               <td>SEP</td>
               <td>21.04.2025</td>
-              <td class="role-member">Member</td> </tr>
+              <td class="role-member">Member</td>
+            </tr>
             <tr>
               <td>TheoInfo2</td>
               <td>22.04.2025</td>
-              <td class="role-admin">Admin</td> </tr>
-            </tbody>
+              <td class="role-admin">Admin</td>
+            </tr>
+          </tbody>
         </table>
       </section>
 
@@ -62,6 +68,9 @@
         </div>
 
         <div class="carousel-wrapper">
+          <div class="carousel-arrow left"></div>
+          <div class="carousel-arrow right"></div>
+
           <div class="carousel-track">
             <div class="member-team-card">
               <h3>Team: SEP</h3>
@@ -101,7 +110,7 @@
                     <span class="member-role">Member</span>
                   </div>
                 </div>
-                </div>
+              </div>
             </div>
 
             <div class="member-team-card">
@@ -121,9 +130,9 @@
                     <span class="member-role">Member</span>
                   </div>
                 </div>
-                </div>
+              </div>
             </div>
-            </div>
+          </div>
         </div>
       </section>
     </main>
