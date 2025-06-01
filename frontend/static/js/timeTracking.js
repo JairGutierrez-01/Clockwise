@@ -423,8 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (!taskId && !title) {
-    alert("Bitte gib einen Tasknamen ein");
-    return;
+    taskId = null;
   }
 
   await startTrackingForTask(taskId, title);
@@ -477,8 +476,9 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     await stopEntryAPI(currentEntryId);
     const e = await fetchEntryAPI(currentEntryId);
+    const task = await fetch(`/api/tasks/${e.task_id}`).then(r => r.json());
 
-    e.name       = input.value;
+    e.name       = task.title;
     e.start_time = startDisplay;
     e.end_time   = new Date(e.end_time).toLocaleTimeString();
     e.duration   = formatTime(elapsedTime);
