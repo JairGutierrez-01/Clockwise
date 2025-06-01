@@ -42,4 +42,4 @@ def members():
         else:
             return result.get("error", "Adding of member failed.")
 
-    return render_template("team.html")
+    return render_template("teams.html")
