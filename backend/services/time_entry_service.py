@@ -81,7 +81,7 @@ def update_time_entry(time_entry_id, **kwargs):
 
     Args:
         time_entry_id (int): The ID of the time entry to update.
-        **kwargs: Fields to update.
+        **kwargs: Fields to update (start_time, end_time, duration_seconds, comment).
 
     Returns:
         dict: Success or error.
@@ -89,6 +89,11 @@ def update_time_entry(time_entry_id, **kwargs):
     entry = TimeEntry.query.get(time_entry_id)
     if not entry:
         return {"error": "Time entry not found"}
+
+    if "start_time" in kwargs and kwargs["start_time"]:
+        kwargs["start_time"] = datetime.strptime(kwargs["start_time"], "%Y-%m-%d %H:%M:%S")
+    if "end_time" in kwargs and kwargs["end_time"]:
+        kwargs["end_time"] = datetime.strptime(kwargs["end_time"], "%Y-%m-%d %H:%M:%S")
 
     ALLOWED_TIME_ENTRY_FIELDS = [
         "start_time",
@@ -100,6 +105,7 @@ def update_time_entry(time_entry_id, **kwargs):
     for key, value in kwargs.items():
         if key in ALLOWED_TIME_ENTRY_FIELDS:
             setattr(entry, key, value)
+
     db.session.commit()
     return {
         "success": True,

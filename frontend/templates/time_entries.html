@@ -2,18 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Time Entries - ClockWise</title>
+    <title>Time Entries – ClockWise</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='time_entries.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='time_entries.css') }}" />
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
     <main class="notification-container">
       <h1>Time entries from the task "{{ task_title }}"</h1>
       {% if time_entries %}
-        <table>
+        <table id="entries-table">
           <thead>
             <tr>
               <th>Date</th>
@@ -25,11 +25,15 @@
           </thead>
           <tbody>
             {% for entry in time_entries %}
-            <tr>
-              <td>{{ entry.start_time.strftime('%Y-%m-%d') }}</td>
-              <td>{{ entry.start_time.strftime('%H:%M') }}</td>
-              <td>{{ entry.end_time.strftime('%H:%M') }}</td>
-              <td>{{ entry.duration_seconds // 3600 }}h {{ (entry.duration_seconds % 3600) // 60 }}m</td>
+            <tr data-entry-id="{{ entry.time_entry_id }}">
+              <td class="entry-date">{{ entry.start_time.strftime('%Y-%m-%d') }}</td>
+              <td class="entry-start">{{ entry.start_time.strftime('%H:%M:%S') }}</td>
+              <td class="entry-end">{{ entry.end_time.strftime('%H:%M:%S') }}</td>
+              <td class="entry-duration">
+                {{ entry.duration_seconds // 3600 }}h
+                {{ (entry.duration_seconds % 3600) // 60 }}m
+                {{ entry.duration_seconds % 60 }}s
+              </td>
               <td>
                 <button type="button" class="delete-btn">Delete</button>
                 <button type="button" class="edit-btn">Edit</button>
@@ -42,6 +46,40 @@
         <p>No time entries for this task.</p>
       {% endif %}
     </main>
+
+    <div id="edit-modal" class="modal hidden">
+      <form id="edit-form" class="edit-form">
+        <h2>Edit Time Entry</h2>
+
+        <label for="edit-start-time">Start Time</label>
+        <input
+          type="datetime-local"
+          id="edit-start-time"
+          name="start_time"
+          step="1"
+          required
+        />
+
+        <label for="edit-end-time">End Time</label>
+        <input
+          type="datetime-local"
+          id="edit-end-time"
+          name="end_time"
+          step="1"
+          required
+        />
+
+        <label>Duration</label>
+        <div id="edit-duration">00:00:00</div>
+
+        <div class="form-actions">
+          <button type="submit" id="save-edit-btn">Save</button>
+          <button type="button" id="cancel-edit-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/time_entries.js') }}"></script>
   </body>
 </html>
