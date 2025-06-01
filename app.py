@@ -34,7 +34,7 @@ from backend.routes.analysis_routes import analysis_bp
 
 from flask_jwt_extended import JWTManager
 
-from backend.services.time_entry_service import get_time_entry_by_task
+from backend.services.time_entry_service import get_time_entries_by_task
 
 # Load environment variables from .env file
 load_dotenv()
@@ -209,7 +209,7 @@ def time_entry_page():
     task_id = int(request.args.get('id'))
     task = get_task_by_id(task_id)
     task_title = task.title if task else "Unbekannte Aufgabe"
-    time_entries = get_time_entry_by_task(task_id)
+    time_entries = get_time_entries_by_task(task_id)
     return render_template(
         'time_entries.html',
         task_id=task_id,

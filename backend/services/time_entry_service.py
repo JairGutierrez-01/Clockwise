@@ -29,8 +29,6 @@ def create_time_entry(
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
-    if task.time_entry:
-        return {"error": "Time entry for this task already exists"}
 
     new_entry = TimeEntry(
         user_id=user_id,
@@ -62,7 +60,7 @@ def get_time_entry_by_id(time_entry_id):
     return TimeEntry.query.get(time_entry_id)
 
 
-def get_time_entry_by_task(task_id):
+def get_time_entries_by_task(task_id):
     """
     Retrieve all time entries assigned to a specific task.
 
@@ -70,7 +68,7 @@ def get_time_entry_by_task(task_id):
         task_id (int): ID of the task.
 
     Returns:
-        list of TimeEntry: All associated time entries.
+        list[TimeEntry]: All associated time entries.
     """
     return TimeEntry.query.filter_by(task_id=task_id).all()
 

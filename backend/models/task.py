@@ -52,7 +52,7 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     created_from_tracking = db.Column(db.Boolean, default=False, nullable=False)
 
-    time_entries = db.relationship("TimeEntry", back_populates="task")
+    time_entries = db.relationship("TimeEntry", back_populates="task", cascade="all, delete-orphan")
     assigned_user = db.relationship("User", back_populates="assigned_task")
     project = db.relationship("Project", back_populates="task")
     category = db.relationship("Category", back_populates="task")

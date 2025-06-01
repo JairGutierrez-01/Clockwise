@@ -2,13 +2,12 @@ from flask import Blueprint, request, jsonify
 from flask_login import current_user
 
 from backend.services import time_entry_service
-from backend.services.time_entry_service import get_time_entry_by_task
 import backend.models.task as task_model
 import backend.services.task_service as task_service
 from backend.services.time_entry_service import (
     create_time_entry,
     get_time_entry_by_id,
-    get_time_entry_by_task,
+    get_time_entries_by_task,
     update_time_entry,
     delete_time_entry,
     start_time_entry,
@@ -68,19 +67,11 @@ def get_entry(entry_id):
 
 
 @time_entry_bp.route("/task/<int:task_id>", methods=["GET"])
-def get_entry_by_task(task_id):
-    """
-    Get the time entry associated with a specific task.
-
-    Args:
-        task_id (int): Task ID.
-
-    Returns:
-        JSON: Time entry data or error.
-    """
-    entry = get_time_entry_by_task(task_id)
-    return jsonify(entry.to_dict()) if entry else (jsonify({"error": "Not found"}), 404)
-
+def get_entries_by_task(task_id):
+    entries = get_time_entries_by_task(task_id)
+    if not entries:
+        return jsonify({"error": "No time entries found"}), 404
+    return jsonify([e.to_dict() for e in entries]), 200
 
 @time_entry_bp.route("/available-tasks", methods=["GET"])
 def get_tasks_without_entries():
@@ -229,12 +220,6 @@ def update_entry(entry_id):
     data = request.get_json()
     return jsonify(update_time_entry(entry_id, **data))
 
-
-@time_entry_bp.route("/task/<int:task_id>", methods=["GET"])
-def get_time_entries_for_task(task_id):
-    """Get all time entries for a specific task."""
-    entries = get_time_entry_by_task(task_id)
-    return jsonify([entry.to_dict() for entry in entries]), 200
 
 @time_entry_bp.route("/latest_sessions", methods=["GET"])
 def get_latest_sessions():
