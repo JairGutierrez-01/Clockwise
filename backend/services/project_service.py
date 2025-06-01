@@ -2,6 +2,7 @@ from flask import current_app
 from backend.database import db
 from backend.models import Project, Task
 from datetime import datetime
+import math
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -143,11 +144,14 @@ def update_total_duration_for_project(project_id):
 
     tasks = Task.query.filter_by(project_id=project_id).all()
     total_seconds = sum(task.total_duration_seconds or 0 for task in tasks if task.total_duration_seconds is not None)
-    project.current_hours = total_seconds / 3600.0  # convert seconds to hours
+
+    total_hours = total_seconds / 3600.0
+
+    project.current_hours = round((project.current_hours or 0) + total_hours, 3)
     db.session.commit()
 
     return {
         "success": True,
         "project_id": project_id,
-        "current_hours": round(project.current_hours, 2)
+        "current_hours": project.current_hours
     }

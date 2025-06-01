@@ -21,7 +21,7 @@ class Project(db.Model):
         name (str): The name of the project.
         description (str): The description of the project.
         time_limit_hours (int): Limit of how much time the user wants to spend on the project.
-        current_hours (int): How many hours the user already spent on the project.
+        current_hours (float): How many hours the user already spent on the project.
         created_at (datetime): The timestamp when the project was created.
         due_date (datetime): Deadline for the project.
         type (enum): Project Type (TeamProject, SoloProject).
@@ -41,7 +41,7 @@ class Project(db.Model):
     name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=True)
     time_limit_hours = db.Column(db.Integer, nullable=False)
-    current_hours = db.Column(db.Integer, nullable=True)
+    current_hours = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     due_date = db.Column(db.DateTime, nullable=True)
     type = db.Column(Enum(ProjectType), default=ProjectType.SoloProject, nullable=False)
