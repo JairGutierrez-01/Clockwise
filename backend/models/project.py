@@ -52,7 +52,7 @@ class Project(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey("teams.team_id"), nullable=True)
 
-    task = db.relationship("Task", back_populates="project")
+    tasks = db.relationship("Task", back_populates="project", cascade="all, delete-orphan")
     team = db.relationship("Team", back_populates="project")
     user = db.relationship("User", back_populates="project")
     notifications = db.relationship("Notification", back_populates="project")

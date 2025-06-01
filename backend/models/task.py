@@ -54,7 +54,7 @@ class Task(db.Model):
 
     time_entries = db.relationship("TimeEntry", back_populates="task", cascade="all, delete-orphan")
     assigned_user = db.relationship("User", back_populates="assigned_task")
-    project = db.relationship("Project", back_populates="task")
+    project = db.relationship("Project", back_populates="tasks")
     category = db.relationship("Category", back_populates="task")
 
     def __repr__(self):
