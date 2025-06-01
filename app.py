@@ -15,7 +15,7 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 from flask import request, jsonify
 from backend.models.task import Task
-from backend.services.task_service import get_tasks_by_project
+from backend.services.task_service import get_task_by_project
 
 from backend.database import db
 from backend.models.notification import Notification
