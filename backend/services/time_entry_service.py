@@ -1,7 +1,9 @@
 from backend.database import db
 from backend.models.time_entry import TimeEntry
 from backend.models.task import Task
-from datetime import datetime
+from datetime import datetime, timedelta
+from backend.services.task_service import get_task_by_id, update_total_duration_for_task
+from backend.services.project_service import update_total_duration_for_project
 
 
 def create_time_entry(
@@ -277,3 +279,20 @@ def get_tasks_with_time_entries():
         return []
 
     return Task.query.filter(Task.task_id.in_(task_ids)).all()
+
+
+def update_durations_for_task_and_project(task_id):
+    """
+    Recalculate and update the duration values for a task and its associated project (if any).
+
+    Args:
+        task_id (int): ID of the task whose durations should be updated.
+    """
+    task_result = update_total_duration_for_task(task_id)
+
+    if task_result.get("success"):
+        task = Task.query.get(task_id)
+        if task and task.project_id:
+            update_total_duration_for_project(task.project_id)
+
+    return task_result

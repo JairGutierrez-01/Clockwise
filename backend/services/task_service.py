@@ -1,6 +1,8 @@
 from backend.database import db
 from backend.models.task import Task, TaskStatus
 from backend.models.time_entry import TimeEntry
+from datetime import timedelta
+from backend.services.project_service import update_total_duration_for_project
 
 
 def create_task(
@@ -96,10 +98,19 @@ def update_task(task_id, **kwargs):
         "category_id",
     ]
 
+    old_project_id = task.project_id
+
     for key, value in kwargs.items():
         if key in ALLOWED_TASK_FIELDS:
             setattr(task, key, value)
     db.session.commit()
+
+    if "project_id" in kwargs:
+        if old_project_id and old_project_id != task.project_id:
+            update_total_duration_for_project(old_project_id)
+        if task.project_id:
+            update_total_duration_for_project(task.project_id)
+
     return {
         "success": True,
         "message": "Task updated successfully",
@@ -119,8 +130,15 @@ def delete_task(task_id):
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
+
+    project_id = task.project_id
+
     db.session.delete(task)
     db.session.commit()
+
+    if project_id:
+        update_total_duration_for_project(project_id)
+
     return {
         "success": True,
         "message": "Task deleted successfully",
@@ -168,3 +186,30 @@ def get_unassigned_tasks():
          list: List of Task objects where project_id is None.
      """
     return Task.query.filter(Task.project_id == None).all()
+
+
+def update_total_duration_for_task(task_id):
+    """
+    Recalculate and update the total duration (in seconds) of a task
+    based on all associated time entries.
+
+    Args:
+        task_id (int): ID of the task to update.
+
+    Returns:
+        dict: Success message with updated duration, or error if task not found.
+    """
+    task = get_task_by_id(task_id)
+    if not task:
+        return {"error": "Task not found"}
+
+    total_seconds = sum(entry.duration_seconds or 0 for entry in task.time_entries or [])
+    task.total_duration_seconds = total_seconds
+    db.session.commit()
+
+    return {
+        "success": True,
+        "task_id": task_id,
+        "total_duration_seconds": total_seconds,
+        "total_duration_formatted": str(timedelta(seconds=total_seconds))
+    }

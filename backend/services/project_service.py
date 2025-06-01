@@ -1,6 +1,6 @@
 from flask import current_app
 from backend.database import db
-from backend.models import Project
+from backend.models import Project, Task
 from datetime import datetime
 
 
@@ -124,3 +124,30 @@ def update_project(project_id, data):
 
     db.session.commit()
     return {"success": True, "message": "Project updated successfully."}
+
+
+def update_total_duration_for_project(project_id):
+    """
+    Recalculate and update the current_hours field of a project
+    based on the total durations of all related tasks.
+
+    Args:
+        project_id (int): ID of the project to update.
+
+    Returns:
+        dict: Success message with updated hours, or error if project not found.
+    """
+    project = Project.query.get(project_id)
+    if not project:
+        return {"error": "Project not found"}
+
+    tasks = Task.query.filter_by(project_id=project_id).all()
+    total_seconds = sum(task.total_duration_seconds or 0 for task in tasks if task.total_duration_seconds is not None)
+    project.current_hours = total_seconds / 3600.0  # convert seconds to hours
+    db.session.commit()
+
+    return {
+        "success": True,
+        "project_id": project_id,
+        "current_hours": round(project.current_hours, 2)
+    }

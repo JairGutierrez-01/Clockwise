@@ -51,11 +51,19 @@ class Task(db.Model):
     status = db.Column(Enum(TaskStatus), default=TaskStatus.todo, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
     created_from_tracking = db.Column(db.Boolean, default=False, nullable=False)
+    total_duration_seconds = db.Column(db.Integer, default=0)
 
     time_entries = db.relationship("TimeEntry", back_populates="task", cascade="all, delete-orphan")
     assigned_user = db.relationship("User", back_populates="assigned_task")
     project = db.relationship("Project", back_populates="tasks")
     category = db.relationship("Category", back_populates="task")
+
+
+    @property
+    def total_duration(self):
+        """Returns total duration in HH:MM:SS format."""
+        from datetime import timedelta
+        return str(timedelta(seconds=self.total_duration_seconds))
 
     def __repr__(self):
         """
@@ -85,10 +93,6 @@ class Task(db.Model):
             "is_untitled": (
                 self.title.startswith("Untitled Task") if self.title else False
             ),
-            "total_duration_seconds": sum(
-                entry.duration_seconds or 0 for entry in self.time_entries
-            ) if self.time_entries else 0,
-            "total_duration": str(timedelta(seconds=sum(
-                entry.duration_seconds or 0 for entry in self.time_entries
-            ))) if self.time_entries else "0:00:00",
+            "total_duration_seconds": self.total_duration_seconds,
+            "total_duration": self.total_duration,
         }

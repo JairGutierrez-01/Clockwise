@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 
+from backend.models.time_entry import TimeEntry
 from backend.services import time_entry_service
 import backend.models.task as task_model
 import backend.services.task_service as task_service
+from backend.services.time_entry_service import update_durations_for_task_and_project
 from backend.services.time_entry_service import (
     create_time_entry,
     get_time_entry_by_id,
@@ -48,6 +50,8 @@ def create_time_entry_api():
         duration_seconds=data.get("duration_seconds"),
         comment=data.get("comment"),
     )
+    if result.get("success") and data.get("task_id"):
+        update_durations_for_task_and_project(data.get("task_id"))
     return jsonify(result)
 
 
@@ -72,6 +76,7 @@ def get_entries_by_task(task_id):
     if not entries:
         return jsonify({"error": "No time entries found"}), 404
     return jsonify([e.to_dict() for e in entries]), 200
+
 
 @time_entry_bp.route("/available-tasks", methods=["GET"])
 def get_tasks_without_entries():
@@ -143,23 +148,20 @@ def stop_entry(entry_id):
     if not result.get("success"):
         return jsonify(result), 400
 
-    # get the TimeEntry
-    from backend.models.time_entry import TimeEntry
-    from backend.models.task import Task
-    from backend.models.project import Project
-    from backend.database import db
 
     time_entry = TimeEntry.query.get(entry_id)
-    if not time_entry or not time_entry.task_id:
-        return jsonify(result)
+    if time_entry and time_entry.task_id:
+        update_durations_for_task_and_project(time_entry.task_id)
 
-    task = Task.query.get(time_entry.task_id)
-    if task and task.project_id:
-        project = Project.query.get(task.project_id)
-        if project:
-            duration_hours = (time_entry.duration_seconds or 0) / 3600.0
-            project.current_hours = (project.current_hours or 0) + duration_hours
-            db.session.commit()
+        from backend.services.project_service import update_total_duration_for_project
+        print(">>> MANUELLER TEST START")
+        task = time_entry.task
+        if task and task.project_id:
+            update_total_duration_for_project(task.project_id)
+            print(">>> update_total_duration_for_project wurde ausgeführt!")
+        else:
+            print(">>> Kein Projekt vorhanden – wird übersprungen.")
+        print(">>> MANUELLER TEST ENDE")
 
     return jsonify(result)
 
@@ -200,7 +202,15 @@ def delete_entry(entry_id):
     Returns:
         JSON: Success or error message.
     """
-    return jsonify(delete_time_entry(entry_id))
+    time_entry = TimeEntry.query.get(entry_id)
+    if time_entry and time_entry.task_id:
+        task_id = time_entry.task_id
+        result = delete_time_entry(entry_id)
+        update_durations_for_task_and_project(task_id)
+        return jsonify(result)
+    else:
+        result = delete_time_entry(entry_id)
+        return jsonify(result)
 
 
 @time_entry_bp.route("/<int:entry_id>", methods=["PUT"])
@@ -218,7 +228,13 @@ def update_entry(entry_id):
         JSON: Success message or error.
     """
     data = request.get_json()
-    return jsonify(update_time_entry(entry_id, **data))
+    result = update_time_entry(entry_id, **data)
+
+    time_entry = TimeEntry.query.get(entry_id)
+    if time_entry and time_entry.task_id:
+        update_durations_for_task_and_project(time_entry.task_id)
+
+    return jsonify(result)
 
 
 @time_entry_bp.route("/latest_sessions", methods=["GET"])
