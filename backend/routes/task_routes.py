@@ -7,7 +7,7 @@ from datetime import datetime
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
-    get_task_by_project,
+    get_tasks_by_project,
     get_unassigned_tasks,
     update_task,
     delete_task,
@@ -34,20 +34,13 @@ def get_tasks():
     if unassigned == "true":
         tasks = get_unassigned_tasks_from_service()
     elif project_id:
-        tasks = get_task_by_project(int(project_id))
+        tasks = get_tasks_by_project(int(project_id))
     else:
         tasks = []
 
     task_list = []
     for task in tasks:
-        duration_seconds = sum(
-            (entry.duration_seconds if entry.duration_seconds is not None else int((entry.duration_minutes or 0) * 60))
-            for entry in task.time_entries
-        )
-
         task_dict = task.to_dict()
-        total_minutes = duration_seconds // 60
-        task_dict["duration_readable"] = f"{total_minutes // 60}h {total_minutes % 60}min"
         task_list.append(task_dict)
 
     return jsonify(task_list)

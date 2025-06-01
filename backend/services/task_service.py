@@ -61,7 +61,7 @@ def get_task_by_id(task_id):
     return Task.query.get(task_id)
 
 
-def get_task_by_project(project_id):
+def get_tasks_by_project(project_id):
     """Retrieve all tasks associated with a given project.
 
     Args:
@@ -71,7 +71,6 @@ def get_task_by_project(project_id):
         list: A list of Task objects.
     """
     return Task.query.filter_by(project_id=project_id).all()
-
 
 
 def update_task(task_id, **kwargs):
@@ -159,7 +158,7 @@ def get_tasks_without_time_entries():
     )
 
 
-def get_task_with_time_entry(task_id):
+def get_task_with_time_entries(task_id):
     """Retrieve a task along with all associated time entries.
 
     Args:
@@ -178,9 +177,9 @@ def get_task_with_time_entry(task_id):
         "time_entries": [entry.to_dict() for entry in task.time_entries] if task.time_entries else [],
     }
 
+
 def get_unassigned_tasks():
-    """
-     Retrieve all tasks that are not assigned to any project.
+    """Retrieve all tasks that are not assigned to any project.
 
      Returns:
          list: List of Task objects where project_id is None.
@@ -189,9 +188,7 @@ def get_unassigned_tasks():
 
 
 def update_total_duration_for_task(task_id):
-    """
-    Recalculate and update the total duration (in seconds) of a task
-    based on all associated time entries.
+    """Recalculate and update the total duration (in seconds) of a task based on all associated time entries.
 
     Args:
         task_id (int): ID of the task to update.
