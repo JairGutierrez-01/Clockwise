@@ -59,8 +59,7 @@ def delete_member(username, teamname):
         return {"error": "Team doesn't exist."}
 
     existing_user_team = UserTeam.query.filter_by(
-        user_id=existing_user.user_id,
-        team_id=existing_team.team_id
+        user_id=existing_user.user_id, team_id=existing_team.team_id
     ).first()
 
     if not existing_user_team:
@@ -70,4 +69,3 @@ def delete_member(username, teamname):
     db.session.commit()
 
     return {"success": True, "message": "Member was removed successfully"}
-
