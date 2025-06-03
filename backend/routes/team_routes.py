@@ -1,22 +1,23 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_login import current_user
 from backend.database import db
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
+from backend.models.user import User
 
 # Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
 
 
 @team_bp.route("/", methods=["GET"])
-@jwt_required()
 def get_user_teams():
-    """
-    Returns all teams the authenticated user is a member of.
-    """
+    """Returns all teams the authenticated user is a member of."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
     try:
-        user_id = get_jwt_identity()
+        user_id = current_user.user_id
 
         user_teams = (
             db.session.query(UserTeam)
@@ -26,7 +27,7 @@ def get_user_teams():
             .all()
         )
 
-        result = [
+        result_teams = [ #Renamed variable
             {
                 "team_id": ut.team.team_id,
                 "team_name": ut.team.name,
@@ -36,16 +37,27 @@ def get_user_teams():
             for ut in user_teams
         ]
 
-        return jsonify(result), 200
+        # Include current user's info in the response
+        current_user_info = None
+        if current_user.is_authenticated:
+            current_user_info = {
+                "user_id": current_user.user_id,
+                "username": current_user.username
+            }
+
+        # Return a dictionary containing both teams and current_user info
+        return jsonify({"teams": result_teams, "current_user": current_user_info}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @team_bp.route("/", methods=["POST"])
-@jwt_required()
 def create_team():
     """Create a new team and assign the current user as admin."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
     try:
         data = request.get_json()
         name = data.get("name")
@@ -53,7 +65,7 @@ def create_team():
         if not name or not name.strip():
             return jsonify({"error": "Team name is required"}), 400
 
-        user_id = get_jwt_identity()
+        user_id = current_user.user_id
 
         new_team = Team(name=name.strip())
         db.session.add(new_team)
@@ -65,7 +77,7 @@ def create_team():
 
         notification = Notification(
             user_id=user_id,
-            project_id=None,  # no projects associated
+            project_id=None,
             message=f"Team created '{new_team.name}'.",
             type="team",
         )
@@ -78,11 +90,33 @@ def create_team():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@team_bp.route("/<int:team_id>/add-member", methods=["PATCH"])
-@jwt_required()
-def add_team_member(team_id):
+
+@team_bp.route("/users/<int:user_id>", methods=["GET"])
+def get_user_details(user_id):
+    """Returns details for a specific user by ID."""
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
     try:
-        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        return jsonify({
+            "user_id": user.user_id,
+            "username": user.username,
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@team_bp.route("/<int:team_id>/add-member", methods=["PATCH"])
+def add_team_member(team_id):
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    try:
+        user_id = current_user.user_id
         data = request.get_json()
         new_member_id = data.get("user_id")
         role = data.get("role", "member")
@@ -91,7 +125,6 @@ def add_team_member(team_id):
         if not admin_relation:
             return jsonify({"error": "You do not have permission to add members to this team"}), 403
 
-        # verifies if is already a member
         existing = UserTeam.query.filter_by(user_id=new_member_id, team_id=team_id).first()
         if existing:
             return jsonify({"error": "User is already a member"}), 400
@@ -106,11 +139,14 @@ def add_team_member(team_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+
 @team_bp.route("/<int:team_id>/remove-member", methods=["PATCH"])
-@jwt_required()
 def remove_team_member(team_id):
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
     try:
-        user_id = get_jwt_identity()
+        user_id = current_user.user_id
         data = request.get_json()
         member_id = data.get("user_id")
 
@@ -132,14 +168,14 @@ def remove_team_member(team_id):
         return jsonify({"error": str(e)}), 500
 
 
-# this part can be optional but could be good to have it
 @team_bp.route("/<int:team_id>/members", methods=["GET"])
-@jwt_required()
 def get_team_members(team_id):
-    try:
-        user_id = get_jwt_identity()
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
 
-        # verifies if user is part of the team
+    try:
+        user_id = current_user.user_id
+
         relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
         if not relation:
             return jsonify({"error": "You are not a member of this team"}), 403
@@ -156,4 +192,30 @@ def get_team_members(team_id):
         return jsonify(result), 200
 
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@team_bp.route("/<int:team_id>", methods=["DELETE"])
+def delete_team(team_id):
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    try:
+        user_id = current_user.user_id
+
+        relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id, role="admin").first()
+        if not relation:
+            return jsonify({"error": "You do not have permission to delete this team"}), 403
+
+        UserTeam.query.filter_by(team_id=team_id).delete()
+
+        team = Team.query.get(team_id)
+        if team:
+            db.session.delete(team)
+            db.session.commit()
+            return jsonify({"message": "Team deleted successfully"}), 200
+        else:
+            return jsonify({"error": "Team not found"}), 404
+
+    except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 500
