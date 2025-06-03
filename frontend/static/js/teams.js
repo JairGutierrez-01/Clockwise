@@ -463,11 +463,11 @@ async function fetchUserTeams() {
       setupCarousel(); // Setup carousel *after* members are rendered
     } else {
       showCustomAlert("Error", "Error fetching teams: " + (responseData.error || "Unknown error"), "error");
-      console.error("Error al obtener equipos:", responseData.error);
+      console.error("Error fetching teams:", responseData.error);
     }
   } catch (err) {
     showCustomAlert("Error", "Network error. Could not load teams.", "error");
-    console.error("Error de red o backend:", err);
+    console.error("Network error", err);
   }
 }
 
