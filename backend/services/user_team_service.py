@@ -36,3 +36,36 @@ def add_member(username, teamname, role):
     db.session.commit()
 
     return {"success": True, "message": "Member was added successfully"}
+
+
+def delete_member(username, teamname):
+    """
+    Delete user from a specific team.
+
+    Args:
+        username (str): The username of the user to remove.
+        teamname (str): The name of the team from which the user will be removed.
+
+    Returns:
+        dict: A dictionary with success or error message.
+    """
+    existing_user = User.query.filter(User.username == username).first()
+    existing_team = Team.query.filter(Team.name == teamname).first()
+
+    if not existing_user:
+        return {"error": "Username doesn't exist."}
+
+    if not existing_team:
+        return {"error": "Team doesn't exist."}
+
+    existing_user_team = UserTeam.query.filter_by(
+        user_id=existing_user.user_id, team_id=existing_team.team_id
+    ).first()
+
+    if not existing_user_team:
+        return {"error": "User is not a member of this team."}
+
+    db.session.delete(existing_user_team)
+    db.session.commit()
+
+    return {"success": True, "message": "Member was removed successfully"}
