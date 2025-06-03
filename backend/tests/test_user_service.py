@@ -1,8 +1,9 @@
-import pytest
+import io
+
+from werkzeug.datastructures import FileStorage
+
 from backend.models import User
 from backend.services.user_service import register_user
-from werkzeug.datastructures import FileStorage
-import io
 
 
 def test_register_user_success(db_session, client, monkeypatch):

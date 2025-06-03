@@ -1,8 +1,7 @@
-from flask import current_app
+from datetime import datetime
+
 from backend.database import db
 from backend.models import Project, Task
-from datetime import datetime
-import math
 
 
 def calculate_time_limit_from_credits(credit_points):

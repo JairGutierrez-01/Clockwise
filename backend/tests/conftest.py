@@ -1,8 +1,8 @@
 import pytest
-from app import db
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+
 from app import app as flask_app
+from app import db
 
 
 @pytest.fixture(scope="session")

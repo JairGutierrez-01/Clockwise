@@ -1,18 +1,18 @@
-from flask import Blueprint, render_template, request, redirect, url_for
-from backend.models.time_entry import TimeEntry
-from backend.services.task_service import (
-    get_unassigned_tasks as get_unassigned_tasks_from_service,
-)
+from datetime import datetime
+
+from flask import Blueprint, request
 from flask import jsonify
 from flask_login import current_user
-from datetime import datetime
+
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
     get_tasks_by_project,
-    get_unassigned_tasks,
     update_task,
     delete_task,
+)
+from backend.services.task_service import (
+    get_unassigned_tasks as get_unassigned_tasks_from_service,
 )
 
 task_bp = Blueprint("tasks", __name__, url_prefix="/api")

@@ -1,12 +1,6 @@
-from backend.models.team import Team
-from backend.models.project import Project
-from backend.models.user import User
-from backend.models.notification import Notification
-from backend.models.user_team import UserTeam
-from backend.models.task import Task
-from backend.models.time_entry import TimeEntry
-from backend.models.category import Category
 from datetime import datetime
+
+from backend.models.notification import Notification
 
 
 def test_notification_creation():

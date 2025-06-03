@@ -1,12 +1,10 @@
-from flask_login import login_user as flask_login_user
 from flask import (
     Blueprint,
-    render_template,
     request,
     redirect,
     url_for,
-    session,
 )
+from flask_login import login_user as flask_login_user
 
 from backend.services.token_service import verify_reset_token
 from backend.services.user_service import (

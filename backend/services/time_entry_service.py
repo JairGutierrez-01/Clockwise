@@ -1,9 +1,10 @@
+from datetime import datetime
+
 from backend.database import db
-from backend.models.time_entry import TimeEntry
 from backend.models.task import Task
-from datetime import datetime, timedelta
-from backend.services.task_service import get_task_by_id, update_total_duration_for_task
+from backend.models.time_entry import TimeEntry
 from backend.services.project_service import update_total_duration_for_project
+from backend.services.task_service import update_total_duration_for_task
 
 
 def create_time_entry(

@@ -1,4 +1,3 @@
-from flask import current_app
 from backend.database import db
 from backend.models import Category
 

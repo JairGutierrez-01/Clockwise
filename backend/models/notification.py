@@ -1,5 +1,6 @@
 from datetime import datetime
-from backend.database import Base, db
+
+from backend.database import db
 
 
 class Notification(db.Model):

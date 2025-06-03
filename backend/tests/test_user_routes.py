@@ -1,8 +1,4 @@
 import io
-import pytest
-from flask import url_for
-from backend.routes import user_routes
-from backend.routes.user_routes import auth_bp
 
 
 def test_register_get(client):

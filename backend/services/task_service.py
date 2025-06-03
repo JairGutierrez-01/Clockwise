@@ -1,7 +1,7 @@
+from datetime import timedelta
+
 from backend.database import db
 from backend.models.task import Task, TaskStatus
-from backend.models.time_entry import TimeEntry
-from datetime import timedelta
 from backend.services.project_service import update_total_duration_for_project
 
 

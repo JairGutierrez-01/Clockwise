@@ -1,6 +1,4 @@
 # from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from flask_sqlalchemy import SQLAlchemy
 
 from flask_sqlalchemy import SQLAlchemy
 

@@ -1,10 +1,9 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, String, Enum
-from sqlalchemy.orm import relationship
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from backend.database import Base
-from backend.database import db
 import enum
+from datetime import datetime
+
+from sqlalchemy import Enum
+
+from backend.database import db
 
 
 class ProjectType(enum.Enum):

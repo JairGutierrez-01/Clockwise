@@ -1,7 +1,8 @@
+from datetime import datetime
+
 from flask import Blueprint, request, jsonify
-from datetime import datetime, timedelta
+
 from backend.services.analysis_service import (
-    calendar_due_dates,
     load_time_entries,
     load_target_times,
     load_tasks,
@@ -9,8 +10,6 @@ from backend.services.analysis_service import (
     filter_time_entries_by_date,
 )
 from backend.services.analysis_service import (
-    aggregate_weekly_time,
-    calendar_events,
     progress_per_project,
     actual_target_comparison,
 )

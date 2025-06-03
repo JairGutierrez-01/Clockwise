@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.database import Base, db
-from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
 from flask_login import UserMixin
+
+from backend.database import db
 
 
 class User(db.Model, UserMixin):

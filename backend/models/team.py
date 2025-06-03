@@ -1,5 +1,6 @@
 from datetime import datetime
-from backend.database import db, Base
+
+from backend.database import db
 
 
 class Team(db.Model):

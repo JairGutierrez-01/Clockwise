@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from datetime import datetime
-from backend.database import Base, db
+
+from backend.database import db
 
 
 class UserTeam(db.Model):

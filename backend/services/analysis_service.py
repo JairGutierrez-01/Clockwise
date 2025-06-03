@@ -1,10 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
-from flask_login import current_user
-from backend.models.project import Project
-from backend.models.task import Task
-from backend.database import db
 
+from flask_login import current_user
 
 from backend.models import TimeEntry, Task, Project
 

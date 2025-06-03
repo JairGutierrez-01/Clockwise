@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
-from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
-from backend.database import Base, db
+
+from backend.database import db
 
 
 class TimeEntry(db.Model):

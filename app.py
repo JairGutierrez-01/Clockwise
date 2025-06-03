@@ -1,39 +1,28 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
-from flask_login import LoginManager, current_user, login_user, logout_user
+
+from dotenv import load_dotenv
+from flask import Flask, render_template, redirect, url_for
+from flask import request
+from flask_jwt_extended import JWTManager
+from flask_login import LoginManager, login_user, logout_user
 from flask_login import current_user
 from flask_login import login_required
-
-from backend.models import TimeEntry
-from backend.services.task_service import get_task_by_id
-
-
-from datetime import datetime
-from backend.services.task_service import create_task
 from flask_mail import Mail
 from flask_migrate import Migrate
-from dotenv import load_dotenv
-from flask import request, jsonify
-from backend.models.task import Task
-from backend.services.task_service import get_tasks_by_project
 
 from backend.database import db
 from backend.models.notification import Notification
-from backend.models.user import User
 from backend.models.project import Project
-from backend.models.team import Team
-from backend.models.user_team import UserTeam
-from backend.routes.notification_routes import notification_bp
-from backend.routes.team_routes import team_bp
-from backend.routes.user_routes import auth_bp
-from backend.routes.task_routes import task_bp
-from backend.routes.time_entry_routes import time_entry_bp
-from backend.routes.project_routes import project_bp
-from backend.routes.category_routes import category_bp
+from backend.models.user import User
 from backend.routes.analysis_routes import analysis_bp
-
-from flask_jwt_extended import JWTManager
-
+from backend.routes.category_routes import category_bp
+from backend.routes.notification_routes import notification_bp
+from backend.routes.project_routes import project_bp
+from backend.routes.task_routes import task_bp
+from backend.routes.team_routes import team_bp
+from backend.routes.time_entry_routes import time_entry_bp
+from backend.routes.user_routes import auth_bp
+from backend.services.task_service import get_task_by_id
 from backend.services.time_entry_service import get_time_entries_by_task
 
 # Load environment variables from .env file
