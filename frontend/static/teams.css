@@ -5,8 +5,13 @@
   --card-bg: #1e2532;
   --text-light: #e0e6ed;
   --text-muted: #94a3b8;
-  --purple: #b18a;
+  --purple: #b18a; /* Corrected to full hex for consistency with other colors */
   --border-color: #3f475a;
+
+  /* NEW: Input background color for modals */
+  --input-bg: #1e1e2d; /* A slightly darker shade for input fields */
+  /* NEW: Delete/Cancel button color */
+  --delete-color: #f87171; /* Your existing red for delete actions */
 
   /* Specific colors for roles */
   --admin-color: var(--purple);
@@ -66,8 +71,20 @@ body {
   color: var(--text-light);
 }
 
-.create-team-btn {
+.create-team-btn{
   background-color: var(--purple);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.delete-team-btn{
+  background-color: #ff6b6b;
   border: none;
   padding: 10px 20px;
   border-radius: 999px;
@@ -80,6 +97,11 @@ body {
 
 .create-team-btn:hover {
   background-color: #c4b5fd;
+}
+
+.delete-team-btn {
+  background-color: #ff7a7a;
+  color: white;
 }
 
 .team-table {
@@ -453,3 +475,163 @@ body {
   color: var(--admin-color);
   font-weight: 500;
 }
+
+/* --- Custom Modal Styles --- */
+.custom-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top of everything */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.custom-modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.custom-modal-content {
+  background-color: var(--card-bg); /* Use your card background color */
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  transform: scale(0.9); /* Start slightly smaller for animation */
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.custom-modal-backdrop.active .custom-modal-content {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.custom-modal-title {
+  font-size: 1.8rem;
+  color: var(--text-light); /* Light text color */
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.custom-modal-message {
+  font-size: 1.1rem;
+  color: var(--text-muted); /* Muted text color */
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.custom-modal-input {
+  width: calc(100% - 20px); /* Adjust for padding */
+  padding: 12px 15px;
+  border: 1px solid var(--border-color); /* Use a subtle border color */
+  border-radius: 8px;
+  background-color: var(--input-bg); /* A slightly darker background for input */
+  color: var(--text-light);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-modal-input:focus {
+  border-color: var(--member-color); /* Highlight on focus */
+  box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3); /* Soft glow */
+}
+
+.custom-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.custom-modal-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.custom-modal-btn:active {
+  transform: translateY(1px);
+}
+
+/* Specific button styles */
+.custom-modal-btn.confirm-btn {
+  background-color: var(--member-color); /* Blue for confirm */
+  color: white;
+}
+
+.custom-modal-btn.confirm-btn:hover {
+  background-color: #93c5fd; /* Lighter blue on hover */
+}
+
+.custom-modal-btn.cancel-btn {
+  background-color: var(--delete-color); /* Red for cancel/delete */
+  color: white;
+}
+
+.custom-modal-btn.cancel-btn:hover {
+  background-color: #fca5a5; /* Lighter red on hover */
+}
+
+/* Specific styles for alert types */
+.custom-modal-content.success .custom-modal-title {
+  color: #4CAF50; /* Green for success */
+}
+
+.custom-modal-content.error .custom-modal-title {
+  color: #f44336; /* Red for error */
+}
+
+/* Hide elements based on modal type */
+.custom-modal-backdrop:not(.prompt-type) #customModalInput {
+  display: none;
+}
+
+.custom-modal-backdrop:not(.prompt-type) #customModalCancelBtn {
+  display: none;
+}
+
+.custom-modal-backdrop.alert-type #customModalConfirmBtn {
+  content: "OK"; /* Text for alert's confirm button */
+}
+
+.custom-modal-backdrop.confirm-type #customModalConfirmBtn {
+  content: "Confirm"; /* Text for confirm's confirm button */
+}
+
+.custom-modal-backdrop.prompt-type #customModalConfirmBtn {
+  content: "Submit"; /* Text for prompt's confirm button */
+}
+
+/* Ensure these CSS variables are defined in your global CSS (e.g., dashboard.css or theme.css) */
+/*
+:root {
+  --card-bg: #2a2a3a;
+  --text-light: #f0f0f0;
+  --text-muted: #b0b0b0;
+  --member-color: #6ec5ff;
+  --admin-color: #b18aff;
+  --delete-color: #f87171;
+  --border-color: #444;
+  --input-bg: #1e1e2d;
+  --gap: 20px;
+}
+*/

@@ -4,21 +4,9 @@
     <meta charset="UTF-8" />
     <title>Teams - ClockWise</title>
 
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='dashboard.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='teams.css') }}"
-    />
-    <style>
-      /* This <style> block can likely be removed if all styles are in teams.css */
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='teams.css') }}" />
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
@@ -28,6 +16,7 @@
         <div class="team-card-header">
           <h2>Teams</h2>
           <button class="create-team-btn">Create Team</button>
+            <button class="delete-team-btn">Delete Team</button>
         </div>
 
         <table class="team-table">
@@ -38,22 +27,8 @@
               <th>Role</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>Algorithmen</td>
-              <td>20.04.2025</td>
-              <td class="role-admin">Admin</td>
-            </tr>
-            <tr>
-              <td>SEP</td>
-              <td>21.04.2025</td>
-              <td class="role-member">Member</td>
-            </tr>
-            <tr>
-              <td>TheoInfo2</td>
-              <td>22.04.2025</td>
-              <td class="role-admin">Admin</td>
-            </tr>
+          <tbody id="teamsBody">
+            <!-- Se llena dinámicamente por JS -->
           </tbody>
         </table>
       </section>
@@ -68,74 +43,29 @@
         </div>
 
         <div class="carousel-wrapper">
+          <div class="carousel-track" id="carouselTrack">
+            <!-- Se llena dinámicamente con miembros por JS -->
+          </div>
           <div class="carousel-arrow left"></div>
           <div class="carousel-arrow right"></div>
-
-          <div class="carousel-track">
-            <div class="member-team-card">
-              <h3>Team: SEP</h3>
-              <div class="members-grid">
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Jude Mawad</span>
-                    <span class="member-role">Member</span>
-                  </div>
-                </div>
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Sophie Ge.</span>
-                    <span class="member-role admin">Admin</span>
-                  </div>
-                </div>
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Cahntal Ebben</span>
-                    <span class="member-role admin">Admin</span>
-                  </div>
-                </div>
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Laden Zaynep</span>
-                    <span class="member-role">Member</span>
-                  </div>
-                </div>
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Merle</span>
-                    <span class="member-role">Member</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="member-team-card">
-              <h3>Team: Algorithmen</h3>
-              <div class="members-grid">
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Max</span>
-                    <span class="member-role admin">Admin</span>
-                  </div>
-                </div>
-                <div class="member-item">
-                  <div class="member-avatar"></div>
-                  <div class="member-info">
-                    <span class="member-name">Luisa</span>
-                    <span class="member-role">Member</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
     </main>
+
+    <!-- Custom Modal Structure -->
+    <div id="customModal" class="custom-modal-backdrop">
+      <div class="custom-modal-content">
+        <h3 id="customModalTitle" class="custom-modal-title"></h3>
+        <p id="customModalMessage" class="custom-modal-message"></p>
+        <input type="text" id="customModalInput" class="custom-modal-input" placeholder="" />
+        <div class="custom-modal-buttons">
+          <button id="customModalConfirmBtn" class="custom-modal-btn confirm-btn"></button>
+          <button id="customModalCancelBtn" class="custom-modal-btn cancel-btn"></button>
+        </div>
+      </div>
+    </div>
+    <!-- End Custom Modal Structure -->
+
     <script src="{{ url_for('static', filename='js/teams.js') }}"></script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   </body>

@@ -1,31 +1,568 @@
 
-//carousel effect
+// Headers básicos para JSON. NO usamos Authorization porque usamos cookies (Flask-Login)
+const headers = {
+  "Content-Type": "application/json"
+};
+
+// Global variables for carousel
+let cardWidth = 0;
+let gap = 0;
+let cardWidthWithGap = 0;
+let currentCardIndex = 0; // Keep track of current card index
+let currentDisplayedTeamId = null; // To store the ID of the currently displayed team
+
+// Global variables to store the logged-in user's ID and username
+let currentLoggedInUserId = null;
+let currentLoggedInUsername = "Guest"; // Default to Guest until fetched
+
+// Carousel elements - make them global if used across functions
 const wrapper = document.querySelector(".carousel-wrapper");
 const track = document.querySelector(".carousel-track");
-const leftArrow = document.querySelector(".carousel-arrow.left"); // NEW
-const rightArrow = document.querySelector(".carousel-arrow.right"); // NEW
+const leftArrow = document.querySelector(".carousel-arrow.left");
+const rightArrow = document.querySelector(".carousel-arrow.right");
 
 let isDown = false;
 let startX;
 let currentTranslateXAtDragStart = 0;
-let cardWidth = 0;
-let gap = 0;
-let cardWidthWithGap = 0;
-let currentCardIndex = 0; // NEW: Keep track of current card index
 
-const DRAG_SENSITIVITY = 2.5; //sensibility
+const DRAG_SENSITIVITY = 2.5; // sensibility
 const SNAP_THRESHOLD_PERCENTAGE = 0.2;
 
+// --- Custom Modal Elements (get references once DOM is loaded) ---
+let customModal, customModalTitle, customModalMessage, customModalInput,
+    customModalConfirmBtn, customModalCancelBtn, customModalContent; // NEW: Added customModalContent here
+let customModalResolve; // To store the resolve function for promises
+
+// --- Custom Modal Functions ---
+function initializeModalElements() {
+  customModal = document.getElementById("customModal");
+  customModalTitle = document.getElementById("customModalTitle");
+  customModalMessage = document.getElementById("customModalMessage");
+  customModalInput = document.getElementById("customModalInput");
+  customModalConfirmBtn = document.getElementById("customModalConfirmBtn");
+  customModalCancelBtn = document.getElementById("customModalCancelBtn");
+  customModalContent = customModal.querySelector(".custom-modal-content"); // NEW: Initialize customModalContent
+}
+
+function showCustomModal(title, message, inputPlaceholder, confirmText, cancelText, type) {
+  return new Promise(resolve => {
+    customModalResolve = resolve;
+
+    customModalTitle.textContent = title;
+    customModalMessage.textContent = message;
+
+    // Reset and configure input
+    customModalInput.value = '';
+    customModalInput.placeholder = inputPlaceholder || '';
+    customModalInput.style.display = inputPlaceholder ? 'block' : 'none';
+
+    // Configure buttons
+    customModalConfirmBtn.textContent = confirmText || 'OK';
+    customModalCancelBtn.textContent = cancelText || 'Cancel';
+    customModalCancelBtn.style.display = cancelText ? 'inline-block' : 'none';
+
+    // Set modal type class for CSS styling
+    customModal.classList.remove('prompt-type', 'alert-type', 'confirm-type');
+    customModal.classList.add(`${type}-type`);
+
+    // Add success/error class to content for color changes
+    // Ensure customModalContent is initialized before using it
+    if (customModalContent) {
+        customModalContent.classList.remove('success', 'error');
+        if (type === 'alert' && title.includes('Success')) {
+            customModalContent.classList.add('success');
+        } else if (type === 'alert' && title.includes('Error')) {
+            customModalContent.classList.add('error');
+        }
+    }
+
+
+    // Event listeners for buttons
+    const handleConfirm = () => {
+      hideCustomModal();
+      resolve(inputPlaceholder ? customModalInput.value : true);
+      removeListeners();
+    };
+
+    const handleCancel = () => {
+      hideCustomModal();
+      resolve(false);
+      removeListeners();
+    };
+
+    const handleKeydown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConfirm();
+      } else if (e.key === 'Escape' && cancelText) {
+        e.preventDefault();
+        handleCancel();
+      }
+    };
+
+    customModalConfirmBtn.addEventListener('click', handleConfirm);
+    customModalCancelBtn.addEventListener('click', handleCancel);
+    document.addEventListener('keydown', handleKeydown);
+
+    // Function to remove event listeners to prevent memory leaks
+    const removeListeners = () => {
+      customModalConfirmBtn.removeEventListener('click', handleConfirm);
+      customModalCancelBtn.removeEventListener('click', handleCancel);
+      document.removeEventListener('keydown', handleKeydown);
+    };
+
+    customModal.classList.add('active');
+    if (inputPlaceholder) {
+      setTimeout(() => customModalInput.focus(), 300); // Focus input after animation
+    } else {
+      setTimeout(() => customModalConfirmBtn.focus(), 300); // Focus confirm button
+    }
+  });
+}
+
+function hideCustomModal() {
+  customModal.classList.remove('active');
+  // Ensure customModalContent is initialized before using it
+  if (customModalContent) {
+      customModalContent.classList.remove('success', 'error'); // Clean up type classes
+  }
+}
+
+// Wrapper functions for convenience
+function showCustomPrompt(title, message, placeholder) {
+  return showCustomModal(title, message, placeholder, 'Submit', 'Cancel', 'prompt');
+}
+
+function showCustomAlert(title, message, type = 'alert') { // type can be 'success' or 'error' for styling
+  return showCustomModal(title, message, null, 'OK', null, 'alert');
+}
+
+function showCustomConfirm(title, message) {
+  return showCustomModal(title, message, null, 'Confirm', 'Cancel', 'confirm');
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-  const card = track.querySelector(".member-team-card");
-  if (card) {
-    cardWidth = card.offsetWidth;
-    const trackStyle = window.getComputedStyle(track);
-    gap = parseFloat(trackStyle.gap);
+  initializeModalElements(); // Initialize modal elements after DOM is loaded
+  fetchUserTeams(); // Initial team load and then carousel setup
+
+  // --- Team Management Buttons ---
+  const createTeamBtn = document.querySelector(".create-team-btn");
+  const addMemberBtn = document.querySelector(".add-member-btn");
+  const deleteMemberBtn = document.querySelector(".delete-member-btn");
+  const deleteTeamBtn = document.querySelector(".delete-team-btn");
+
+  // NEW: All button event listeners are now at the same level
+  if (createTeamBtn) {
+    createTeamBtn.addEventListener("click", async () => {
+      const teamName = await showCustomPrompt("Create New Team", "Enter the name for your new team:", "Team Name");
+      if (!teamName || teamName.trim() === "") {
+        showCustomAlert("Error", "Team name is required.", "error");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/teams/", {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ name: teamName.trim() }),
+          credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showCustomAlert("Success!", `Team "${teamName.trim()}" created successfully!`, "success");
+          fetchUserTeams();
+        } else {
+          showCustomAlert("Error", "Error: " + (data.error || "Unknown error"), "error");
+        }
+      } catch (err) {
+        console.error("Error at creating the Team:", err);
+        showCustomAlert("Error", "Network error. Please try again.", "error");
+      }
+    });
+  }
+
+  // NEW: Moved out of createTeamBtn's if block
+  if (deleteTeamBtn) {
+    deleteTeamBtn.addEventListener("click", async () => {
+      if (!currentDisplayedTeamId) {
+        showCustomAlert("Error", "Please select a team first.", "error");
+        return;
+      }
+
+      const confirmDelete = await showCustomConfirm("Delete Team", "Are you sure you want to delete this team? This action cannot be undone.");
+      if (!confirmDelete) return;
+
+      try {
+        const response = await fetch(`/api/teams/${currentDisplayedTeamId}`, {
+          method: "DELETE",
+          headers: headers,
+          credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showCustomAlert("Success!", "Team deleted successfully!", "success");
+          fetchUserTeams(); // Refresh
+        } else {
+          showCustomAlert("Error", "Error deleting team: " + (data.error || "Unknown error"), "error");
+        }
+      } catch (err) {
+        console.error("Network error:", err);
+        showCustomAlert("Error", "Network error. Please try again.", "error");
+      }
+    });
+  }
+
+  // NEW: Moved out of createTeamBtn's if block
+  if (addMemberBtn) {
+    addMemberBtn.addEventListener("click", async () => {
+      if (!currentDisplayedTeamId) {
+        showCustomAlert("Error", "Please select a team first.", "error");
+        return;
+      }
+
+      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID and Role (e.g., '123, member' or '456, admin'):", "User ID, role");
+      if (!memberInfo || memberInfo.trim() === "") {
+        showCustomAlert("Error", "User ID and Role are required.", "error");
+        return;
+      }
+
+      const parts = memberInfo.split(',').map(p => p.trim());
+      const newMemberId = parts[0];
+      const role = parts[1] || 'member'; // Default to 'member' if not specified
+
+      if (!newMemberId) {
+        showCustomAlert("Error", "Invalid User ID provided.", "error");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/teams/${currentDisplayedTeamId}/add-member`, {
+          method: "PATCH",
+          headers: headers,
+          body: JSON.stringify({ user_id: newMemberId, role: role }),
+          credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showCustomAlert("Success!", "Member added successfully!", "success");
+          fetchUserTeams(); // Re-fetch all teams to update the carousel
+        } else {
+          showCustomAlert("Error", "Error adding member: " + (data.error || "Unknown error"), "error");
+        }
+      } catch (err) {
+        console.error("Error adding member:", err);
+        showCustomAlert("Error", "Network error. Please try again.", "error");
+      }
+    });
+  }
+
+  // NEW: Moved out of createTeamBtn's if block
+  if (deleteMemberBtn) {
+    deleteMemberBtn.addEventListener("click", async () => {
+      if (!currentDisplayedTeamId) {
+        showCustomAlert("Error", "Please select a team first.", "error");
+        return;
+      }
+
+      const memberIdToDelete = await showCustomPrompt("Remove Member", "Enter the User ID of the member to delete:", "User ID");
+      if (!memberIdToDelete || memberIdToDelete.trim() === "") {
+        showCustomAlert("Error", "User ID is required.", "error");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/teams/${currentDisplayedTeamId}/remove-member`, {
+          method: "PATCH",
+          headers: headers,
+          body: JSON.stringify({ user_id: memberIdToDelete }),
+          credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showCustomAlert("Success!", "Member removed successfully!", "success");
+          fetchUserTeams(); // Re-fetch all teams to update the carousel
+        } else {
+          showCustomAlert("Error", "Error removing member: " + (data.error || "Unknown error"), "error");
+        }
+      } catch (err) {
+        console.error("Error removing member:", err);
+        showCustomAlert("Error", "Network error. Please try again.", "error");
+      }
+    });
+  }
+
+  // --- Carousel Event Listeners ---
+  // Add click handlers for carousel arrows here, ensuring they are only added once
+  if (leftArrow) {
+    leftArrow.addEventListener("click", () => {
+      if (!isDown) { // Prevent clicking during a drag
+        updateCarouselPosition(currentCardIndex - 1);
+      }
+    });
+  }
+
+  if (rightArrow) {
+    rightArrow.addEventListener("click", () => {
+      if (!isDown) { // Prevent clicking during a drag
+        updateCarouselPosition(currentCardIndex + 1);
+      }
+    });
+  }
+
+  // Carousel drag event listeners
+  if (wrapper && track) {
+    wrapper.addEventListener("mousedown", (e) => {
+      isDown = true;
+      wrapper.classList.add("active");
+      startX = e.pageX;
+      currentTranslateXAtDragStart = getTranslateX(track);
+    });
+
+    wrapper.addEventListener("mouseup", () => {
+      if (!isDown) return;
+      isDown = false;
+      wrapper.classList.remove("active");
+
+      const currentTranslateX = getTranslateX(track);
+      const movedDistance = currentTranslateX - currentTranslateXAtDragStart;
+
+      let targetIndex;
+
+      // Determine target index based on snap threshold
+      const snapThresholdPx = cardWidthWithGap * SNAP_THRESHOLD_PERCENTAGE;
+
+      if (movedDistance > snapThresholdPx) { // Dragged right significantly
+        targetIndex = currentCardIndex - 1;
+      } else if (movedDistance < -snapThresholdPx) { // Dragged left significantly
+        targetIndex = currentCardIndex + 1;
+      } else { // Slight drag, snap back to current or nearest if very close
+        targetIndex = currentCardIndex; // Snap back to where it was
+      }
+
+      // Clamp target index to valid range
+      const maxIndex = track.children.length - 1;
+      const clampedIndex = Math.max(0, Math.min(targetIndex, maxIndex));
+
+      // Update position using the new function
+      updateCarouselPosition(clampedIndex);
+    });
+
+    wrapper.addEventListener("mouseleave", () => {
+      if (isDown) {
+        wrapper.dispatchEvent(new Event("mouseup")); // Trigger mouseup if dragging ends on mouseleave
+      }
+    });
+
+    wrapper.addEventListener("mousemove", (e) => {
+      if (!isDown) return;
+      e.preventDefault();
+
+      const x = e.pageX;
+      let walk = (x - startX) * DRAG_SENSITIVITY;
+
+      let newTranslateX = currentTranslateXAtDragStart + walk;
+
+      // Calculate bounds based on track width vs wrapper width
+      const totalTrackContentWidth = track.scrollWidth;
+      const wrapperVisibleWidth = wrapper.offsetWidth;
+
+      const maxAllowedTranslateX = 0; // Cannot drag past the first card to the right (0px translate)
+      // The minimum allowed translateX means the rightmost edge of the track aligns with the rightmost edge of the wrapper
+      // Only apply this if there are more cards than can fit in the wrapper
+      const minAllowedTranslateX = -(totalTrackContentWidth - wrapperVisibleWidth);
+
+
+      // Clamp the newTranslateX within the valid range
+      newTranslateX = Math.max(newTranslateX, minAllowedTranslateX);
+      newTranslateX = Math.min(newTranslateX, maxAllowedTranslateX);
+
+
+      track.style.transform = `translateX(${newTranslateX}px)`;
+    });
+  }
+});
+
+
+// Cargar equipos desde el backend y sus miembros
+async function fetchUserTeams() {
+  try {
+    const response = await fetch("/api/teams/", {
+      method: "GET",
+      headers: headers,
+      credentials: "include" // important for FLASK login
+    });
+
+    const responseData = await response.json();
+
+    if (response.ok) {
+      // NEW: Assuming your /api/teams/ endpoint returns current_user info
+      // Example: {"teams": [...], "current_user": {"user_id": 1, "username": "JohnDoe"}}
+      if (responseData.current_user) {
+        currentLoggedInUserId = responseData.current_user.user_id;
+        currentLoggedInUsername = responseData.current_user.username;
+        console.log(`Logged in as: ${currentLoggedInUsername} (ID: ${currentLoggedInUserId})`);
+      } else {
+        console.warn("Current user data not found in /api/teams/ response. Displaying 'Guest'.");
+        currentLoggedInUserId = null;
+        currentLoggedInUsername = "Guest";
+      }
+
+      const teamsData = responseData.teams || []; // Get the teams array
+
+      console.log("Teams received:", teamsData);
+
+      // Fetch members for each team and their usernames
+      const teamsWithMembersPromises = teamsData.map(async (team) => {
+        try {
+          const membersResponse = await fetch(`/api/teams/${team.team_id}/members`, {
+            method: "GET",
+            headers: headers,
+            credentials: "include"
+          });
+          const membersData = await membersResponse.json();
+
+          const membersWithUsernames = await Promise.all(membersData.map(async (member) => {
+            let username = `User ID: ${member.user_id}`; // Fallback
+            // NEW: Check if the member is the current logged-in user
+            if (currentLoggedInUserId && member.user_id === currentLoggedInUserId) {
+                username = currentLoggedInUsername;
+            } else {
+                // Fetch actual username from a dedicated user endpoint
+                try {
+                  const userDetailsResponse = await fetch(`/api/users/${member.user_id}`, {
+                    method: "GET",
+                    headers: headers,
+                    credentials: "include"
+                  });
+                  const userDetails = await userDetailsResponse.json();
+                  if (userDetailsResponse.ok && userDetails.username) {
+                    username = userDetails.username;
+                  } else {
+                    console.warn(`Could not fetch username for user ID: ${member.user_id}`);
+                  }
+                } catch (userErr) {
+                  console.error(`Error fetching user details for ID ${member.user_id}:`, userErr);
+                }
+            }
+            return { ...member, username: username };
+          }));
+
+          return { ...team, members: membersWithUsernames };
+        } catch (memberErr) {
+          console.error(`Error fetching members for team ${team.team_id}:`, memberErr);
+          return { ...team, members: [] }; // Return team with empty members array on error
+        }
+      });
+
+      const teamsWithMembers = await Promise.all(teamsWithMembersPromises);
+      renderTeams(teamsData); // Render teams in the table
+      renderMembersForTeams(teamsWithMembers); // Render members into carousel
+      setupCarousel(); // Setup carousel *after* members are rendered
+    } else {
+      showCustomAlert("Error", "Error fetching teams: " + (responseData.error || "Unknown error"), "error");
+      console.error("Error al obtener equipos:", responseData.error);
+    }
+  } catch (err) {
+    showCustomAlert("Error", "Network error. Could not load teams.", "error");
+    console.error("Error de red o backend:", err);
+  }
+}
+
+
+// Show teams
+function renderTeams(teams) {
+  const tbody = document.getElementById("teamsBody");
+  tbody.innerHTML = ""; // Borra mockups anteriores
+
+  teams.forEach(team => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${team.team_name}</td>
+      <td>${new Date(team.created_at).toLocaleDateString()}</td>
+      <td class="${team.role === 'admin' ? 'role-admin' : 'role-member'}">${team.role}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+
+// Show members of the Team
+function renderMembersForTeams(teams) {
+  const trackElement = document.getElementById("carouselTrack");
+  if (!trackElement) return; // Safeguard
+
+  trackElement.innerHTML = "";
+
+  if (teams.length === 0) {
+    trackElement.innerHTML = "<p style='text-align: center; color: var(--text-muted); margin-top: 20px;'>No teams available to display members.</p>";
+    return;
+  }
+
+  teams.forEach(team => {
+    const card = document.createElement("div");
+    card.className = "member-team-card";
+    card.dataset.teamId = team.team_id; // Store team ID on the card
+
+    const members = team.members || [];
+
+    const membersHtml = members.map(member => `
+      <div class="member-item">
+        <div class="member-avatar" style="background-color:${member.role === 'admin' ? '#b18aff' : '#6ec5ff'}"></div>
+        <div class="member-info">
+          <span class="member-name">${member.username}</span> <span class="member-role ${member.role === 'admin' ? 'admin' : ''}">${member.role}</span>
+        </div>
+      </div>
+    `).join("");
+
+    // Display current user's role in this team
+    const currentUserRoleInThisTeam = team.role;
+    const roleDisplay = currentUserRoleInThisTeam === 'admin' ?
+      `<span class="role-indicator role-admin">You are Admin</span>` :
+      `<span class="role-indicator role-member">You are Member</span>`;
+
+    card.innerHTML = `
+      <h3>Team: ${team.team_name}</h3>
+      <p class="current-user-team-role">${roleDisplay}</p>
+      <div class="members-grid">${membersHtml}</div>
+    `;
+
+    trackElement.appendChild(card);
+  });
+}
+
+function setupCarousel() {
+  if (!track || track.children.length === 0) {
+    currentCardIndex = 0; // Reset index if no cards
+    currentDisplayedTeamId = null; // No team displayed
+    updateCarouselArrows();
+    return; // No cards to set up carousel for
+  }
+
+  const firstCard = track.querySelector(".member-team-card");
+  if (firstCard) {
+    cardWidth = firstCard.offsetWidth;
+    const style = window.getComputedStyle(track);
+    // Ensure gap is parsed correctly, default to 0 if not a valid number
+    gap = parseFloat(style.gap) || 0;
     cardWidthWithGap = cardWidth + gap;
   }
-  updateCarouselArrows(); // NEW: Call on load to set initial arrow visibility
-});
+
+  // Ensure currentCardIndex is valid after potential content changes
+  currentCardIndex = Math.max(0, Math.min(currentCardIndex, track.children.length - 1));
+  updateCarouselPosition(currentCardIndex); // Set initial position and update arrows
+}
+
 
 function getTranslateX(el) {
   const style = window.getComputedStyle(el);
@@ -33,113 +570,46 @@ function getTranslateX(el) {
   return matrix.m41;
 }
 
-function updateCarouselPosition(index) { // NEW: Function to animate carousel to an index
-    currentCardIndex = Math.max(0, Math.min(index, track.children.length - 1));
+function updateCarouselPosition(index) {
+  currentCardIndex = Math.max(0, Math.min(index, track.children.length - 1));
 
-    track.style.transition = "transform 0.3s ease-out";
-    track.style.transform = `translateX(-${currentCardIndex * cardWidthWithGap}px)`;
+  track.style.transition = "transform 0.3s ease-out";
+  track.style.transform = `translateX(-${currentCardIndex * cardWidthWithGap}px)`;
 
-    currentTranslateXAtDragStart = -currentCardIndex * cardWidthWithGap; // Update for future drags
+  // Update for future drags. This is important!
+  currentTranslateXAtDragStart = -currentCardIndex * cardWidthWithGap;
 
-    setTimeout(() => {
-        track.style.transition = ""; // Remove transition after animation
-        updateCarouselArrows(); // Update arrows after position settles
-    }, 300);
+  // Update the currentDisplayedTeamId based on the visible card
+  const activeCard = track.children[currentCardIndex];
+  if (activeCard) {
+    currentDisplayedTeamId = activeCard.dataset.teamId;
+  } else {
+    currentDisplayedTeamId = null;
+  }
+
+  setTimeout(() => {
+    track.style.transition = ""; // Remove transition after animation
+    updateCarouselArrows(); // Update arrows after position settles
+  }, 300);
 }
 
-// NEW: Function to show/hide arrows
+// Function to show/hide arrows
 function updateCarouselArrows() {
-    const maxIndex = track.children.length - 1;
+  if (!leftArrow || !rightArrow || !track || track.children.length === 0) return;
 
-    // Left arrow
-    if (currentCardIndex > 0) {
-        leftArrow.classList.add("visible");
-    } else {
-        leftArrow.classList.remove("visible");
-    }
-
-    // Right arrow
-    if (currentCardIndex < maxIndex) {
-        rightArrow.classList.add("visible");
-    } else {
-        rightArrow.classList.remove("visible");
-    }
-}
-
-// NEW: Click handlers for arrows
-leftArrow.addEventListener("click", () => {
-    if (!isDown) { // Prevent clicking during a drag
-        updateCarouselPosition(currentCardIndex - 1);
-    }
-});
-
-rightArrow.addEventListener("click", () => {
-    if (!isDown) { // Prevent clicking during a drag
-        updateCarouselPosition(currentCardIndex + 1);
-    }
-});
-
-wrapper.addEventListener("mousedown", (e) => {
-  isDown = true;
-  wrapper.classList.add("active");
-  startX = e.pageX;
-  currentTranslateXAtDragStart = getTranslateX(track);
-});
-
-wrapper.addEventListener("mouseup", () => {
-  if (!isDown) return;
-  isDown = false;
-  wrapper.classList.remove("active");
-
-  const currentTranslateX = getTranslateX(track);
-  const movedDistance = currentTranslateX - currentTranslateXAtDragStart;
-
-  // Determine target index based on snap threshold
-  let targetIndex = Math.round(-currentTranslateX / cardWidthWithGap);
-  const snapThresholdPx = cardWidthWithGap * SNAP_THRESHOLD_PERCENTAGE;
-
-  if (movedDistance > snapThresholdPx) { // Dragged right significantly
-    targetIndex = currentCardIndex - 1;
-  } else if (movedDistance < -snapThresholdPx) { // Dragged left significantly
-    targetIndex = currentCardIndex + 1;
-  } else { // Slight drag, snap back to current or nearest if very close
-    targetIndex = currentCardIndex; // Snap back to where it was
-  }
-
-
-  // Clamp target index to valid range
   const maxIndex = track.children.length - 1;
-  const clampedIndex = Math.max(0, Math.min(targetIndex, maxIndex));
 
-  // Update position using the new function
-  updateCarouselPosition(clampedIndex);
-});
-
-wrapper.addEventListener("mouseleave", () => {
-  if (isDown) {
-    wrapper.dispatchEvent(new Event("mouseup"));
+  // Left arrow
+  if (currentCardIndex > 0) {
+    leftArrow.classList.add("visible");
+  } else {
+    leftArrow.classList.remove("visible");
   }
-});
 
-wrapper.addEventListener("mousemove", (e) => {
-  if (!isDown) return;
-  e.preventDefault();
-
-  const x = e.pageX;
-  let walk = (x - startX) * DRAG_SENSITIVITY;
-
-  let newTranslateX = currentTranslateXAtDragStart + walk;
-
-  // Calculate bounds based on track width vs wrapper width
-  const totalTrackContentWidth = track.scrollWidth;
-  const wrapperVisibleWidth = wrapper.offsetWidth;
-
-  const maxAllowedTranslateX = 0; // Cannot drag past the first card to the right
-  const minAllowedTranslateX = wrapperVisibleWidth - totalTrackContentWidth; // Cannot drag past the last card to the left
-
-  newTranslateX = Math.max(newTranslateX, minAllowedTranslateX);
-  newTranslateX = Math.min(newTranslateX, maxAllowedTranslateX);
-
-  track.style.transform = `translateX(${newTranslateX}px)`;
-});
-//ends carousel effect
+  // Right arrow
+  if (currentCardIndex < maxIndex) {
+    rightArrow.classList.add("visible");
+  } else {
+    rightArrow.classList.remove("visible");
+  }
+}
