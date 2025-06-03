@@ -30,7 +30,7 @@ def load_time_entries():
                 "start": entry.start_time,
                 "end": entry.end_time,
                 "task": entry.task.title,
-                "project": entry.task.project.name,  # TODO: could be null
+                "project": entry.task.project.name if entry.task.project else None,
             }
         )
     return result
@@ -54,10 +54,10 @@ def load_tasks():
     for task in tasks:
         result.append(
             {
-                "project": task.project.name,
+                "project": task.project.name if task.project else None,
                 "status": task.status,
                 "title": task.title,
-                "start_date": task.start_date,  # if there
+                "due_date": task.due_date if task.due_date else None,
             }
         )
     return result
@@ -192,12 +192,15 @@ def actual_target_comparison(time_entries, target):
     """
     actual = defaultdict(float)
     for e in time_entries:
-        actual[e["project"]] += (e["end"] - e["start"]).total_seconds() / 3600
+        project = e.get("project") or "No project"
+        actual[project] += (e["end"] - e["start"]).total_seconds() / 3600
+
     comparison = {}
     for project in set(list(actual.keys()) + list(target.keys())):
-        comparison[project] = {
-            "actual": actual.get(project, 0),
-            "target": target.get(project, 0),
+        key = project or "No project"
+        comparison[key] = {
+            "actual": actual.get(project, 0) or 0,
+            "target": target.get(project, 0) or 0,
         }
     return comparison
 

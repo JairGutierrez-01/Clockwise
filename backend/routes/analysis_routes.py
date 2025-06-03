@@ -18,6 +18,7 @@ from backend.services.analysis_service import (
 analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
 
+# For Testing: /time-entries?start_date=2025-06-01&end_date=2025-06-07
 @analysis_bp.route("/time-entries")
 def api_time_entries():
     """
@@ -61,6 +62,7 @@ def api_time_entries():
     return jsonify(result)
 
 
+# For Testing: /tasks-in-month?month=2025-05
 @analysis_bp.route("/tasks-in-month")
 def api_tasks_in_month():
     """
