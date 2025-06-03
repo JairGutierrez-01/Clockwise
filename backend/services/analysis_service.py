@@ -9,6 +9,88 @@ from backend.database import db
 from backend.models import TimeEntry, Task, Project
 
 
+def load_time_entries():
+    """
+    Load all time entries for the current logged-in user.
+
+    Returns:
+        list of dict: List of time entries with keys:
+            - 'start' (datetime): Start datetime of the time entry
+            - 'end' (datetime): End datetime of the time entry
+            - 'task' (str): Task title
+            - 'project' (str): Project name (may be None)
+    """
+    if not current_user.is_authenticated:
+        return []
+    entries = TimeEntry.query.filter_by(user_id=current_user.user_id).all()
+    result = []
+    for entry in entries:
+        result.append(
+            {
+                "start": entry.start_time,
+                "end": entry.end_time,
+                "task": entry.task.title,
+                "project": entry.task.project.name,  # TODO: could be null
+            }
+        )
+    return result
+
+
+def load_tasks():
+    """
+    Load all tasks for the current logged-in user.
+
+    Returns:
+        list of dict: List of tasks with keys:
+            - 'project' (str): Project name
+            - 'status' (str): Task status, e.g., "done", "open"
+            - 'title' (str): Task title
+            - 'start_date' (datetime or None): Task start date if available
+    """
+    if not current_user.is_authenticated:
+        return []
+    tasks = Task.query.filter_by(user_id=current_user.user_id).all()
+    result = []
+    for task in tasks:
+        result.append(
+            {
+                "project": task.project.name,
+                "status": task.status,
+                "title": task.title,
+                "start_date": task.start_date,  # if there
+            }
+        )
+    return result
+
+
+def load_projects():
+    """
+    Load all projects for the current logged-in user.
+
+    Returns:
+        list of Project: List of Project model instances
+    """
+    if not current_user.is_authenticated:
+        return []
+    return Project.query.filter_by(user_id=current_user.user_id).all()
+
+
+def filter_time_entries_by_date(time_entries, start_date, end_date):
+    """
+    Filter time entries to those between start_date and end_date inclusive.
+
+    Args:
+        time_entries (list of dict): List of time entry dicts with 'start' key.
+        start_date (datetime): Start datetime for filtering.
+        end_date (datetime): End datetime for filtering.
+
+    Returns:
+        list of dict: Filtered time entries.
+    """
+    filtered = [e for e in time_entries if start_date <= e["start"] <= end_date]
+    return filtered
+
+
 def aggregate_weekly_time(time_entries, week_start_date):
     """
     Aggregate worked hours per project for each day of the given week.
@@ -86,13 +168,9 @@ def progress_per_project(tasks):
         progress[t["project"]]["total"] += 1
         if t["status"] == "done":
             progress[t["project"]]["done"] += 1
-
     result = {}
     for proj, val in progress.items():
-        if val["total"] > 0:
-            result[proj] = val["done"] / val["total"]
-        else:
-            result[proj] = 0
+        result[proj] = val["done"] / val["total"] if val["total"] > 0 else 0
     return result
 
 
@@ -115,7 +193,6 @@ def actual_target_comparison(time_entries, target):
     actual = defaultdict(float)
     for e in time_entries:
         actual[e["project"]] += (e["end"] - e["start"]).total_seconds() / 3600
-
     comparison = {}
     for project in set(list(actual.keys()) + list(target.keys())):
         comparison[project] = {
@@ -125,53 +202,7 @@ def actual_target_comparison(time_entries, target):
     return comparison
 
 
-def load_time_entries_from_db():
-    """
-    Loads all time entries for the currently logged-in user from the database.
-
-    Returns:
-        list of dict: List of time entries with keys 'start', 'end', and 'project'.
-    """
-    if not current_user.is_authenticated:
-        return []
-
-    time_entries = TimeEntry.query.filter_by(user_id=current_user.user_id).all()
-    result = []
-    for entry in time_entries:
-        result.append(
-            {
-                "start": entry.start_time,
-                "end": entry.end_time,
-                "task": entry.task.title,
-            }
-        )
-    return result
-
-
-def load_tasks_from_db():
-    """
-    Loads all tasks belonging to the currently logged-in user from the database.
-
-    Returns:
-        list of dict: List of tasks with keys 'project' and 'status'.
-    """
-    if not current_user.is_authenticated:
-        return []
-
-    tasks = Task.query.filter_by(user_id=current_user.user_id).all()
-
-    result = []
-    for task in tasks:
-        result.append(
-            {
-                "project": task.project.name,
-                "status": task.status,
-            }
-        )
-    return result
-
-
-def load_target_times_from_db():
+def load_target_times():
     """
     Loads the target planned hours per project for the current user.
 
@@ -180,13 +211,21 @@ def load_target_times_from_db():
     """
     if not current_user.is_authenticated:
         return {}
+    projects = load_projects()
+    return {p.name: p.time_limit_hours for p in projects}
 
-    projects = Project.query.filter_by(user_id=current_user.user_id).all()
 
-    result = {}
-    for project in projects:
-        result[project.name] = project.time_limit_hours
-    return result
+def tasks_in_month(tasks, year, month):
+    filtered = []
+    for t in tasks:
+        if (
+            "start_date" in t
+            and t["start_date"]
+            and t["start_date"].year == year
+            and t["start_date"].month == month
+        ):
+            filtered.append(t)
+    return filtered
 
 
 def calendar_due_dates():

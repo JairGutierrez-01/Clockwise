@@ -1,96 +1,120 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
-from backend.services.analysis_service import calendar_due_dates
+from backend.services.analysis_service import (
+    calendar_due_dates,
+    load_time_entries,
+    load_target_times,
+    load_tasks,
+    tasks_in_month,
+    filter_time_entries_by_date,
+)
 from backend.services.analysis_service import (
     aggregate_weekly_time,
     calendar_events,
     progress_per_project,
     actual_target_comparison,
-    load_tasks_from_db,
-    load_target_times_from_db,
-    load_time_entries_from_db,
 )
 
-analysis_bp = Blueprint("analysis", __name__)
+analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
 
-@analysis_bp.route("/weekly-time")
-def weekly_time():
+@analysis_bp.route("/time-entries")
+def api_time_entries():
     """
-    Endpoint to get aggregated weekly hours worked per project.
+    Get time entries filtered by a date range.
 
     Query Parameters:
-        start_date (str): Optional. Start date of the week in 'YYYY-MM-DD' format.
-                          Defaults to the current week's Monday.
+        start_date (str): Start date in ISO8601 format (YYYY-MM-DDTHH:MM:SS).
+        end_date (str): End date in ISO8601 format (YYYY-MM-DDTHH:MM:SS).
 
     Returns:
-        JSON: A dictionary where keys are project names and values are lists of 7 floats,
-              each representing hours worked per day of the week starting from start_date.
+        JSON response containing a list of time entries with keys:
+            - task (str): Task title.
+            - start (str): ISO8601 formatted start datetime.
+            - end (str): ISO8601 formatted end datetime.
+            - duration_hours (float): Duration of the time entry in hours.
+
+    Errors:
+        400 if parameters are missing or date formats are invalid.
     """
-    start_date_str = request.args.get("start_date")
-    if start_date_str:
-        week_start = datetime.strptime(start_date_str, "%Y-%m-%d")
-    else:
-        today = datetime.today()
-        week_start = today - timedelta(days=today.weekday())
+    start_str = request.args.get("start_date")
+    end_str = request.args.get("end_date")
+    if not start_str or not end_str:
+        return jsonify({"error": "start_date and end_date required"}), 400
+    try:
+        start_date = datetime.fromisoformat(start_str)
+        end_date = datetime.fromisoformat(end_str)
+    except ValueError:
+        return jsonify({"error": "Invalid date format"}), 400
 
-    time_entries = load_time_entries_from_db()
+    entries = load_time_entries()
+    filtered = filter_time_entries_by_date(entries, start_date, end_date)
+    result = [
+        {
+            "task": e["task"],
+            "start": e["start"].isoformat(),
+            "end": e["end"].isoformat(),
+            "duration_hours": (e["end"] - e["start"]).total_seconds() / 3600,
+        }
+        for e in filtered
+    ]
+    return jsonify(result)
 
-    result = aggregate_weekly_time(time_entries, week_start)
-    json_result = {project: hours for project, hours in result.items()}
-    return jsonify(json_result)
 
-
-@analysis_bp.route("/projects")
-def projects_events():
+@analysis_bp.route("/tasks-in-month")
+def api_tasks_in_month():
     """
-    Endpoint to get all time entries as calendar events.
+    Get all tasks for a specific month.
+
+    Query Parameters:
+        month (str): Month in format "YYYY-MM".
 
     Returns:
-        JSON: A dictionary with key "time_entries" containing a list of event dictionaries.
-              Each event has 'title', 'start' (ISO8601 string), and 'end' (ISO8601 string).
+        JSON response containing a list of task names with project prefix.
+
+    Errors:
+        400 if the month parameter is missing or formatted incorrectly.
     """
-    time_entries = load_time_entries_from_db()
-    events = calendar_events(time_entries)
-    return jsonify({"time_entries": events})
+    month_str = request.args.get("month")  # Format: "YYYY-MM"
+    if not month_str:
+        return jsonify({"error": "month parameter required"}), 400
+    try:
+        year, month = map(int, month_str.split("-"))
+    except Exception:
+        return jsonify({"error": "Invalid month format"}), 400
+
+    tasks = load_tasks()
+    filtered_tasks = tasks_in_month(tasks, year, month)
+    task_names = list(
+        {t["project"] + ": " + t.get("title", "Unknown Task") for t in filtered_tasks}
+    )
+    return jsonify(task_names)
 
 
-@analysis_bp.route("/progress")
-def progress():
+@analysis_bp.route("/project-progress")
+def api_project_progress():
     """
-    Endpoint to get task progress per project.
+    Get progress ratio per project based on completed tasks.
 
     Returns:
-        JSON: A dictionary mapping project names to progress ratios (float between 0 and 1).
+        JSON response mapping project names to progress ratios (float between 0 and 1).
     """
-    tasks = load_tasks_from_db()
-    progress_data = progress_per_project(tasks)
-    return jsonify(progress_data)
+    tasks = load_tasks()
+    progress = progress_per_project(tasks)
+    return jsonify(progress)
 
 
-@analysis_bp.route("/actual-target")
-def actual_target():
+@analysis_bp.route("/actual-vs-planned")
+def api_actual_vs_planned():
     """
-    Endpoint to compare actual worked hours against target hours per project.
+    Compare actual worked hours against planned target hours per project.
 
     Returns:
-        JSON: A dictionary mapping project names to dictionaries containing
-              'actual' (float) and 'target' (float) hours.
+        JSON response mapping project names to dictionaries containing:
+            - actual (float): Actual worked hours.
+            - target (float): Planned target hours.
     """
-    time_entries = load_time_entries_from_db()
-    target = load_target_times_from_db()
-
-    comparison = actual_target_comparison(time_entries, target)
+    time_entries = load_time_entries()
+    targets = load_target_times()
+    comparison = actual_target_comparison(time_entries, targets)
     return jsonify(comparison)
-
-
-@analysis_bp.route("/calendar-due-dates")
-def get_calendar_due_dates():
-    """
-    API endpoint that returns all project and task due dates for calendar display.
-
-    Returns:
-        Response: JSON list of calendar event dictionaries including title, date, and color.
-    """
-    events = calendar_due_dates()
-    return jsonify(events)
