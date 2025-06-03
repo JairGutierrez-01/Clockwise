@@ -10,9 +10,9 @@
  */
 async function deleteEntryAPI(entryId) {
   const res = await fetch(`/api/time_entries/${entryId}`, {
-    method: 'DELETE'
+    method: "DELETE",
   });
-  if (!res.ok) throw new Error('Failed to delete entry');
+  if (!res.ok) throw new Error("Failed to delete entry");
   return res.json();
 }
 
@@ -30,11 +30,11 @@ async function deleteEntryAPI(entryId) {
  */
 async function updateEntryAPI(entryId, data) {
   const res = await fetch(`/api/time_entries/${entryId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update entry');
+  if (!res.ok) throw new Error("Failed to update entry");
   return res.json();
 }
 
@@ -48,7 +48,7 @@ async function updateEntryAPI(entryId, data) {
  */
 async function fetchEntryAPI(entryId) {
   const res = await fetch(`/api/time_entries/${entryId}`);
-  if (!res.ok) throw new Error('Failed to fetch entry');
+  if (!res.ok) throw new Error("Failed to fetch entry");
   return res.json();
 }
 
@@ -63,7 +63,7 @@ function formatDuration(totalSeconds) {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-  return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+  return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
 /**
@@ -74,11 +74,11 @@ function formatDuration(totalSeconds) {
  * @returns {string} "YYYY-MM-DDTHH:MM"
  */
 function toInputDateTime(dateObj) {
-  const year   = dateObj.getFullYear();
-  const month  = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day    = String(dateObj.getDate()).padStart(2, '0');
-  const hours  = String(dateObj.getHours()).padStart(2, '0');
-  const mins   = String(dateObj.getMinutes()).padStart(2, '0');
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+  const hours = String(dateObj.getHours()).padStart(2, "0");
+  const mins = String(dateObj.getMinutes()).padStart(2, "0");
   return `${year}-${month}-${day}T${hours}:${mins}`;
 }
 
@@ -94,16 +94,16 @@ function parseInputDateTime(inputVal) {
 }
 
 //                          MAIN LOGIC
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   // DOM references
-  const table       = document.getElementById('entries-table');
-  const editModal   = document.getElementById('edit-modal');
-  const editForm    = document.getElementById('edit-form');
-  const startInput  = document.getElementById('edit-start-time');
-  const endInput    = document.getElementById('edit-end-time');
-  const durationDiv = document.getElementById('edit-duration');
-  const saveBtn     = document.getElementById('save-edit-btn');
-  const cancelBtn   = document.getElementById('cancel-edit-btn');
+  const table = document.getElementById("entries-table");
+  const editModal = document.getElementById("edit-modal");
+  const editForm = document.getElementById("edit-form");
+  const startInput = document.getElementById("edit-start-time");
+  const endInput = document.getElementById("edit-end-time");
+  const durationDiv = document.getElementById("edit-duration");
+  const saveBtn = document.getElementById("save-edit-btn");
+  const cancelBtn = document.getElementById("cancel-edit-btn");
 
   let currentEditId = null;
 
@@ -112,11 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
    * @function closeEditModal
    */
   function closeEditModal() {
-    editModal.classList.add('hidden');
+    editModal.classList.add("hidden");
     currentEditId = null;
-    startInput.value = '';
-    endInput.value = '';
-    durationDiv.textContent = '00:00:00';
+    startInput.value = "";
+    endInput.value = "";
+    durationDiv.textContent = "00:00:00";
   }
 
   /**
@@ -131,17 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
       currentEditId = entryId;
 
       const startDate = new Date(entry.start_time);
-      const endDate   = new Date(entry.end_time);
+      const endDate = new Date(entry.end_time);
 
       startInput.value = toInputDateTime(startDate);
-      endInput.value   = toInputDateTime(endDate);
+      endInput.value = toInputDateTime(endDate);
 
       const diffSeconds = Math.floor((endDate - startDate) / 1000);
       durationDiv.textContent = formatDuration(diffSeconds);
 
-      editModal.classList.remove('hidden');
+      editModal.classList.remove("hidden");
     } catch (err) {
-      console.error('Failed to load entry for editing:', err);
+      console.error("Failed to load entry for editing:", err);
     }
   }
 
@@ -151,21 +151,19 @@ document.addEventListener('DOMContentLoaded', () => {
    * @param {MouseEvent} e
    * @async
    */
-  table.addEventListener('click', async (e) => {
-    const row = e.target.closest('tr[data-entry-id]');
+  table.addEventListener("click", async (e) => {
+    const row = e.target.closest("tr[data-entry-id]");
     if (!row) return;
     const entryId = row.dataset.entryId;
 
-    if (e.target.classList.contains('delete-btn')) {
+    if (e.target.classList.contains("delete-btn")) {
       try {
         await deleteEntryAPI(entryId);
         row.remove();
       } catch (err) {
-        console.error('Error deleting entry:', err);
+        console.error("Error deleting entry:", err);
       }
-    }
-
-    else if (e.target.classList.contains('edit-btn')) {
+    } else if (e.target.classList.contains("edit-btn")) {
       await openEditModal(entryId);
     }
   });
@@ -176,24 +174,24 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function recalcDuration() {
     if (!startInput.value || !endInput.value) {
-      durationDiv.textContent = '00:00:00';
+      durationDiv.textContent = "00:00:00";
       return;
     }
     const startDate = parseInputDateTime(startInput.value);
-    const endDate   = parseInputDateTime(endInput.value);
-    const diffMs    = endDate - startDate;
-    const diffSec   = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
+    const endDate = parseInputDateTime(endInput.value);
+    const diffMs = endDate - startDate;
+    const diffSec = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
     durationDiv.textContent = formatDuration(diffSec);
   }
 
-  startInput.addEventListener('input', recalcDuration);
-  endInput.addEventListener('input', recalcDuration);
+  startInput.addEventListener("input", recalcDuration);
+  endInput.addEventListener("input", recalcDuration);
 
   /**
    * Handles "Cancel" button in edit modal.
    * @listens #cancel-edit-btn click
    */
-  cancelBtn.addEventListener('click', () => {
+  cancelBtn.addEventListener("click", () => {
     closeEditModal();
   });
 
@@ -204,47 +202,49 @@ document.addEventListener('DOMContentLoaded', () => {
    * @param {SubmitEvent} e
    * @async
    */
-  editForm.addEventListener('submit', async (e) => {
+  editForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentEditId) return;
 
     const startDate = parseInputDateTime(startInput.value);
-    const endDate   = parseInputDateTime(endInput.value);
+    const endDate = parseInputDateTime(endInput.value);
     const durationSeconds = Math.floor((endDate - startDate) / 1000);
 
     const payload = {
-      start_time: startInput.value.replace('T', ' '),
-      end_time:   endInput.value.replace('T', ' '),
-      duration_seconds: durationSeconds
+      start_time: startInput.value.replace("T", " "),
+      end_time: endInput.value.replace("T", " "),
+      duration_seconds: durationSeconds,
     };
 
     try {
       await updateEntryAPI(currentEditId, payload);
 
-      const row = document.querySelector(`tr[data-entry-id="${currentEditId}"]`);
+      const row = document.querySelector(
+        `tr[data-entry-id="${currentEditId}"]`,
+      );
       if (row) {
         const yyyy = startDate.getFullYear();
-        const mm   = String(startDate.getMonth() + 1).padStart(2, '0');
-        const dd   = String(startDate.getDate()).padStart(2, '0');
-        row.querySelector('.entry-date').textContent = `${yyyy}-${mm}-${dd}`;
+        const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+        const dd = String(startDate.getDate()).padStart(2, "0");
+        row.querySelector(".entry-date").textContent = `${yyyy}-${mm}-${dd}`;
 
-        const sh = String(startDate.getHours()).padStart(2, '0');
-        const sm = String(startDate.getMinutes()).padStart(2, '0');
-        row.querySelector('.entry-start').textContent = `${sh}:${sm}`;
+        const sh = String(startDate.getHours()).padStart(2, "0");
+        const sm = String(startDate.getMinutes()).padStart(2, "0");
+        row.querySelector(".entry-start").textContent = `${sh}:${sm}`;
 
-        const eh = String(endDate.getHours()).padStart(2, '0');
-        const em = String(endDate.getMinutes()).padStart(2, '0');
-        row.querySelector('.entry-end').textContent = `${eh}:${em}`;
+        const eh = String(endDate.getHours()).padStart(2, "0");
+        const em = String(endDate.getMinutes()).padStart(2, "0");
+        row.querySelector(".entry-end").textContent = `${eh}:${em}`;
 
-        const hours   = Math.floor(durationSeconds / 3600);
+        const hours = Math.floor(durationSeconds / 3600);
         const minutes = Math.floor((durationSeconds % 3600) / 60);
         const seconds = durationSeconds % 60;
-        row.querySelector('.entry-duration').textContent =
+        row.querySelector(".entry-duration").textContent =
           `${hours}h ${minutes}m ${seconds}s`;
       }
       closeEditModal();
     } catch (err) {
-      console.error('Error updating entry:', err);
+      console.error("Error updating entry:", err);
     }
   });
 
@@ -258,16 +258,16 @@ document.addEventListener('DOMContentLoaded', () => {
  * - Persists updates via API
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-  const table = document.getElementById('entries-table');
+document.addEventListener("DOMContentLoaded", () => {
+  const table = document.getElementById("entries-table");
   if (!table) return;
 
-  const editModal   = document.getElementById('edit-modal');
-  const editForm    = document.getElementById('edit-form');
-  const startInput  = document.getElementById('edit-start-time');
-  const endInput    = document.getElementById('edit-end-time');
-  const durationDiv = document.getElementById('edit-duration');
-  const cancelBtn   = document.getElementById('cancel-edit-btn');
+  const editModal = document.getElementById("edit-modal");
+  const editForm = document.getElementById("edit-form");
+  const startInput = document.getElementById("edit-start-time");
+  const endInput = document.getElementById("edit-end-time");
+  const durationDiv = document.getElementById("edit-duration");
+  const cancelBtn = document.getElementById("cancel-edit-btn");
 
   /** @type {string|null} */
   let currentEditId = null;
@@ -276,25 +276,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function deleteEntryAPI(entryId) {
     const res = await fetch(`/api/time_entries/${entryId}`, {
-      method: 'DELETE'
+      method: "DELETE",
     });
-    if (!res.ok) throw new Error('Failed to delete entry');
+    if (!res.ok) throw new Error("Failed to delete entry");
     return res.json();
   }
 
   async function fetchEntryAPI(entryId) {
     const res = await fetch(`/api/time_entries/${entryId}`);
-    if (!res.ok) throw new Error('Failed to fetch entry');
+    if (!res.ok) throw new Error("Failed to fetch entry");
     return res.json();
   }
 
   async function updateEntryAPI(entryId, data) {
     const res = await fetch(`/api/time_entries/${entryId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error('Failed to update entry');
+    if (!res.ok) throw new Error("Failed to update entry");
     return res.json();
   }
 
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
-    return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+    return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
   }
 
   /**
@@ -313,12 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
    * suitable for a <input type="datetime-local" step="1">.
    */
   function toInputDateTime(dateObj) {
-    const year   = dateObj.getFullYear();
-    const month  = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day    = String(dateObj.getDate()).padStart(2, '0');
-    const hours  = String(dateObj.getHours()).padStart(2, '0');
-    const mins   = String(dateObj.getMinutes()).padStart(2, '0');
-    const secs   = String(dateObj.getSeconds()).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const mins = String(dateObj.getMinutes()).padStart(2, "0");
+    const secs = String(dateObj.getSeconds()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${mins}:${secs}`;
   }
 
@@ -331,11 +331,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function closeEditModal() {
-    editModal.classList.add('hidden');
+    editModal.classList.add("hidden");
     currentEditId = null;
-    startInput.value = '';
-    endInput.value   = '';
-    durationDiv.textContent = '00:00:00';
+    startInput.value = "";
+    endInput.value = "";
+    durationDiv.textContent = "00:00:00";
   }
 
   async function openEditModal(entryId) {
@@ -344,107 +344,105 @@ document.addEventListener('DOMContentLoaded', () => {
       currentEditId = entryId;
 
       const startDate = new Date(entry.start_time);
-      const endDate   = new Date(entry.end_time);
+      const endDate = new Date(entry.end_time);
 
       startInput.value = toInputDateTime(startDate);
-      endInput.value   = toInputDateTime(endDate);
+      endInput.value = toInputDateTime(endDate);
 
       const diffSeconds = Math.floor((endDate - startDate) / 1000);
       durationDiv.textContent = formatDuration(diffSeconds);
 
-      editModal.classList.remove('hidden');
+      editModal.classList.remove("hidden");
     } catch (err) {
-      console.error('Failed to load entry for editing:', err);
+      console.error("Failed to load entry for editing:", err);
     }
   }
 
-  table.addEventListener('click', async (e) => {
-    const row = e.target.closest('tr[data-entry-id]');
+  table.addEventListener("click", async (e) => {
+    const row = e.target.closest("tr[data-entry-id]");
     if (!row) return;
     const entryId = row.dataset.entryId;
     if (!entryId) return;
 
-    if (e.target.classList.contains('delete-btn')) {
+    if (e.target.classList.contains("delete-btn")) {
       try {
         await deleteEntryAPI(entryId);
         row.remove();
       } catch (err) {
-        console.error('Error deleting entry:', err);
+        console.error("Error deleting entry:", err);
       }
-    }
-    else if (e.target.classList.contains('edit-btn')) {
+    } else if (e.target.classList.contains("edit-btn")) {
       await openEditModal(entryId);
     }
   });
 
   function recalcDuration() {
     if (!startInput.value || !endInput.value) {
-      durationDiv.textContent = '00:00:00';
+      durationDiv.textContent = "00:00:00";
       return;
     }
     const startDate = parseInputDateTime(startInput.value);
-    const endDate   = parseInputDateTime(endInput.value);
-    const diffMs    = endDate - startDate;
-    const diffSec   = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
+    const endDate = parseInputDateTime(endInput.value);
+    const diffMs = endDate - startDate;
+    const diffSec = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
     durationDiv.textContent = formatDuration(diffSec);
   }
 
-  startInput.addEventListener('input', recalcDuration);
-  endInput.addEventListener('input', recalcDuration);
+  startInput.addEventListener("input", recalcDuration);
+  endInput.addEventListener("input", recalcDuration);
 
-
-  cancelBtn.addEventListener('click', () => {
+  cancelBtn.addEventListener("click", () => {
     closeEditModal();
   });
 
-
-  editForm.addEventListener('submit', async (e) => {
+  editForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!currentEditId) return;
 
     const startDate = parseInputDateTime(startInput.value);
-    const endDate   = parseInputDateTime(endInput.value);
+    const endDate = parseInputDateTime(endInput.value);
     const durationSeconds = Math.floor((endDate - startDate) / 1000);
 
     const payload = {
-      start_time: startInput.value.replace('T', ' '),
-      end_time:   endInput.value.replace('T', ' '),
-      duration_seconds: durationSeconds
+      start_time: startInput.value.replace("T", " "),
+      end_time: endInput.value.replace("T", " "),
+      duration_seconds: durationSeconds,
     };
 
     try {
       await updateEntryAPI(currentEditId, payload);
 
-      const row = document.querySelector(`tr[data-entry-id="${currentEditId}"]`);
+      const row = document.querySelector(
+        `tr[data-entry-id="${currentEditId}"]`,
+      );
       if (row) {
         const yyyy = startDate.getFullYear();
-        const mm   = String(startDate.getMonth() + 1).padStart(2, '0');
-        const dd   = String(startDate.getDate()).padStart(2, '0');
-        row.querySelector('.entry-date').textContent = `${yyyy}-${mm}-${dd}`;
+        const mm = String(startDate.getMonth() + 1).padStart(2, "0");
+        const dd = String(startDate.getDate()).padStart(2, "0");
+        row.querySelector(".entry-date").textContent = `${yyyy}-${mm}-${dd}`;
 
-        const sh = String(startDate.getHours()).padStart(2, '0');
-        const sm = String(startDate.getMinutes()).padStart(2, '0');
-        const ss = String(startDate.getSeconds()).padStart(2, '0');
-        row.querySelector('.entry-start').textContent = `${sh}:${sm}:${ss}`;
+        const sh = String(startDate.getHours()).padStart(2, "0");
+        const sm = String(startDate.getMinutes()).padStart(2, "0");
+        const ss = String(startDate.getSeconds()).padStart(2, "0");
+        row.querySelector(".entry-start").textContent = `${sh}:${sm}:${ss}`;
 
-        const eh = String(endDate.getHours()).padStart(2, '0');
-        const em = String(endDate.getMinutes()).padStart(2, '0');
-        const es = String(endDate.getSeconds()).padStart(2, '0');
-        row.querySelector('.entry-end').textContent = `${eh}:${em}:${es}`;
+        const eh = String(endDate.getHours()).padStart(2, "0");
+        const em = String(endDate.getMinutes()).padStart(2, "0");
+        const es = String(endDate.getSeconds()).padStart(2, "0");
+        row.querySelector(".entry-end").textContent = `${eh}:${em}:${es}`;
 
-        const hours   = Math.floor(durationSeconds / 3600);
+        const hours = Math.floor(durationSeconds / 3600);
         const minutes = Math.floor((durationSeconds % 3600) / 60);
         const seconds = durationSeconds % 60;
-        row.querySelector('.entry-duration').textContent =
+        row.querySelector(".entry-duration").textContent =
           `${hours}h ${minutes}m ${seconds}s`;
       }
 
       closeEditModal();
     } catch (err) {
-      console.error('Error updating entry:', err);
+      console.error("Error updating entry:", err);
     }
   });
-
 
   closeEditModal();
 });

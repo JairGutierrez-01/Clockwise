@@ -4,9 +4,18 @@
     <meta charset="UTF-8" />
     <title>Teams - ClockWise</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='teams.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='teams.css') }}"
+    />
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
@@ -16,7 +25,7 @@
         <div class="team-card-header">
           <h2>Teams</h2>
           <button class="create-team-btn">Create Team</button>
-            <button class="delete-team-btn">Delete Team</button>
+          <button class="delete-team-btn">Delete Team</button>
         </div>
 
         <table class="team-table">
@@ -57,10 +66,21 @@
       <div class="custom-modal-content">
         <h3 id="customModalTitle" class="custom-modal-title"></h3>
         <p id="customModalMessage" class="custom-modal-message"></p>
-        <input type="text" id="customModalInput" class="custom-modal-input" placeholder="" />
+        <input
+          type="text"
+          id="customModalInput"
+          class="custom-modal-input"
+          placeholder=""
+        />
         <div class="custom-modal-buttons">
-          <button id="customModalConfirmBtn" class="custom-modal-btn confirm-btn"></button>
-          <button id="customModalCancelBtn" class="custom-modal-btn cancel-btn"></button>
+          <button
+            id="customModalConfirmBtn"
+            class="custom-modal-btn confirm-btn"
+          ></button>
+          <button
+            id="customModalCancelBtn"
+            class="custom-modal-btn cancel-btn"
+          ></button>
         </div>
       </div>
     </div>

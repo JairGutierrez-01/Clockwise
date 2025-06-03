@@ -117,14 +117,12 @@ def start_entry():
     if not task_id or str(task_id).strip() == "":
         count = task_model.Task.query.filter(
             task_model.Task.user_id == user_id,
-            task_model.Task.title.like("Untitled Task%")
+            task_model.Task.title.like("Untitled Task%"),
         ).count()
 
         title = f"Untitled Task #{count + 1}"
         task_result = task_service.create_task(
-            title=title,
-            user_id=user_id,
-            created_from_tracking=True
+            title=title, user_id=user_id, created_from_tracking=True
         )
         task_id = task_result["task_id"]
 
@@ -148,12 +146,12 @@ def stop_entry(entry_id):
     if not result.get("success"):
         return jsonify(result), 400
 
-
     time_entry = TimeEntry.query.get(entry_id)
     if time_entry and time_entry.task_id:
         update_durations_for_task_and_project(time_entry.task_id)
 
         from backend.services.project_service import update_total_duration_for_project
+
         print(">>> MANUELLER TEST START")
         task = time_entry.task
         if task and task.project_id:

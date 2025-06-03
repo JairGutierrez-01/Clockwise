@@ -51,7 +51,8 @@ body.dark-mode {
 --------------------------------------------*/
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: var(--font-base);
   line-height: var(--line-height);
   background-color: #ffffff;
@@ -160,7 +161,9 @@ body {
   border-radius: var(--radius);
   font-size: var(--font-base);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 }
 .tracker button:hover,
 .project button:hover {

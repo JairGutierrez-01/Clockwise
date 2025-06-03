@@ -21,8 +21,8 @@
  * @throws {Error} If the fetch request fails
  */
 async function fetchTasks() {
-  const res = await fetch('/api/time_entries/available-tasks');
-  if (!res.ok) throw new Error('Failed to fetch tasks');
+  const res = await fetch("/api/time_entries/available-tasks");
+  if (!res.ok) throw new Error("Failed to fetch tasks");
   return res.json(); // [{ task_id, title, … }, …]
 }
 
@@ -35,12 +35,12 @@ async function fetchTasks() {
  * @throws {Error} If the fetch request fails
  */
 async function createTaskAPI(title) {
-  const res = await fetch('/api/tasks', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, created_from_tracking: true }),
   });
-  if (!res.ok) throw new Error('Failed to create task');
+  if (!res.ok) throw new Error("Failed to create task");
   return res.json(); // { success, message, task_id }
 }
 
@@ -53,12 +53,12 @@ async function createTaskAPI(title) {
  * @throws {Error} If the fetch request fails
  */
 async function startEntryAPI(taskId) {
-  const res = await fetch('/api/time_entries/start', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("/api/time_entries/start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ task_id: taskId }),
   });
-  if (!res.ok) throw new Error('Failed to start entry');
+  if (!res.ok) throw new Error("Failed to start entry");
   return res.json(); // { success, message, time_entry_id }
 }
 
@@ -71,8 +71,10 @@ async function startEntryAPI(taskId) {
  * @throws {Error} If the fetch request fails
  */
 async function pauseEntryAPI(entryId) {
-  const res = await fetch(`/api/time_entries/pause/${entryId}`, { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to pause entry');
+  const res = await fetch(`/api/time_entries/pause/${entryId}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to pause entry");
   return res.json();
 }
 
@@ -85,8 +87,10 @@ async function pauseEntryAPI(entryId) {
  * @throws {Error} If the fetch request fails
  */
 async function resumeEntryAPI(entryId) {
-  const res = await fetch(`/api/time_entries/resume/${entryId}`, { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to resume entry');
+  const res = await fetch(`/api/time_entries/resume/${entryId}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to resume entry");
   return res.json();
 }
 
@@ -99,8 +103,10 @@ async function resumeEntryAPI(entryId) {
  * @throws {Error} If the fetch request fails
  */
 async function stopEntryAPI(entryId) {
-  const res = await fetch(`/api/time_entries/stop/${entryId}`, { method: 'POST' });
-  if (!res.ok) throw new Error('Failed to stop entry');
+  const res = await fetch(`/api/time_entries/stop/${entryId}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Failed to stop entry");
   return res.json(); // { success, message, duration_minutes }
 }
 
@@ -114,7 +120,7 @@ async function stopEntryAPI(entryId) {
  */
 async function fetchEntryAPI(entryId) {
   const res = await fetch(`/api/time_entries/${entryId}`);
-  if (!res.ok) throw new Error('Failed to fetch entry');
+  if (!res.ok) throw new Error("Failed to fetch entry");
   return res.json(); // the full { time_entry_id, start_time, end_time, duration_minutes, … }
 }
 
@@ -123,8 +129,8 @@ async function fetchEntryAPI(entryId) {
  * @returns {Promise<Array>} Array of tasks
  */
 async function fetchLatestSessions() {
-  const res = await fetch('/api/time_entries/latest_sessions');
-  if (!res.ok) throw new Error('Failed to fetch latest sessions');
+  const res = await fetch("/api/time_entries/latest_sessions");
+  if (!res.ok) throw new Error("Failed to fetch latest sessions");
   return res.json(); // Array of task objects
 }
 
@@ -137,8 +143,8 @@ async function fetchLatestSessions() {
  * @throws {Error} If the fetch request fails
  */
 async function deleteEntryAPI(entryId) {
-  const res = await fetch(`/api/time_entries/${entryId}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Failed to delete entry');
+  const res = await fetch(`/api/time_entries/${entryId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete entry");
   return res.json();
 }
 
@@ -158,11 +164,11 @@ function formatTime(ms) {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
-  return [h, m, s].map(v => String(v).padStart(2,'0')).join(':');
+  return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
 // --- persistent entry ID storage ---
-const ENTRY_IDS_KEY = 'clockwise_entry_ids';
+const ENTRY_IDS_KEY = "clockwise_entry_ids";
 
 /**
  * Loads persisted entry IDs from localStorage.
@@ -205,7 +211,7 @@ function addEntryId(id) {
  * @param {string|number} id - Entry ID to remove
  */
 function removeEntryId(id) {
-  const ids = loadEntryIds().filter(x => x !== id);
+  const ids = loadEntryIds().filter((x) => x !== id);
   saveEntryIds(ids);
 }
 
@@ -214,7 +220,6 @@ function removeEntryId(id) {
 // Sets up event listeners, state variables, and UI rendering on page load
 // ============================================================================
 
-
 /**
  * Initializes the time tracking page on DOMContentLoaded.
  * Hydrates persisted entries, sets up UI and event handlers.
@@ -222,40 +227,39 @@ function removeEntryId(id) {
 document.addEventListener("DOMContentLoaded", () => {
   // DOM refs
   /** @type {HTMLElement} */
-  const trackerEl    = document.querySelector(".tracker");
+  const trackerEl = document.querySelector(".tracker");
   /** @type {HTMLElement} */
-  const display      = document.getElementById("tracker-time");
+  const display = document.getElementById("tracker-time");
   /** @type {HTMLButtonElement} */
-  const startBtn     = document.getElementById("tracker-start");
+  const startBtn = document.getElementById("tracker-start");
   /** @type {HTMLButtonElement} */
-  const pauseBtn     = document.getElementById("tracker-pause");
+  const pauseBtn = document.getElementById("tracker-pause");
   /** @type {HTMLButtonElement} */
-  const resumeBtn    = document.getElementById("tracker-resume");
+  const resumeBtn = document.getElementById("tracker-resume");
   /** @type {HTMLButtonElement} */
-  const stopBtn      = document.getElementById("tracker-stop");
+  const stopBtn = document.getElementById("tracker-stop");
   /** @type {HTMLInputElement} */
-  const input        = document.getElementById("project-name-input");
+  const input = document.getElementById("project-name-input");
   /** @type {HTMLElement} */
-  const suggList     = document.getElementById("task-suggestions");
+  const suggList = document.getElementById("task-suggestions");
   /** @type {HTMLElement} */
-  const list         = document.getElementById("project-list");
+  const list = document.getElementById("project-list");
   /** @type {HTMLElement} */
   const emptyMessage = document.getElementById("empty-message");
   /** @type {HTMLTemplateElement} */
-  const tpl          = document.getElementById("entry-template");
-
+  const tpl = document.getElementById("entry-template");
 
   (async () => {
     try {
       const latestSessions = await fetchLatestSessions();
       if (latestSessions.length > 0) {
         emptyMessage.style.display = "none";
-        latestSessions.forEach(task => {
+        latestSessions.forEach((task) => {
           renderEntry({
             time_entry_id: task.task_id,
             task_id: task.task_id,
             name: task.title,
-            duration: "duration"
+            duration: "duration",
           });
         });
       }
@@ -264,56 +268,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })();
 
-
   // state
   /** @type {Array<Object>} */
   let allTasks = [];
   /** @type {number|null} */
   let timerInterval = null;
   /** @type {number|null} */
-  let startTime     = null;
+  let startTime = null;
   /** @type {number} */
-  let elapsedTime   = 0;
+  let elapsedTime = 0;
   /** @type {number|null} */
-  let currentEntryId= null;
+  let currentEntryId = null;
   /** @type {string} */
-  let startDisplay  = "";
+  let startDisplay = "";
 
   async function startTrackingForTask(taskId, title) {
-  // UI vorbereiten
-  input.value = title;
-  input.dataset.taskId = taskId;
-  input.disabled = true;
-  startBtn.hidden  = true;
-  pauseBtn.hidden  = false;
-  stopBtn.hidden   = false;
-  resumeBtn.hidden = true;
-  trackerEl.classList.add("animate-controls");
+    // UI vorbereiten
+    input.value = title;
+    input.dataset.taskId = taskId;
+    input.disabled = true;
+    startBtn.hidden = true;
+    pauseBtn.hidden = false;
+    stopBtn.hidden = false;
+    resumeBtn.hidden = true;
+    trackerEl.classList.add("animate-controls");
 
-  // Timer starten
-  startTime   = Date.now();
-  elapsedTime = 0;
-  display.textContent = "00:00:00";
-  timerInterval = setInterval(() => {
-    elapsedTime = Date.now() - startTime;
-    display.textContent = formatTime(elapsedTime);
-  }, 1000);
+    // Timer starten
+    startTime = Date.now();
+    elapsedTime = 0;
+    display.textContent = "00:00:00";
+    timerInterval = setInterval(() => {
+      elapsedTime = Date.now() - startTime;
+      display.textContent = formatTime(elapsedTime);
+    }, 1000);
 
-  // Backend start
-  const { time_entry_id } = await startEntryAPI(parseInt(taskId));
-  currentEntryId = time_entry_id;
-  startDisplay = new Date().toLocaleTimeString();
-}
+    // Backend start
+    const { time_entry_id } = await startEntryAPI(parseInt(taskId));
+    currentEntryId = time_entry_id;
+    startDisplay = new Date().toLocaleTimeString();
+  }
 
   // load tasks for suggestions
-  fetchTasks().then(tasks => allTasks = tasks);
+  fetchTasks().then((tasks) => (allTasks = tasks));
 
   /**
    * Shows or hides the "no sessions" hint based on presence of entries.
    * @function updateEmptyState
    */
   function updateEmptyState() {
-    emptyMessage.style.display = list.children.length ? 'none' : 'block';
+    emptyMessage.style.display = list.children.length ? "none" : "block";
   }
 
   // --- after loadEntries() and updateEmptyState() ---
@@ -330,8 +333,10 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function renderEntry(e) {
     // remove any existing entry cards for this ID
-    const existingCards = list.querySelectorAll(`.project-wrapper[data-id="${e.time_entry_id}"]`);
-    existingCards.forEach(card => card.remove());
+    const existingCards = list.querySelectorAll(
+      `.project-wrapper[data-id="${e.time_entry_id}"]`,
+    );
+    existingCards.forEach((card) => card.remove());
     // also remove from storage to prevent stale duplicates
     removeEntryId(e.time_entry_id);
 
@@ -340,41 +345,41 @@ document.addEventListener("DOMContentLoaded", () => {
     w.dataset.id = e.time_entry_id;
     clone.querySelector(".project-name").textContent = e.name;
     // Removed time-range population
-    clone.querySelector(".duration").textContent  = e.duration;
-     const resumeBtn = clone.querySelector(".resume-btn");
-  const deleteBtn = clone.querySelector(".delete-btn");
-  if (resumeBtn) resumeBtn.remove();
-  if (deleteBtn) deleteBtn.remove();
+    clone.querySelector(".duration").textContent = e.duration;
+    const resumeBtn = clone.querySelector(".resume-btn");
+    const deleteBtn = clone.querySelector(".delete-btn");
+    if (resumeBtn) resumeBtn.remove();
+    if (deleteBtn) deleteBtn.remove();
 
-  // Setze Edit-Button
-  const editBtn = clone.querySelector(".edit-btn");
-  if (editBtn) {
-    editBtn.setAttribute("data-task-id", e.task_id);
-  }
+    // Setze Edit-Button
+    const editBtn = clone.querySelector(".edit-btn");
+    if (editBtn) {
+      editBtn.setAttribute("data-task-id", e.task_id);
+    }
 
-  // Füge neuen Track-Button hinzu
-  const trackBtn = document.createElement("button");
+    // Füge neuen Track-Button hinzu
+    const trackBtn = document.createElement("button");
     trackBtn.textContent = "Track";
     trackBtn.className = "track-btn";
     trackBtn.addEventListener("click", async () => {
-  // Beende ggf. vorherige Sessions (Timer stoppen und ID löschen)
-  if (timerInterval) {
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
+      // Beende ggf. vorherige Sessions (Timer stoppen und ID löschen)
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
 
-  currentEntryId = null;
-  elapsedTime = 0;
-  display.textContent = "00:00:00";
+      currentEntryId = null;
+      elapsedTime = 0;
+      display.textContent = "00:00:00";
 
-  await startTrackingForTask(e.task_id, e.name);
-});
+      await startTrackingForTask(e.task_id, e.name);
+    });
 
-  clone.querySelector(".project").appendChild(trackBtn);
+    clone.querySelector(".project").appendChild(trackBtn);
 
-  list.appendChild(clone);
+    list.appendChild(clone);
     w.classList.add("new-entry");
-    w.addEventListener("animationend", ()=> w.classList.remove("new-entry"));
+    w.addEventListener("animationend", () => w.classList.remove("new-entry"));
     updateEmptyState();
   }
 
@@ -387,8 +392,8 @@ document.addEventListener("DOMContentLoaded", () => {
     suggList.innerHTML = "";
     if (!q) return;
     allTasks
-      .filter(t => t.title.toLowerCase().includes(q))
-      .forEach(t => {
+      .filter((t) => t.title.toLowerCase().includes(q))
+      .forEach((t) => {
         const li = document.createElement("li");
         li.textContent = t.title;
         li.dataset.taskId = t.task_id;
@@ -401,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @listens ul#task-suggestions click
    * @param {MouseEvent} e - Click event
    */
-  suggList.addEventListener("click", e => {
+  suggList.addEventListener("click", (e) => {
     if (e.target.tagName !== "LI") return;
     input.value = e.target.textContent;
     input.dataset.taskId = e.target.dataset.taskId;
@@ -414,20 +419,20 @@ document.addEventListener("DOMContentLoaded", () => {
    * @async
    */
   startBtn.addEventListener("click", async () => {
-  let taskId = input.dataset.taskId;
-  const title = input.value.trim();
+    let taskId = input.dataset.taskId;
+    const title = input.value.trim();
 
-  if (!taskId && title) {
-    const { task_id } = await createTaskAPI(title);
-    taskId = task_id;
-  }
+    if (!taskId && title) {
+      const { task_id } = await createTaskAPI(title);
+      taskId = task_id;
+    }
 
-  if (!taskId && !title) {
-    taskId = null;
-  }
+    if (!taskId && !title) {
+      taskId = null;
+    }
 
-  await startTrackingForTask(taskId, title);
-});
+    await startTrackingForTask(taskId, title);
+  });
 
   /**
    * Pauses the current timer and backend time entry.
@@ -438,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(timerInterval);
     timerInterval = null;
     await pauseEntryAPI(currentEntryId);
-    pauseBtn.hidden  = true;
+    pauseBtn.hidden = true;
     resumeBtn.hidden = false;
   });
 
@@ -455,7 +460,7 @@ document.addEventListener("DOMContentLoaded", () => {
       display.textContent = formatTime(elapsedTime);
     }, 1000);
     resumeBtn.hidden = true;
-    pauseBtn.hidden  = false;
+    pauseBtn.hidden = false;
   });
 
   /**
@@ -465,43 +470,43 @@ document.addEventListener("DOMContentLoaded", () => {
    * @async
    */
   stopBtn.addEventListener("click", async () => {
-  clearInterval(timerInterval);
-  timerInterval = null;
+    clearInterval(timerInterval);
+    timerInterval = null;
 
-  if (!currentEntryId) {
-    console.warn("No currentEntryId – stopping without entry");
-    return;
-  }
+    if (!currentEntryId) {
+      console.warn("No currentEntryId – stopping without entry");
+      return;
+    }
 
-  try {
-    await stopEntryAPI(currentEntryId);
-    const e = await fetchEntryAPI(currentEntryId);
-    const task = await fetch(`/api/tasks/${e.task_id}`).then(r => r.json());
+    try {
+      await stopEntryAPI(currentEntryId);
+      const e = await fetchEntryAPI(currentEntryId);
+      const task = await fetch(`/api/tasks/${e.task_id}`).then((r) => r.json());
 
-    e.name       = task.title;
-    e.start_time = startDisplay;
-    e.end_time   = new Date(e.end_time).toLocaleTimeString();
-    e.duration   = formatTime(elapsedTime);
+      e.name = task.title;
+      e.start_time = startDisplay;
+      e.end_time = new Date(e.end_time).toLocaleTimeString();
+      e.duration = formatTime(elapsedTime);
 
-    renderEntry(e);
-    addEntryId(currentEntryId);
-  } catch (err) {
-    console.error("Failed to stop or fetch entry:", err);
-  }
+      renderEntry(e);
+      addEntryId(currentEntryId);
+    } catch (err) {
+      console.error("Failed to stop or fetch entry:", err);
+    }
 
-  // Reset UI
-  trackerEl.classList.remove("animate-controls");
-  stopBtn.hidden  = true;
-  pauseBtn.hidden = true;
-  resumeBtn.hidden = true;
-  startBtn.hidden = false;
-  input.disabled  = false;
-  input.value     = "";
-  delete input.dataset.taskId;
-  currentEntryId  = null;
-  elapsedTime     = 0;
-  display.textContent = "00:00:00";
-});
+    // Reset UI
+    trackerEl.classList.remove("animate-controls");
+    stopBtn.hidden = true;
+    pauseBtn.hidden = true;
+    resumeBtn.hidden = true;
+    startBtn.hidden = false;
+    input.disabled = false;
+    input.value = "";
+    delete input.dataset.taskId;
+    currentEntryId = null;
+    elapsedTime = 0;
+    display.textContent = "00:00:00";
+  });
 
   /**
    * Handles click events on the project list for delete, resume, and edit actions.
@@ -509,7 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {MouseEvent} e - Click event
    * @async
    */
-  list.addEventListener("click", async e => {
+  list.addEventListener("click", async (e) => {
     const w = e.target.closest(".project-wrapper");
     if (!w) return;
     const id = w.dataset.id;
@@ -519,13 +524,14 @@ document.addEventListener("DOMContentLoaded", () => {
       w.remove();
       removeEntryId(id);
       updateEmptyState();
-
     } else if (e.target.classList.contains("resume-btn")) {
       // NEW: resume an existing session
       const entryId = w.dataset.id;
       const entry = await fetchEntryAPI(entryId);
       // fetch task title
-      const task = await fetch(`/api/tasks/${entry.task_id}`).then(r => r.json());
+      const task = await fetch(`/api/tasks/${entry.task_id}`).then((r) =>
+        r.json(),
+      );
       const title = task.title;
       // remove from UI and storage
       w.remove();
@@ -548,7 +554,6 @@ document.addEventListener("DOMContentLoaded", () => {
         display.textContent = formatTime(elapsedTime);
       }, 1000);
       currentEntryId = entryId;
-
     } else if (e.target.classList.contains("edit-btn")) {
       const taskId = e.target.dataset.taskId;
       if (taskId) {

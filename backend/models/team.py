@@ -4,16 +4,16 @@ from backend.database import db, Base
 
 class Team(db.Model):
     """
-        Database model for a team within the system.
+    Database model for a team within the system.
 
-        Attributes:
-            team_id: Primary key identifier for the team.
-            name: Name of the team (required).
-            description: Optional textual description.
-            created_at: Timestamp of team creation.
-            members: Relationship to UserTeam (team members).
-            project: Projects that belong to this team.
-        """
+    Attributes:
+        team_id: Primary key identifier for the team.
+        name: Name of the team (required).
+        description: Optional textual description.
+        created_at: Timestamp of team creation.
+        members: Relationship to UserTeam (team members).
+        project: Projects that belong to this team.
+    """
 
     __tablename__ = "teams"
     # - Attributes:

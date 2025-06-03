@@ -27,9 +27,13 @@
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
+  background: linear-gradient(
+    to bottom,
+    var(--bg-gradient-start),
+    var(--bg-gradient-end)
+  );
   color: var(--text-light);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 1.1rem;
 }
 
@@ -71,7 +75,7 @@ body {
   color: var(--text-light);
 }
 
-.create-team-btn{
+.create-team-btn {
   background-color: var(--purple);
   border: none;
   padding: 10px 20px;
@@ -83,7 +87,7 @@ body {
   transition: background 0.2s ease;
 }
 
-.delete-team-btn{
+.delete-team-btn {
   background-color: #ff6b6b;
   border: none;
   padding: 10px 20px;
@@ -118,12 +122,12 @@ body {
 }
 
 .team-table thead {
-    background-color: var(--team-card-header-bg);
-    color: var(--text-light);
-    text-transform: uppercase;
-    font-size: 0.95rem;
-    letter-spacing: 0.5px;
-    font-weight: 700;
+  background-color: var(--team-card-header-bg);
+  color: var(--text-light);
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
 .team-table th {
@@ -132,18 +136,17 @@ body {
   border-bottom: 2px solid var(--border-color);
 }
 .team-table thead tr:first-child th:first-child {
-    border-top-left-radius: 12px;
+  border-top-left-radius: 12px;
 }
 .team-table thead tr:first-child th:last-child {
-    border-top-right-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
-
 .team-table tbody {
-    flex-grow: 1;
-    overflow-y: auto;
-    display: block;
-    width: 100%;
+  flex-grow: 1;
+  overflow-y: auto;
+  display: block;
+  width: 100%;
 }
 
 .team-table tr {
@@ -151,7 +154,9 @@ body {
   width: 100%;
   table-layout: fixed;
   border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.15);
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 }
 
 .team-table tr:last-child {
@@ -166,19 +171,19 @@ body {
 
 .team-table td {
   padding: 1rem 1.25rem;
-  font-size: 1.0rem;
+  font-size: 1rem;
   color: var(--text-light);
   vertical-align: middle;
 }
 
 .team-table td.role-admin {
-    color: var(--purple);
-    font-weight: 500;
+  color: var(--purple);
+  font-weight: 500;
 }
 
 .team-table td.role-member {
-    color: var(--member-color);
-    font-weight: 500;
+  color: var(--member-color);
+  font-weight: 500;
 }
 
 .members-card {
@@ -260,8 +265,6 @@ body {
   width: 100%;
 }
 
-
-
 /* Carousel Arrows */
 .carousel-arrow {
   position: absolute;
@@ -278,7 +281,9 @@ body {
   z-index: 10;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, background-color 0.2s ease;
+  transition:
+    opacity 0.3s ease,
+    background-color 0.2s ease;
 }
 
 .carousel-arrow:hover {
@@ -287,7 +292,7 @@ body {
 
 /* Arrow icon styling (pure CSS chevron) */
 .carousel-arrow::before {
-  content: '';
+  content: "";
   display: block;
   width: 10px; /* Size of the chevron */
   height: 10px;
@@ -324,8 +329,6 @@ body {
   pointer-events: auto;
 }
 
-
-
 .carousel-wrapper.active {
   cursor: grabbing;
 }
@@ -346,7 +349,7 @@ body {
   min-width: 100%;
   flex-shrink: 0;
   height: 100%;
-  background: linear-gradient(to right, #004C57, #0F1F36);
+  background: linear-gradient(to right, #004c57, #0f1f36);
   border-radius: 24px;
   padding: 1.5rem;
   box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
@@ -376,20 +379,19 @@ body {
 
 /* Custom scrollbar for .members-grid */
 .members-grid::-webkit-scrollbar {
-    width: 8px;
+  width: 8px;
 }
 .members-grid::-webkit-scrollbar-track {
-    background: #3a3a3a;
-    border-radius: 10px;
+  background: #3a3a3a;
+  border-radius: 10px;
 }
 .members-grid::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 10px;
+  background: #555;
+  border-radius: 10px;
 }
 .members-grid::-webkit-scrollbar-thumb:hover {
-    background: #707070;
+  background: #707070;
 }
-
 
 .member-item {
   display: flex;
@@ -397,7 +399,10 @@ body {
   background: var(--subtle-gradient-1);
   border-radius: 12px;
   padding: 1rem;
-  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -424,12 +429,11 @@ body {
 }
 
 .member-item:has(.member-role.admin) .member-avatar {
-    background-color: var(--admin-color);
+  background-color: var(--admin-color);
 }
 .member-item:has(.member-role:not(.admin)) .member-avatar {
-    background-color: var(--member-color);
+  background-color: var(--member-color);
 }
-
 
 .member-info {
   flex-grow: 1;
@@ -454,21 +458,21 @@ body {
 }
 
 .member-role::before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-    vertical-align: middle;
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
 }
 
 .member-role:not(.admin)::before {
-    background-color: var(--member-color);
+  background-color: var(--member-color);
 }
 
 .member-role.admin::before {
-    background-color: var(--admin-color);
+  background-color: var(--admin-color);
 }
 
 .member-role.admin {
@@ -490,7 +494,9 @@ body {
   z-index: 1000; /* Ensure it's on top of everything */
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
 }
 
 .custom-modal-backdrop.active {
@@ -507,7 +513,9 @@ body {
   width: 90%;
   text-align: center;
   transform: scale(0.9); /* Start slightly smaller for animation */
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
   opacity: 0;
   display: flex;
   flex-direction: column;
@@ -539,11 +547,15 @@ body {
   padding: 12px 15px;
   border: 1px solid var(--border-color); /* Use a subtle border color */
   border-radius: 8px;
-  background-color: var(--input-bg); /* A slightly darker background for input */
+  background-color: var(
+    --input-bg
+  ); /* A slightly darker background for input */
   color: var(--text-light);
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .custom-modal-input:focus {
@@ -565,7 +577,9 @@ body {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 }
 
 .custom-modal-btn:active {
@@ -593,7 +607,7 @@ body {
 
 /* Specific styles for alert types */
 .custom-modal-content.success .custom-modal-title {
-  color: #4CAF50; /* Green for success */
+  color: #4caf50; /* Green for success */
 }
 
 .custom-modal-content.error .custom-modal-title {

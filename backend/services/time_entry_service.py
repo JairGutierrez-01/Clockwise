@@ -91,7 +91,9 @@ def update_time_entry(time_entry_id, **kwargs):
         return {"error": "Time entry not found"}
 
     if "start_time" in kwargs and kwargs["start_time"]:
-        kwargs["start_time"] = datetime.strptime(kwargs["start_time"], "%Y-%m-%d %H:%M:%S")
+        kwargs["start_time"] = datetime.strptime(
+            kwargs["start_time"], "%Y-%m-%d %H:%M:%S"
+        )
     if "end_time" in kwargs and kwargs["end_time"]:
         kwargs["end_time"] = datetime.strptime(kwargs["end_time"], "%Y-%m-%d %H:%M:%S")
 
@@ -138,10 +140,8 @@ def delete_time_entry(time_entry_id):
         db.session.delete(task)
         db.session.commit()
 
-    return {
-        "success": True,
-        "message": "Time entry deleted successfully"
-    }
+    return {"success": True, "message": "Time entry deleted successfully"}
+
 
 def start_time_entry(user_id, task_id, comment=None):
     """
@@ -158,7 +158,9 @@ def start_time_entry(user_id, task_id, comment=None):
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
-    active_entry = TimeEntry.query.filter_by(task_id=task_id, user_id=user_id, end_time=None).first()
+    active_entry = TimeEntry.query.filter_by(
+        task_id=task_id, user_id=user_id, end_time=None
+    ).first()
     if active_entry:
         return {"error": "There is already an active time entry for this task"}
 

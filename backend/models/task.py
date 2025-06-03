@@ -53,16 +53,18 @@ class Task(db.Model):
     created_from_tracking = db.Column(db.Boolean, default=False, nullable=False)
     total_duration_seconds = db.Column(db.Integer, default=0)
 
-    time_entries = db.relationship("TimeEntry", back_populates="task", cascade="all, delete-orphan")
+    time_entries = db.relationship(
+        "TimeEntry", back_populates="task", cascade="all, delete-orphan"
+    )
     assigned_user = db.relationship("User", back_populates="assigned_task")
     project = db.relationship("Project", back_populates="tasks")
     category = db.relationship("Category", back_populates="task")
-
 
     @property
     def total_duration(self):
         """Returns total duration in HH:MM:SS format."""
         from datetime import timedelta
+
         return str(timedelta(seconds=self.total_duration_seconds))
 
     def __repr__(self):

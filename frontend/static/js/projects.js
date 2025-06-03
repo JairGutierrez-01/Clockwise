@@ -152,19 +152,19 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderProjectList() {
     projectListEl.innerHTML = "";
 
-  if (activeFilter === "unassigned") {
-    renderUnassignedTasks();
-    return;
-  }
+    if (activeFilter === "unassigned") {
+      renderUnassignedTasks();
+      return;
+    }
 
-  projects.forEach((proj) => {
-    if (activeFilter !== "all" && proj.type !== activeFilter) return;
+    projects.forEach((proj) => {
+      if (activeFilter !== "all" && proj.type !== activeFilter) return;
 
-    const card = document.createElement("div");
-    card.className = "project-card";
-    card.dataset.id = String(proj.project_id);
-    card.dataset.type = proj.type;
-    card.innerHTML = `
+      const card = document.createElement("div");
+      card.className = "project-card";
+      card.dataset.id = String(proj.project_id);
+      card.dataset.type = proj.type;
+      card.innerHTML = `
       <h2 class="project-card__name">${proj.name}</h2>
       <div class="project-card__meta">
         <p>Type: ${proj.type}</p>
@@ -173,41 +173,42 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <button class="project-card__view">View</button>
     `;
-    projectListEl.appendChild(card);
-  });
+      projectListEl.appendChild(card);
+    });
 
-  // Detail-Panel schließen, wenn außerhalb geklickt wird
-document.addEventListener("click", (event) => {
-  const detailPanel = document.getElementById("project-detail");
+    // Detail-Panel schließen, wenn außerhalb geklickt wird
+    document.addEventListener("click", (event) => {
+      const detailPanel = document.getElementById("project-detail");
 
-  // Falls Panel nicht existiert oder nicht sichtbar ist, abbrechen
-  if (!detailPanel || detailPanel.classList.contains("hidden")) return;
+      // Falls Panel nicht existiert oder nicht sichtbar ist, abbrechen
+      if (!detailPanel || detailPanel.classList.contains("hidden")) return;
 
-  const isInsideDetail = detailPanel.contains(event.target);
-  const clickedViewButton = event.target.classList.contains("project-card__view");
+      const isInsideDetail = detailPanel.contains(event.target);
+      const clickedViewButton =
+        event.target.classList.contains("project-card__view");
 
-  // Wenn außerhalb geklickt und nicht auf View-Button → Panel schließen
-  if (!isInsideDetail && !clickedViewButton) {
-    detailPanel.classList.add("hidden");
+      // Wenn außerhalb geklickt und nicht auf View-Button → Panel schließen
+      if (!isInsideDetail && !clickedViewButton) {
+        detailPanel.classList.add("hidden");
+      }
+    });
   }
-});
-}
 
-async function renderUnassignedTasks() {
-  try {
-    const res = await fetch("/api/tasks?unassigned=true");
-    if (!res.ok) throw new Error("Failed to fetch unassigned tasks");
-    const tasks = await res.json();
+  async function renderUnassignedTasks() {
+    try {
+      const res = await fetch("/api/tasks?unassigned=true");
+      if (!res.ok) throw new Error("Failed to fetch unassigned tasks");
+      const tasks = await res.json();
 
-    if (tasks.length === 0) {
-      projectListEl.innerHTML = "<p>No unassigned tasks found.</p>";
-      return;
-    }
+      if (tasks.length === 0) {
+        projectListEl.innerHTML = "<p>No unassigned tasks found.</p>";
+        return;
+      }
 
-    tasks.forEach((task) => {
-      const card = document.createElement("div");
-      card.className = "project-card unassigned-task-card";
-      card.innerHTML = `
+      tasks.forEach((task) => {
+        const card = document.createElement("div");
+        card.className = "project-card unassigned-task-card";
+        card.innerHTML = `
         <h2 class="project-card__name">${task.title}</h2>
         <div class="project-card__meta">
           <p>Description: ${task.description || "-"}</p>
@@ -216,16 +217,16 @@ async function renderUnassignedTasks() {
       `;
 
         card.addEventListener("click", () => {
-        openTaskEditModal(task.task_id);
-      });
+          openTaskEditModal(task.task_id);
+        });
 
-      projectListEl.appendChild(card);
-    });
-  } catch (err) {
-    console.error("Error loading unassigned tasks:", err);
-    projectListEl.innerHTML = "<p>Error loading unassigned tasks.</p>";
+        projectListEl.appendChild(card);
+      });
+    } catch (err) {
+      console.error("Error loading unassigned tasks:", err);
+      projectListEl.innerHTML = "<p>Error loading unassigned tasks.</p>";
+    }
   }
-}
   /**
    * Displays the details of a selected project.
    *
@@ -326,7 +327,7 @@ async function renderUnassignedTasks() {
 
   /* ───────────── Event listeners Tasks ───────────── */
   createTaskBtn.addEventListener("click", () => {
-  openTaskModal(null, editingProjectId);
+    openTaskModal(null, editingProjectId);
   });
 
   cancelTaskBtn.addEventListener("click", () => {
@@ -352,7 +353,7 @@ async function renderUnassignedTasks() {
       description: taskDescInput.value.trim(),
       category_id: parseInt(taskCategorySelect.value, 10) || null,
       due_date: taskDueDateInput.value || null,
-      project_id: parseInt(projectSelect.value, 10) || null,  // <-- neu!
+      project_id: parseInt(projectSelect.value, 10) || null, // <-- neu!
       created_from_tracking: false,
     };
 
@@ -399,7 +400,8 @@ async function renderUnassignedTasks() {
       taskDueDateInput.value = task.due_date || "";
 
       const projectSelect = document.getElementById("task-project");
-      projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
+      projectSelect.innerHTML =
+        '<option value="">-- Select Project --</option>';
       projects.forEach((proj) => {
         const option = document.createElement("option");
         option.value = proj.project_id;
@@ -451,7 +453,6 @@ async function renderUnassignedTasks() {
 
       const textSpan = document.createElement("span");
       textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
-
 
       // Delete-Button
       const deleteBtn = document.createElement("button");
@@ -507,7 +508,9 @@ async function renderUnassignedTasks() {
   function openTaskModal(task = null, defaultProjectId = null) {
     // Reset
     taskForm.reset();
-    document.getElementById("task-form-title").textContent = task ? "Edit Task" : "New Task";
+    document.getElementById("task-form-title").textContent = task
+      ? "Edit Task"
+      : "New Task";
 
     const projectSelect = document.getElementById("task-project");
 

@@ -188,6 +188,7 @@ def load_target_times_from_db():
         result[project.name] = project.time_limit_hours
     return result
 
+
 def calendar_due_dates():
     """
     Loads all project and task due dates and formats them as calendar events.
@@ -200,21 +201,25 @@ def calendar_due_dates():
     # Projekte mit due_date
     projects = Project.query.filter(Project.due_date.isnot(None)).all()
     for p in projects:
-        events.append({
-            "title": f"Project: {p.name}",
-            "start": p.due_date.date().isoformat(),
-            "end": p.due_date.date().isoformat(),
-            "color": "#ff4c4c",
-        })
+        events.append(
+            {
+                "title": f"Project: {p.name}",
+                "start": p.due_date.date().isoformat(),
+                "end": p.due_date.date().isoformat(),
+                "color": "#ff4c4c",
+            }
+        )
 
     # Tasks mit due_date
     tasks = Task.query.filter(Task.due_date.isnot(None)).all()
     for t in tasks:
-        events.append({
-            "title": f"Task: {t.title}",
-            "start": t.due_date.date().isoformat(),
-            "end": t.due_date.date().isoformat(),
-            "color": "#b30000",
-        })
+        events.append(
+            {
+                "title": f"Task: {t.title}",
+                "start": t.due_date.date().isoformat(),
+                "end": t.due_date.date().isoformat(),
+                "color": "#b30000",
+            }
+        )
 
     return events

@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from backend.models.time_entry import TimeEntry
-from backend.services.task_service import get_unassigned_tasks as get_unassigned_tasks_from_service
+from backend.services.task_service import (
+    get_unassigned_tasks as get_unassigned_tasks_from_service,
+)
 from flask import jsonify
 from flask_login import current_user
 from datetime import datetime
@@ -169,12 +171,18 @@ def get_unassigned_tasks():
 
     for task in tasks:
         duration_seconds = sum(
-            (entry.duration_seconds if entry.duration_seconds is not None else int((entry.duration_minutes or 0) * 60))
+            (
+                entry.duration_seconds
+                if entry.duration_seconds is not None
+                else int((entry.duration_minutes or 0) * 60)
+            )
             for entry in task.time_entries
         )
         task_dict = task.to_dict()
         total_minutes = duration_seconds // 60
-        task_dict["duration_readable"] = f"{total_minutes // 60}h {total_minutes % 60}min"
+        task_dict["duration_readable"] = (
+            f"{total_minutes // 60}h {total_minutes % 60}min"
+        )
         task_list.append(task_dict)
 
     return jsonify(task_list)

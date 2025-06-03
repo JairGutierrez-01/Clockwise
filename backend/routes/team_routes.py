@@ -27,7 +27,7 @@ def get_user_teams():
             .all()
         )
 
-        result_teams = [ #Renamed variable
+        result_teams = [  # Renamed variable
             {
                 "team_id": ut.team.team_id,
                 "team_name": ut.team.name,
@@ -42,7 +42,7 @@ def get_user_teams():
         if current_user.is_authenticated:
             current_user_info = {
                 "user_id": current_user.user_id,
-                "username": current_user.username
+                "username": current_user.username,
             }
 
         # Return a dictionary containing both teams and current_user info
@@ -102,13 +102,19 @@ def get_user_details(user_id):
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        return jsonify({
-            "user_id": user.user_id,
-            "username": user.username,
-        }), 200
+        return (
+            jsonify(
+                {
+                    "user_id": user.user_id,
+                    "username": user.username,
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @team_bp.route("/<int:team_id>/add-member", methods=["PATCH"])
 def add_team_member(team_id):
@@ -121,11 +127,20 @@ def add_team_member(team_id):
         new_member_id = data.get("user_id")
         role = data.get("role", "member")
 
-        admin_relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id, role="admin").first()
+        admin_relation = UserTeam.query.filter_by(
+            user_id=user_id, team_id=team_id, role="admin"
+        ).first()
         if not admin_relation:
-            return jsonify({"error": "You do not have permission to add members to this team"}), 403
+            return (
+                jsonify(
+                    {"error": "You do not have permission to add members to this team"}
+                ),
+                403,
+            )
 
-        existing = UserTeam.query.filter_by(user_id=new_member_id, team_id=team_id).first()
+        existing = UserTeam.query.filter_by(
+            user_id=new_member_id, team_id=team_id
+        ).first()
         if existing:
             return jsonify({"error": "User is already a member"}), 400
 
@@ -150,9 +165,18 @@ def remove_team_member(team_id):
         data = request.get_json()
         member_id = data.get("user_id")
 
-        admin_relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id, role="admin").first()
+        admin_relation = UserTeam.query.filter_by(
+            user_id=user_id, team_id=team_id, role="admin"
+        ).first()
         if not admin_relation:
-            return jsonify({"error": "You do not have permission to remove members from this team"}), 403
+            return (
+                jsonify(
+                    {
+                        "error": "You do not have permission to remove members from this team"
+                    }
+                ),
+                403,
+            )
 
         relation = UserTeam.query.filter_by(user_id=member_id, team_id=team_id).first()
         if not relation:
@@ -182,17 +206,14 @@ def get_team_members(team_id):
 
         members = UserTeam.query.filter_by(team_id=team_id).all()
         result = [
-            {
-                "user_id": member.user_id,
-                "role": member.role
-            }
-            for member in members
+            {"user_id": member.user_id, "role": member.role} for member in members
         ]
 
         return jsonify(result), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @team_bp.route("/<int:team_id>", methods=["DELETE"])
 def delete_team(team_id):
@@ -202,9 +223,14 @@ def delete_team(team_id):
     try:
         user_id = current_user.user_id
 
-        relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id, role="admin").first()
+        relation = UserTeam.query.filter_by(
+            user_id=user_id, team_id=team_id, role="admin"
+        ).first()
         if not relation:
-            return jsonify({"error": "You do not have permission to delete this team"}), 403
+            return (
+                jsonify({"error": "You do not have permission to delete this team"}),
+                403,
+            )
 
         UserTeam.query.filter_by(team_id=team_id).delete()
 

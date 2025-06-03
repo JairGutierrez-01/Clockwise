@@ -1,6 +1,5 @@
-
 const headers = {
-  "Content-Type": "application/json"
+  "Content-Type": "application/json",
 };
 
 // Global variables for carousel
@@ -28,8 +27,13 @@ const DRAG_SENSITIVITY = 2.5; // sensibility
 const SNAP_THRESHOLD_PERCENTAGE = 0.2;
 
 // --- Custom Modal Elements (get references once DOM is loaded) ---
-let customModal, customModalTitle, customModalMessage, customModalInput,
-    customModalConfirmBtn, customModalCancelBtn, customModalContent; // NEW: Added customModalContent here
+let customModal,
+  customModalTitle,
+  customModalMessage,
+  customModalInput,
+  customModalConfirmBtn,
+  customModalCancelBtn,
+  customModalContent; // NEW: Added customModalContent here
 let customModalResolve; // To store the resolve function for promises
 
 // Custom Modal Functions
@@ -43,38 +47,44 @@ function initializeModalElements() {
   customModalContent = customModal.querySelector(".custom-modal-content"); //Initialize customModalContent
 }
 
-function showCustomModal(title, message, inputPlaceholder, confirmText, cancelText, type) {
-  return new Promise(resolve => {
+function showCustomModal(
+  title,
+  message,
+  inputPlaceholder,
+  confirmText,
+  cancelText,
+  type,
+) {
+  return new Promise((resolve) => {
     customModalResolve = resolve;
 
     customModalTitle.textContent = title;
     customModalMessage.textContent = message;
 
     // Reset and configure input
-    customModalInput.value = '';
-    customModalInput.placeholder = inputPlaceholder || '';
-    customModalInput.style.display = inputPlaceholder ? 'block' : 'none';
+    customModalInput.value = "";
+    customModalInput.placeholder = inputPlaceholder || "";
+    customModalInput.style.display = inputPlaceholder ? "block" : "none";
 
     // Configure buttons
-    customModalConfirmBtn.textContent = confirmText || 'OK';
-    customModalCancelBtn.textContent = cancelText || 'Cancel';
-    customModalCancelBtn.style.display = cancelText ? 'inline-block' : 'none';
+    customModalConfirmBtn.textContent = confirmText || "OK";
+    customModalCancelBtn.textContent = cancelText || "Cancel";
+    customModalCancelBtn.style.display = cancelText ? "inline-block" : "none";
 
     // Set modal type class for CSS styling
-    customModal.classList.remove('prompt-type', 'alert-type', 'confirm-type');
+    customModal.classList.remove("prompt-type", "alert-type", "confirm-type");
     customModal.classList.add(`${type}-type`);
 
     // Add success/error class to content for color changes
     // Ensure customModalContent is initialized before using it
     if (customModalContent) {
-        customModalContent.classList.remove('success', 'error');
-        if (type === 'alert' && title.includes('Success')) {
-            customModalContent.classList.add('success');
-        } else if (type === 'alert' && title.includes('Error')) {
-            customModalContent.classList.add('error');
-        }
+      customModalContent.classList.remove("success", "error");
+      if (type === "alert" && title.includes("Success")) {
+        customModalContent.classList.add("success");
+      } else if (type === "alert" && title.includes("Error")) {
+        customModalContent.classList.add("error");
+      }
     }
-
 
     // Event listeners for buttons
     const handleConfirm = () => {
@@ -90,27 +100,27 @@ function showCustomModal(title, message, inputPlaceholder, confirmText, cancelTe
     };
 
     const handleKeydown = (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         e.preventDefault();
         handleConfirm();
-      } else if (e.key === 'Escape' && cancelText) {
+      } else if (e.key === "Escape" && cancelText) {
         e.preventDefault();
         handleCancel();
       }
     };
 
-    customModalConfirmBtn.addEventListener('click', handleConfirm);
-    customModalCancelBtn.addEventListener('click', handleCancel);
-    document.addEventListener('keydown', handleKeydown);
+    customModalConfirmBtn.addEventListener("click", handleConfirm);
+    customModalCancelBtn.addEventListener("click", handleCancel);
+    document.addEventListener("keydown", handleKeydown);
 
     // Function to remove event listeners to prevent memory leaks
     const removeListeners = () => {
-      customModalConfirmBtn.removeEventListener('click', handleConfirm);
-      customModalCancelBtn.removeEventListener('click', handleCancel);
-      document.removeEventListener('keydown', handleKeydown);
+      customModalConfirmBtn.removeEventListener("click", handleConfirm);
+      customModalCancelBtn.removeEventListener("click", handleCancel);
+      document.removeEventListener("keydown", handleKeydown);
     };
 
-    customModal.classList.add('active');
+    customModal.classList.add("active");
     if (inputPlaceholder) {
       setTimeout(() => customModalInput.focus(), 300); // Focus input after animation
     } else {
@@ -120,26 +130,33 @@ function showCustomModal(title, message, inputPlaceholder, confirmText, cancelTe
 }
 
 function hideCustomModal() {
-  customModal.classList.remove('active');
+  customModal.classList.remove("active");
   // Ensure customModalContent is initialized before using it
   if (customModalContent) {
-      customModalContent.classList.remove('success', 'error'); // Clean up type classes
+    customModalContent.classList.remove("success", "error"); // Clean up type classes
   }
 }
 
 // Wrapper functions for convenience
 function showCustomPrompt(title, message, placeholder) {
-  return showCustomModal(title, message, placeholder, 'Submit', 'Cancel', 'prompt');
+  return showCustomModal(
+    title,
+    message,
+    placeholder,
+    "Submit",
+    "Cancel",
+    "prompt",
+  );
 }
 
-function showCustomAlert(title, message, type = 'alert') { // type can be 'success' or 'error' for styling
-  return showCustomModal(title, message, null, 'OK', null, 'alert');
+function showCustomAlert(title, message, type = "alert") {
+  // type can be 'success' or 'error' for styling
+  return showCustomModal(title, message, null, "OK", null, "alert");
 }
 
 function showCustomConfirm(title, message) {
-  return showCustomModal(title, message, null, 'Confirm', 'Cancel', 'confirm');
+  return showCustomModal(title, message, null, "Confirm", "Cancel", "confirm");
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeModalElements(); // Initialize modal elements after DOM is loaded
@@ -154,7 +171,11 @@ document.addEventListener("DOMContentLoaded", () => {
   //All button event listeners are now at the same level
   if (createTeamBtn) {
     createTeamBtn.addEventListener("click", async () => {
-      const teamName = await showCustomPrompt("Create New Team", "Enter the name for your new team:", "Team Name");
+      const teamName = await showCustomPrompt(
+        "Create New Team",
+        "Enter the name for your new team:",
+        "Team Name",
+      );
       if (!teamName || teamName.trim() === "") {
         showCustomAlert("Error", "Team name is required.", "error");
         return;
@@ -165,16 +186,24 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: headers,
           body: JSON.stringify({ name: teamName.trim() }),
-          credentials: "include"
+          credentials: "include",
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          showCustomAlert("Success!", `Team "${teamName.trim()}" created successfully!`, "success");
+          showCustomAlert(
+            "Success!",
+            `Team "${teamName.trim()}" created successfully!`,
+            "success",
+          );
           fetchUserTeams();
         } else {
-          showCustomAlert("Error", "Error: " + (data.error || "Unknown error"), "error");
+          showCustomAlert(
+            "Error",
+            "Error: " + (data.error || "Unknown error"),
+            "error",
+          );
         }
       } catch (err) {
         console.error("Error at creating the Team:", err);
@@ -191,14 +220,17 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const confirmDelete = await showCustomConfirm("Delete Team", "Are you sure you want to delete this team? This action cannot be undone.");
+      const confirmDelete = await showCustomConfirm(
+        "Delete Team",
+        "Are you sure you want to delete this team? This action cannot be undone.",
+      );
       if (!confirmDelete) return;
 
       try {
         const response = await fetch(`/api/teams/${currentDisplayedTeamId}`, {
           method: "DELETE",
           headers: headers,
-          credentials: "include"
+          credentials: "include",
         });
 
         const data = await response.json();
@@ -207,7 +239,11 @@ document.addEventListener("DOMContentLoaded", () => {
           showCustomAlert("Success!", "Team deleted successfully!", "success");
           fetchUserTeams(); // Refresh
         } else {
-          showCustomAlert("Error", "Error deleting team: " + (data.error || "Unknown error"), "error");
+          showCustomAlert(
+            "Error",
+            "Error deleting team: " + (data.error || "Unknown error"),
+            "error",
+          );
         }
       } catch (err) {
         console.error("Network error:", err);
@@ -224,15 +260,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID and Role (e.g., '123, member' or '456, admin'):", "User ID, role");
+      const memberInfo = await showCustomPrompt(
+        "Add New Member",
+        "Enter new member's User ID and Role (e.g., '123, member' or '456, admin'):",
+        "User ID, role",
+      );
       if (!memberInfo || memberInfo.trim() === "") {
         showCustomAlert("Error", "User ID and Role are required.", "error");
         return;
       }
 
-      const parts = memberInfo.split(',').map(p => p.trim());
+      const parts = memberInfo.split(",").map((p) => p.trim());
       const newMemberId = parts[0];
-      const role = parts[1] || 'member'; // Default to 'member' if not specified
+      const role = parts[1] || "member"; // Default to 'member' if not specified
 
       if (!newMemberId) {
         showCustomAlert("Error", "Invalid User ID provided.", "error");
@@ -240,12 +280,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const response = await fetch(`/api/teams/${currentDisplayedTeamId}/add-member`, {
-          method: "PATCH",
-          headers: headers,
-          body: JSON.stringify({ user_id: newMemberId, role: role }),
-          credentials: "include"
-        });
+        const response = await fetch(
+          `/api/teams/${currentDisplayedTeamId}/add-member`,
+          {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify({ user_id: newMemberId, role: role }),
+            credentials: "include",
+          },
+        );
 
         const data = await response.json();
 
@@ -253,7 +296,11 @@ document.addEventListener("DOMContentLoaded", () => {
           showCustomAlert("Success!", "Member added successfully!", "success");
           fetchUserTeams(); // Re-fetch all teams to update the carousel
         } else {
-          showCustomAlert("Error", "Error adding member: " + (data.error || "Unknown error"), "error");
+          showCustomAlert(
+            "Error",
+            "Error adding member: " + (data.error || "Unknown error"),
+            "error",
+          );
         }
       } catch (err) {
         console.error("Error adding member:", err);
@@ -270,27 +317,42 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const memberIdToDelete = await showCustomPrompt("Remove Member", "Enter the User ID of the member to delete:", "User ID");
+      const memberIdToDelete = await showCustomPrompt(
+        "Remove Member",
+        "Enter the User ID of the member to delete:",
+        "User ID",
+      );
       if (!memberIdToDelete || memberIdToDelete.trim() === "") {
         showCustomAlert("Error", "User ID is required.", "error");
         return;
       }
 
       try {
-        const response = await fetch(`/api/teams/${currentDisplayedTeamId}/remove-member`, {
-          method: "PATCH",
-          headers: headers,
-          body: JSON.stringify({ user_id: memberIdToDelete }),
-          credentials: "include"
-        });
+        const response = await fetch(
+          `/api/teams/${currentDisplayedTeamId}/remove-member`,
+          {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify({ user_id: memberIdToDelete }),
+            credentials: "include",
+          },
+        );
 
         const data = await response.json();
 
         if (response.ok) {
-          showCustomAlert("Success!", "Member removed successfully!", "success");
+          showCustomAlert(
+            "Success!",
+            "Member removed successfully!",
+            "success",
+          );
           fetchUserTeams(); // Re-fetch all teams to update the carousel
         } else {
-          showCustomAlert("Error", "Error removing member: " + (data.error || "Unknown error"), "error");
+          showCustomAlert(
+            "Error",
+            "Error removing member: " + (data.error || "Unknown error"),
+            "error",
+          );
         }
       } catch (err) {
         console.error("Error removing member:", err);
@@ -303,7 +365,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add click handlers for carousel arrows here, ensuring they are only added once
   if (leftArrow) {
     leftArrow.addEventListener("click", () => {
-      if (!isDown) { // Prevent clicking during a drag
+      if (!isDown) {
+        // Prevent clicking during a drag
         updateCarouselPosition(currentCardIndex - 1);
       }
     });
@@ -311,7 +374,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (rightArrow) {
     rightArrow.addEventListener("click", () => {
-      if (!isDown) { // Prevent clicking during a drag
+      if (!isDown) {
+        // Prevent clicking during a drag
         updateCarouselPosition(currentCardIndex + 1);
       }
     });
@@ -339,11 +403,14 @@ document.addEventListener("DOMContentLoaded", () => {
       // Determine target index based on snap threshold
       const snapThresholdPx = cardWidthWithGap * SNAP_THRESHOLD_PERCENTAGE;
 
-      if (movedDistance > snapThresholdPx) { // Dragged right significantly
+      if (movedDistance > snapThresholdPx) {
+        // Dragged right significantly
         targetIndex = currentCardIndex - 1;
-      } else if (movedDistance < -snapThresholdPx) { // Dragged left significantly
+      } else if (movedDistance < -snapThresholdPx) {
+        // Dragged left significantly
         targetIndex = currentCardIndex + 1;
-      } else { // Slight drag, snap back to current or nearest if very close
+      } else {
+        // Slight drag, snap back to current or nearest if very close
         targetIndex = currentCardIndex; // Snap back to where it was
       }
 
@@ -377,27 +444,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const maxAllowedTranslateX = 0; // Cannot drag past the first card to the right (0px translate)
       // The minimum allowed translateX means the rightmost edge of the track aligns with the rightmost edge of the wrapper
       // Only apply this if there are more cards than can fit in the wrapper
-      const minAllowedTranslateX = -(totalTrackContentWidth - wrapperVisibleWidth);
-
+      const minAllowedTranslateX = -(
+        totalTrackContentWidth - wrapperVisibleWidth
+      );
 
       // Clamp the newTranslateX within the valid range
       newTranslateX = Math.max(newTranslateX, minAllowedTranslateX);
       newTranslateX = Math.min(newTranslateX, maxAllowedTranslateX);
-
 
       track.style.transform = `translateX(${newTranslateX}px)`;
     });
   }
 });
 
-
-
 async function fetchUserTeams() {
   try {
     const response = await fetch("/api/teams/", {
       method: "GET",
       headers: headers,
-      credentials: "include" // important for FLASK login
+      credentials: "include", // important for FLASK login
     });
 
     const responseData = await response.json();
@@ -408,9 +473,13 @@ async function fetchUserTeams() {
       if (responseData.current_user) {
         currentLoggedInUserId = responseData.current_user.user_id;
         currentLoggedInUsername = responseData.current_user.username;
-        console.log(`Logged in as: ${currentLoggedInUsername} (ID: ${currentLoggedInUserId})`);
+        console.log(
+          `Logged in as: ${currentLoggedInUsername} (ID: ${currentLoggedInUserId})`,
+        );
       } else {
-        console.warn("Current user data not found in /api/teams/ response. Displaying 'Guest'.");
+        console.warn(
+          "Current user data not found in /api/teams/ response. Displaying 'Guest'.",
+        );
         currentLoggedInUserId = null;
         currentLoggedInUsername = "Guest";
       }
@@ -422,42 +491,61 @@ async function fetchUserTeams() {
       // Fetch members for each team and their usernames
       const teamsWithMembersPromises = teamsData.map(async (team) => {
         try {
-          const membersResponse = await fetch(`/api/teams/${team.team_id}/members`, {
-            method: "GET",
-            headers: headers,
-            credentials: "include"
-          });
+          const membersResponse = await fetch(
+            `/api/teams/${team.team_id}/members`,
+            {
+              method: "GET",
+              headers: headers,
+              credentials: "include",
+            },
+          );
           const membersData = await membersResponse.json();
 
-          const membersWithUsernames = await Promise.all(membersData.map(async (member) => {
-            let username = `User ID: ${member.user_id}`; // Fallback
-            // Check if the member is the current logged-in user
-            if (currentLoggedInUserId && member.user_id === currentLoggedInUserId) {
+          const membersWithUsernames = await Promise.all(
+            membersData.map(async (member) => {
+              let username = `User ID: ${member.user_id}`; // Fallback
+              // Check if the member is the current logged-in user
+              if (
+                currentLoggedInUserId &&
+                member.user_id === currentLoggedInUserId
+              ) {
                 username = currentLoggedInUsername;
-            } else {
+              } else {
                 // Fetch actual username from a dedicated user endpoint
                 try {
-                  const userDetailsResponse = await fetch(`/api/users/${member.user_id}`, {
-                    method: "GET",
-                    headers: headers,
-                    credentials: "include"
-                  });
+                  const userDetailsResponse = await fetch(
+                    `/api/users/${member.user_id}`,
+                    {
+                      method: "GET",
+                      headers: headers,
+                      credentials: "include",
+                    },
+                  );
                   const userDetails = await userDetailsResponse.json();
                   if (userDetailsResponse.ok && userDetails.username) {
                     username = userDetails.username;
                   } else {
-                    console.warn(`Could not fetch username for user ID: ${member.user_id}`);
+                    console.warn(
+                      `Could not fetch username for user ID: ${member.user_id}`,
+                    );
                   }
                 } catch (userErr) {
-                  console.error(`Error fetching user details for ID ${member.user_id}:`, userErr);
+                  console.error(
+                    `Error fetching user details for ID ${member.user_id}:`,
+                    userErr,
+                  );
                 }
-            }
-            return { ...member, username: username };
-          }));
+              }
+              return { ...member, username: username };
+            }),
+          );
 
           return { ...team, members: membersWithUsernames };
         } catch (memberErr) {
-          console.error(`Error fetching members for team ${team.team_id}:`, memberErr);
+          console.error(
+            `Error fetching members for team ${team.team_id}:`,
+            memberErr,
+          );
           return { ...team, members: [] }; // Return team with empty members array on error
         }
       });
@@ -467,7 +555,11 @@ async function fetchUserTeams() {
       renderMembersForTeams(teamsWithMembers); // Render members into carousel
       setupCarousel(); // Setup carousel *after* members are rendered
     } else {
-      showCustomAlert("Error", "Error fetching teams: " + (responseData.error || "Unknown error"), "error");
+      showCustomAlert(
+        "Error",
+        "Error fetching teams: " + (responseData.error || "Unknown error"),
+        "error",
+      );
       console.error("Error al obtener equipos:", responseData.error);
     }
   } catch (err) {
@@ -476,25 +568,23 @@ async function fetchUserTeams() {
   }
 }
 
-
 // Show teams
 function renderTeams(teams) {
   const tbody = document.getElementById("teamsBody");
   tbody.innerHTML = "";
 
-  teams.forEach(team => {
+  teams.forEach((team) => {
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
       <td>${team.team_name}</td>
       <td>${new Date(team.created_at).toLocaleDateString()}</td>
-      <td class="${team.role === 'admin' ? 'role-admin' : 'role-member'}">${team.role}</td>
+      <td class="${team.role === "admin" ? "role-admin" : "role-member"}">${team.role}</td>
     `;
 
     tbody.appendChild(tr);
   });
 }
-
 
 // Show members of the Team
 function renderMembersForTeams(teams) {
@@ -504,31 +594,37 @@ function renderMembersForTeams(teams) {
   trackElement.innerHTML = "";
 
   if (teams.length === 0) {
-    trackElement.innerHTML = "<p style='text-align: center; color: var(--text-muted); margin-top: 20px;'>No teams available to display members.</p>";
+    trackElement.innerHTML =
+      "<p style='text-align: center; color: var(--text-muted); margin-top: 20px;'>No teams available to display members.</p>";
     return;
   }
 
-  teams.forEach(team => {
+  teams.forEach((team) => {
     const card = document.createElement("div");
     card.className = "member-team-card";
     card.dataset.teamId = team.team_id; // Store team ID on the card
 
     const members = team.members || [];
 
-    const membersHtml = members.map(member => `
+    const membersHtml = members
+      .map(
+        (member) => `
       <div class="member-item">
-        <div class="member-avatar" style="background-color:${member.role === 'admin' ? '#b18aff' : '#6ec5ff'}"></div>
+        <div class="member-avatar" style="background-color:${member.role === "admin" ? "#b18aff" : "#6ec5ff"}"></div>
         <div class="member-info">
-          <span class="member-name">${member.username}</span> <span class="member-role ${member.role === 'admin' ? 'admin' : ''}">${member.role}</span>
+          <span class="member-name">${member.username}</span> <span class="member-role ${member.role === "admin" ? "admin" : ""}">${member.role}</span>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
 
     // Display current user's role in this team
     const currentUserRoleInThisTeam = team.role;
-    const roleDisplay = currentUserRoleInThisTeam === 'admin' ?
-      `<span class="role-indicator role-admin">You are Admin</span>` :
-      `<span class="role-indicator role-member">You are Member</span>`;
+    const roleDisplay =
+      currentUserRoleInThisTeam === "admin"
+        ? `<span class="role-indicator role-admin">You are Admin</span>`
+        : `<span class="role-indicator role-member">You are Member</span>`;
 
     card.innerHTML = `
       <h3>Team: ${team.team_name}</h3>
@@ -558,10 +654,12 @@ function setupCarousel() {
   }
 
   // Ensure currentCardIndex is valid after potential content changes
-  currentCardIndex = Math.max(0, Math.min(currentCardIndex, track.children.length - 1));
+  currentCardIndex = Math.max(
+    0,
+    Math.min(currentCardIndex, track.children.length - 1),
+  );
   updateCarouselPosition(currentCardIndex); // Set initial position and update arrows
 }
-
 
 function getTranslateX(el) {
   const style = window.getComputedStyle(el);
@@ -594,7 +692,8 @@ function updateCarouselPosition(index) {
 
 // Function to show/hide arrows
 function updateCarouselArrows() {
-  if (!leftArrow || !rightArrow || !track || track.children.length === 0) return;
+  if (!leftArrow || !rightArrow || !track || track.children.length === 0)
+    return;
 
   const maxIndex = track.children.length - 1;
 

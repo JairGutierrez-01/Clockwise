@@ -134,10 +134,12 @@ def projects():
     user_projects = Project.query.filter_by(user_id=current_user.user_id).all()
     return render_template("projects.html", projects=user_projects)
 
+
 @app.route("/teams")
 @login_required
 def teams():
     return render_template("teams.html")
+
 
 @app.route("/logout")
 def logout():
@@ -197,17 +199,17 @@ def trigger_test_notification():
     return redirect(url_for("notifications"))
 
 
-@app.route('/time_entries')
+@app.route("/time_entries")
 def time_entry_page():
-    task_id = int(request.args.get('id'))
+    task_id = int(request.args.get("id"))
     task = get_task_by_id(task_id)
     task_title = task.title if task else "Unbekannte Aufgabe"
     time_entries = get_time_entries_by_task(task_id)
     return render_template(
-        'time_entries.html',
+        "time_entries.html",
         task_id=task_id,
         task_title=task_title,
-        time_entries=time_entries
+        time_entries=time_entries,
     )
 
 

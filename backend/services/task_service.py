@@ -174,16 +174,20 @@ def get_task_with_time_entries(task_id):
 
     return {
         "task": task.to_dict(),
-        "time_entries": [entry.to_dict() for entry in task.time_entries] if task.time_entries else [],
+        "time_entries": (
+            [entry.to_dict() for entry in task.time_entries]
+            if task.time_entries
+            else []
+        ),
     }
 
 
 def get_unassigned_tasks():
     """Retrieve all tasks that are not assigned to any project.
 
-     Returns:
-         list: List of Task objects where project_id is None.
-     """
+    Returns:
+        list: List of Task objects where project_id is None.
+    """
     return Task.query.filter(Task.project_id == None).all()
 
 
@@ -200,7 +204,9 @@ def update_total_duration_for_task(task_id):
     if not task:
         return {"error": "Task not found"}
 
-    total_seconds = sum(entry.duration_seconds or 0 for entry in task.time_entries or [])
+    total_seconds = sum(
+        entry.duration_seconds or 0 for entry in task.time_entries or []
+    )
     task.total_duration_seconds = total_seconds
     db.session.commit()
 
@@ -208,5 +214,5 @@ def update_total_duration_for_task(task_id):
         "success": True,
         "task_id": task_id,
         "total_duration_seconds": total_seconds,
-        "total_duration_formatted": str(timedelta(seconds=total_seconds))
+        "total_duration_formatted": str(timedelta(seconds=total_seconds)),
     }
