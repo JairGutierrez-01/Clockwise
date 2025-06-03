@@ -137,14 +137,7 @@ def projects():
 @app.route("/teams")
 @login_required
 def teams():
-    user_teams = (
-        db.session.query(UserTeam)
-        .filter_by(user_id=current_user.user_id)
-        .join(Team)
-        .order_by(Team.created_at.desc())
-        .all()
-    )
-    return render_template("teams.html", user_teams=user_teams)
+    return render_template("teams.html")
 
 @app.route("/logout")
 def logout():
