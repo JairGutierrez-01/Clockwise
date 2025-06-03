@@ -14,7 +14,7 @@ let currentDisplayedTeamId = null; // To store the ID of the currently displayed
 let currentLoggedInUserId = null;
 let currentLoggedInUsername = "Guest"; // Default to Guest until fetched
 
-// Carousel elements - make them global if used across functions
+// Carousel elements
 const wrapper = document.querySelector(".carousel-wrapper");
 const track = document.querySelector(".carousel-track");
 const leftArrow = document.querySelector(".carousel-arrow.left");
@@ -27,9 +27,10 @@ let currentTranslateXAtDragStart = 0;
 const DRAG_SENSITIVITY = 2.5; // sensibility
 const SNAP_THRESHOLD_PERCENTAGE = 0.2;
 
-// --- Custom Modal Elements (get references once DOM is loaded) ---
+// Custom Modal Elements (get references once DOM is loaded)
 let customModal, customModalTitle, customModalMessage, customModalInput,
-    customModalConfirmBtn, customModalCancelBtn, customModalContent; // NEW: Added customModalContent here
+    customModalConfirmBtn, customModalCancelBtn, customModalContent;
+
 let customModalResolve; // To store the resolve function for promises
 
 // Custom Modal Functions
@@ -65,8 +66,7 @@ function showCustomModal(title, message, inputPlaceholder, confirmText, cancelTe
     customModal.classList.add(`${type}-type`);
 
     // Add success/error class to content for color changes
-    // Ensure customModalContent is initialized before using it
-    if (customModalContent) {
+    if (customModalContent) { // Ensure customModalContent is initialized
         customModalContent.classList.remove('success', 'error');
         if (type === 'alert' && title.includes('Success')) {
             customModalContent.classList.add('success');
@@ -121,8 +121,7 @@ function showCustomModal(title, message, inputPlaceholder, confirmText, cancelTe
 
 function hideCustomModal() {
   customModal.classList.remove('active');
-  // Ensure customModalContent is initialized before using it
-  if (customModalContent) {
+  if (customModalContent) { // Ensure customModalContent is initialized
       customModalContent.classList.remove('success', 'error'); // Clean up type classes
   }
 }
@@ -183,7 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Moved out of createTeamBtn's if block
   if (deleteTeamBtn) {
     deleteTeamBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -216,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Moved out of createTeamBtn's if block
+  // Add member button listener to use User ID
   if (addMemberBtn) {
     addMemberBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -224,6 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Prompt for User ID and Role
       const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID and Role (e.g., '123, member' or '456, admin'):", "User ID, role");
       if (!memberInfo || memberInfo.trim() === "") {
         showCustomAlert("Error", "User ID and Role are required.", "error");
@@ -231,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const parts = memberInfo.split(',').map(p => p.trim());
-      const newMemberId = parts[0];
+      const newMemberId = parts[0]; // Extract User ID
       const role = parts[1] || 'member'; // Default to 'member' if not specified
 
       if (!newMemberId) {
@@ -240,10 +239,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
+        // Send user_id to the existing backend endpoint
         const response = await fetch(`/api/teams/${currentDisplayedTeamId}/add-member`, {
           method: "PATCH",
           headers: headers,
-          body: JSON.stringify({ user_id: newMemberId, role: role }),
+          body: JSON.stringify({ user_id: newMemberId, role: role }), // Sending user_id
           credentials: "include"
         });
 
@@ -262,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Moved out of createTeamBtn's if block
+  // Delete member button listener
   if (deleteMemberBtn) {
     deleteMemberBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -300,7 +300,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Carousel Event Listeners
-  // Add click handlers for carousel arrows here, ensuring they are only added once
   if (leftArrow) {
     leftArrow.addEventListener("click", () => {
       if (!isDown) { // Prevent clicking during a drag
@@ -375,8 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const wrapperVisibleWidth = wrapper.offsetWidth;
 
       const maxAllowedTranslateX = 0; // Cannot drag past the first card to the right (0px translate)
-      // The minimum allowed translateX means the rightmost edge of the track aligns with the rightmost edge of the wrapper
-      // Only apply this if there are more cards than can fit in the wrapper
       const minAllowedTranslateX = -(totalTrackContentWidth - wrapperVisibleWidth);
 
 
@@ -391,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
 async function fetchUserTeams() {
   try {
     const response = await fetch("/api/teams/", {
@@ -404,7 +400,6 @@ async function fetchUserTeams() {
 
     if (response.ok) {
       // Assuming /api/teams/ endpoint returns current_user info
-      // Example: {"teams": [...], "current_user": {"user_id": 1, "username": "JohnDoe"}}
       if (responseData.current_user) {
         currentLoggedInUserId = responseData.current_user.user_id;
         currentLoggedInUsername = responseData.current_user.username;
@@ -430,7 +425,7 @@ async function fetchUserTeams() {
           const membersData = await membersResponse.json();
 
           const membersWithUsernames = await Promise.all(membersData.map(async (member) => {
-            let username = `User ID: ${member.user_id}`; // Fallback
+            let username = `${member.user_id}`; // Fallback: Use User ID if username can't be fetched
             // Check if the member is the current logged-in user
             if (currentLoggedInUserId && member.user_id === currentLoggedInUserId) {
                 username = currentLoggedInUsername;
