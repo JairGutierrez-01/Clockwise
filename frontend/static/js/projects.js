@@ -445,13 +445,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ? new Date(task.due_date).toLocaleDateString("de-DE")
         : "kein Datum";
 
-      let durationText = "0h 0min";
-      if (task.total_duration) {
-        const [hours, minutes] = task.total_duration.split(":");
-        durationText = `${parseInt(hours)}h ${parseInt(minutes)}min`;
-      }
-
       const textSpan = document.createElement("span");
+        let durationText = "0h 0min 0s";
+        if (task.total_duration) {
+            const [hours, minutes, seconds] = task.total_duration.split(":");
+            durationText = `${parseInt(hours)}h ${parseInt(minutes)}min ${parseInt(seconds)}s`;
+        }
+        textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
       textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
 
       // Delete-Button

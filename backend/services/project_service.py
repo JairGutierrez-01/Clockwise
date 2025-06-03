@@ -148,9 +148,7 @@ def update_total_duration_for_project(project_id):
         if task.total_duration_seconds is not None
     )
 
-    total_hours = total_seconds / 3600.0
-
-    project.current_hours = round((project.current_hours or 0) + total_hours, 3)
+    project.current_duration_seconds = total_seconds
     db.session.commit()
 
     return {
