@@ -1,5 +1,4 @@
 
-// Headers básicos para JSON. NO usamos Authorization porque usamos cookies (Flask-Login)
 const headers = {
   "Content-Type": "application/json"
 };
@@ -33,7 +32,7 @@ let customModal, customModalTitle, customModalMessage, customModalInput,
     customModalConfirmBtn, customModalCancelBtn, customModalContent; // NEW: Added customModalContent here
 let customModalResolve; // To store the resolve function for promises
 
-// --- Custom Modal Functions ---
+// Custom Modal Functions
 function initializeModalElements() {
   customModal = document.getElementById("customModal");
   customModalTitle = document.getElementById("customModalTitle");
@@ -41,7 +40,7 @@ function initializeModalElements() {
   customModalInput = document.getElementById("customModalInput");
   customModalConfirmBtn = document.getElementById("customModalConfirmBtn");
   customModalCancelBtn = document.getElementById("customModalCancelBtn");
-  customModalContent = customModal.querySelector(".custom-modal-content"); // NEW: Initialize customModalContent
+  customModalContent = customModal.querySelector(".custom-modal-content"); //Initialize customModalContent
 }
 
 function showCustomModal(title, message, inputPlaceholder, confirmText, cancelText, type) {
@@ -146,13 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeModalElements(); // Initialize modal elements after DOM is loaded
   fetchUserTeams(); // Initial team load and then carousel setup
 
-  // --- Team Management Buttons ---
+  //Team Management Buttons
   const createTeamBtn = document.querySelector(".create-team-btn");
   const addMemberBtn = document.querySelector(".add-member-btn");
   const deleteMemberBtn = document.querySelector(".delete-member-btn");
   const deleteTeamBtn = document.querySelector(".delete-team-btn");
 
-  // NEW: All button event listeners are now at the same level
+  //All button event listeners are now at the same level
   if (createTeamBtn) {
     createTeamBtn.addEventListener("click", async () => {
       const teamName = await showCustomPrompt("Create New Team", "Enter the name for your new team:", "Team Name");
@@ -184,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // NEW: Moved out of createTeamBtn's if block
+  // Moved out of createTeamBtn's if block
   if (deleteTeamBtn) {
     deleteTeamBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -217,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // NEW: Moved out of createTeamBtn's if block
+  // Moved out of createTeamBtn's if block
   if (addMemberBtn) {
     addMemberBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -263,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // NEW: Moved out of createTeamBtn's if block
+  // Moved out of createTeamBtn's if block
   if (deleteMemberBtn) {
     deleteMemberBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -300,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Carousel Event Listeners ---
+  // Carousel Event Listeners
   // Add click handlers for carousel arrows here, ensuring they are only added once
   if (leftArrow) {
     leftArrow.addEventListener("click", () => {
@@ -392,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// Cargar equipos desde el backend y sus miembros
+
 async function fetchUserTeams() {
   try {
     const response = await fetch("/api/teams/", {
@@ -404,7 +403,7 @@ async function fetchUserTeams() {
     const responseData = await response.json();
 
     if (response.ok) {
-      // NEW: Assuming your /api/teams/ endpoint returns current_user info
+      // Assuming /api/teams/ endpoint returns current_user info
       // Example: {"teams": [...], "current_user": {"user_id": 1, "username": "JohnDoe"}}
       if (responseData.current_user) {
         currentLoggedInUserId = responseData.current_user.user_id;
@@ -432,7 +431,7 @@ async function fetchUserTeams() {
 
           const membersWithUsernames = await Promise.all(membersData.map(async (member) => {
             let username = `User ID: ${member.user_id}`; // Fallback
-            // NEW: Check if the member is the current logged-in user
+            // Check if the member is the current logged-in user
             if (currentLoggedInUserId && member.user_id === currentLoggedInUserId) {
                 username = currentLoggedInUsername;
             } else {
@@ -481,7 +480,7 @@ async function fetchUserTeams() {
 // Show teams
 function renderTeams(teams) {
   const tbody = document.getElementById("teamsBody");
-  tbody.innerHTML = ""; // Borra mockups anteriores
+  tbody.innerHTML = "";
 
   teams.forEach(team => {
     const tr = document.createElement("tr");
