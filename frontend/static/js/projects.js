@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="project-card__meta">
         <p>Type: ${proj.type}</p>
         <p>Limit: ${proj.time_limit_hours} h</p>
-        <p>Spent: ${proj.duration_readable || "0h 0min"}</p>
+        <p>Spent Time: ${proj.duration_readable || "0h 0min 0s"}</p>
       </div>
       <button class="project-card__view">View</button>
     `;
@@ -246,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
       detailDesc.textContent = proj.description || "-";
       detailType.textContent = proj.type;
       detailTimeLimit.textContent = `${proj.time_limit_hours} h`;
-      detailCurrentHours.textContent = `${proj.current_hours || 0} h`;
+      detailCurrentHours.textContent = proj.duration_readable || "0h 0min 0s";
       detailDueDate.textContent = proj.due_date
         ? new Date(proj.due_date).toLocaleDateString()
         : "-";

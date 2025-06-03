@@ -81,6 +81,7 @@ def get_project(project_id):
     project = Project.query.get(project_id)
     if not project:
         return {"error": "Project not found."}
+    update_total_duration_for_project(project_id)
     return {"success": True, "project": project}
 
 
