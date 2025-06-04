@@ -53,73 +53,111 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderFullCalendar() {
-    const calendarEl = document.getElementById("calendar");
+  const calendarEl = document.getElementById("calendar");
 
-    if (calendarInstance) {
-      calendarInstance.destroy();
+  if (calendarInstance) {
+    calendarInstance.destroy();
+  }
+
+  // Fetch nur due dates und aggregierte Arbeitszeit
+  Promise.all([
+    fetch("/calendar-due-dates").then(res => res.json()),
+    fetch("/calendar-worked-time").then(res => res.json())
+  ])
+  .then(([dueDates, workedTime]) => {
+    const events = [...dueDates, ...workedTime];
+
+    calendarInstance = new FullCalendar.Calendar(calendarEl, {
+    initialView: "dayGridMonth",
+    headerToolbar: {
+      left: "prev",
+      center: "title",
+      right: "next",
+    },
+    views: {
+      multiMonthYear: {
+        type: "multiMonth",
+        duration: { months: 12 },
+      },
+    },
+    events: events,
+    eventDidMount: function(info) {
+      const project = info.event.extendedProps.project;
+
+      if (project) {
+        let tooltip;
+
+        info.el.addEventListener("mouseenter", (e) => {
+          tooltip = document.createElement("div");
+          tooltip.innerText = `Projekt: ${project}`;
+          tooltip.style.position = "absolute";
+          tooltip.style.background = "#333";
+          tooltip.style.color = "#fff";
+          tooltip.style.padding = "4px 8px";
+          tooltip.style.borderRadius = "4px";
+          tooltip.style.fontSize = "12px";
+          tooltip.style.pointerEvents = "none";
+          tooltip.style.zIndex = 1000;
+          tooltip.style.whiteSpace = "nowrap";
+          tooltip.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+          tooltip.style.transition = "opacity 0.1s";
+
+          document.body.appendChild(tooltip);
+          tooltip.style.opacity = "1";
+          tooltip.style.left = e.pageX + 10 + "px";
+          tooltip.style.top = e.pageY + "px";
+        });
+
+        info.el.addEventListener("mousemove", (e) => {
+          if (tooltip) {
+            tooltip.style.left = e.pageX + 10 + "px";
+            tooltip.style.top = e.pageY + "px";
+          }
+        });
+
+        info.el.addEventListener("mouseleave", () => {
+          if (tooltip) {
+            tooltip.remove();
+            tooltip = null;
+          }
+        });
+      }
     }
+  });
 
-    Promise.all([
-      fetch("/api/analysis/time-entries?start_date=2025-06-01T00:00:00&end_date=2025-06-30T23:59:59").then(res => res.json()),
-      fetch("/calendar-due-dates").then(res => res.json())
-    ])
-    .then(([timeEntries, dueDates]) => {
-      const timeEntryEvents = timeEntries.map((e) => ({
-        title: e.task,
-        start: e.start,
-        end: e.end,
-      }));
+    calendarInstance.render();
 
-      const events = [...timeEntryEvents, ...dueDates];
-
-      calendarInstance = new FullCalendar.Calendar(calendarEl, {
-        initialView: "dayGridMonth",
-        headerToolbar: {
-          left: "prev",
-          center: "title",
-          right: "next",
-        },
-        views: {
-          multiMonthYear: {
-            type: "multiMonth",
-            duration: { months: 12 },
-          },
-        },
-        events: events,
+    // Buttons für Ansicht
+    document
+      .getElementById("month-view-btn")
+      ?.addEventListener("click", () => {
+        calendarInstance.changeView("dayGridMonth");
+        setActiveView("month");
       });
 
-      calendarInstance.render();
+    document
+      .getElementById("year-view-btn")
+      ?.addEventListener("click", () => {
+        calendarInstance.changeView("multiMonthYear");
+        setActiveView("year");
+      });
 
-      // Buttons für Ansicht
+    function setActiveView(view) {
       document
         .getElementById("month-view-btn")
-        ?.addEventListener("click", () => {
-          calendarInstance.changeView("dayGridMonth");
-          setActiveView("month");
-        });
-
+        ?.classList.toggle("active", view === "month");
       document
         .getElementById("year-view-btn")
-        ?.addEventListener("click", () => {
-          calendarInstance.changeView("multiMonthYear");
-          setActiveView("year");
-        });
+        ?.classList.toggle("active", view === "year");
+    }
 
-      function setActiveView(view) {
-        document
-          .getElementById("month-view-btn")
-          ?.classList.toggle("active", view === "month");
-        document
-          .getElementById("year-view-btn")
-          ?.classList.toggle("active", view === "year");
-      }
+    setActiveView("month");
+  })
+  .catch((err) => {
+    console.error("❌ Fehler beim Laden von Kalenderdaten:", err);
+  });
+}
 
-      setActiveView("month");
-    })
-    .catch((err) => {
-      console.error("Error occured while loading calender data:", err);
-    });
-  }
 
   // === View Switching ===
   buttons.forEach((btn) => {

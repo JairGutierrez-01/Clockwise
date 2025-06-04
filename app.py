@@ -25,7 +25,8 @@ from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.user_routes import auth_bp
 from backend.services.task_service import get_task_by_id
 from backend.services.time_entry_service import get_time_entries_by_task
-from backend.services.analysis_service import calendar_due_dates
+from backend.services.analysis_service import calendar_due_dates, calendar_worked_time
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -205,6 +206,11 @@ def time_entry_page():
         task_title=task_title,
         time_entries=time_entries,
     )
+
+
+@app.route("/calendar-worked-time")
+def get_calendar_worked_time():
+    return jsonify(calendar_worked_time())
 
 
 if __name__ == "__main__":

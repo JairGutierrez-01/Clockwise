@@ -262,3 +262,42 @@ def calendar_due_dates():
         )
 
     return events
+
+
+def calendar_worked_time():
+    """
+    Returns one calendar event per task per day with total duration in h:min:s
+    """
+    time_entries = load_time_entries()
+    if not time_entries:
+        return []
+
+    grouped = defaultdict(lambda: defaultdict(lambda: {"duration": [], "project": None}))
+
+    for entry in time_entries:
+        date = entry["start"].date().isoformat()
+        task = entry["task"]
+        duration_sec = (entry["end"] - entry["start"]).total_seconds()
+        grouped[date][task]["duration"].append(duration_sec)
+        grouped[date][task]["project"] = entry["project"]
+
+    events = []
+    for date, tasks in grouped.items():
+        for task_name, task_data in tasks.items():
+            total = sum(task_data["duration"])
+            hours = int(total // 3600)
+            minutes = int((total % 3600) // 60)
+            seconds = int(total % 60)
+            project_name = task_data["project"]
+
+            events.append({
+                "title": f"{task_name}: {hours}h {minutes}min {seconds}s",
+                "start": date,
+                "allDay": True,
+                "color": "#7ab8f5",
+                "extendedProps": {
+                    "project": project_name
+                }
+            })
+
+    return events
