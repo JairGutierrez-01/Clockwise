@@ -3,6 +3,7 @@
 /**
  * Toggles between light and dark mode by modifying body classes.
  * Switches the visibility of the sun and moon icon accordingly.
+ * Saves the user's choice in localStorage.
  */
 function toggleTheme() {
   const body = document.body;
@@ -12,6 +13,10 @@ function toggleTheme() {
   const isDark = body.classList.contains("dark-mode");
   body.classList.toggle("dark-mode", !isDark);
   body.classList.toggle("light-mode", isDark);
+
+  // Save chosen theme
+  const newTheme = isDark ? "light" : "dark";
+  localStorage.setItem("theme", newTheme);
 
   if (sunIcon && moonIcon) {
     sunIcon.style.display = isDark ? "inline" : "none";
@@ -26,6 +31,18 @@ function toggleTheme() {
 document.addEventListener("DOMContentLoaded", () => {
   const sunIcon = document.getElementById("sun-icon");
   const moonIcon = document.getElementById("moon-icon");
+
+  const savedTheme = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+    document.body.classList.add("dark-mode");
+    document.body.classList.remove("light-mode");
+  } else {
+    document.body.classList.add("light-mode");
+    document.body.classList.remove("dark-mode");
+  }
+
   const isDark = document.body.classList.contains("dark-mode");
 
   if (sunIcon && moonIcon) {
