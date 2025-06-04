@@ -59,64 +59,66 @@ document.addEventListener("DOMContentLoaded", () => {
       calendarInstance.destroy();
     }
 
-    fetch("/analysis/projects")
-      .then((res) => res.json())
-      .then((data) => {
-        const events = data.projects || [];
+    Promise.all([
+      fetch("/api/analysis/time-entries?start_date=2025-06-01T00:00:00&end_date=2025-06-30T23:59:59").then(res => res.json()),
+      fetch("/calendar-due-dates").then(res => res.json())
+    ])
+    .then(([timeEntries, dueDates]) => {
+      const timeEntryEvents = timeEntries.map((e) => ({
+        title: e.task,
+        start: e.start,
+        end: e.end,
+      }));
 
-        calendarInstance = new FullCalendar.Calendar(calendarEl, {
-          initialView: "dayGridMonth",
-          headerToolbar: {
-            left: "prev",
-            center: "title",
-            right: "next",
+      const events = [...timeEntryEvents, ...dueDates];
+
+      calendarInstance = new FullCalendar.Calendar(calendarEl, {
+        initialView: "dayGridMonth",
+        headerToolbar: {
+          left: "prev",
+          center: "title",
+          right: "next",
+        },
+        views: {
+          multiMonthYear: {
+            type: "multiMonth",
+            duration: { months: 12 },
           },
-          views: {
-            multiMonthYear: {
-              type: "multiMonth",
-              duration: { months: 12 },
-            },
-          },
-          events: events,
+        },
+        events: events,
+      });
+
+      calendarInstance.render();
+
+      // Buttons für Ansicht
+      document
+        .getElementById("month-view-btn")
+        ?.addEventListener("click", () => {
+          calendarInstance.changeView("dayGridMonth");
+          setActiveView("month");
         });
 
-        calendarInstance.render();
+      document
+        .getElementById("year-view-btn")
+        ?.addEventListener("click", () => {
+          calendarInstance.changeView("multiMonthYear");
+          setActiveView("year");
+        });
 
+      function setActiveView(view) {
         document
           .getElementById("month-view-btn")
-          ?.addEventListener("click", () => {
-            calendarInstance.changeView("dayGridMonth");
-            setActiveView("month");
-          });
-
+          ?.classList.toggle("active", view === "month");
         document
           .getElementById("year-view-btn")
-          ?.addEventListener("click", () => {
-            calendarInstance.changeView("multiMonthYear");
-            setActiveView("year");
-          });
+          ?.classList.toggle("active", view === "year");
+      }
 
-        function setActiveView(view) {
-          document
-            .getElementById("month-view-btn")
-            ?.classList.toggle("active", view === "month");
-          document
-            .getElementById("year-view-btn")
-            ?.classList.toggle("active", view === "year");
-        }
-
-        // Set default active button
-        setActiveView("month");
-      })
-      .catch((err) => {
-        console.error("Fehler beim Laden der Kalenderdaten:", err);
-      });
-
-    fetch("/calendar-due-dates")
-      .then((res) => res.json())
-      .then((events) => {
-        calendar.addEventSource(events); // Fügt die Due-Dates hinzu
-      });
+      setActiveView("month");
+    })
+    .catch((err) => {
+      console.error("Error occured while loading calender data:", err);
+    });
   }
 
   // === View Switching ===

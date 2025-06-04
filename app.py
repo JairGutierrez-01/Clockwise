@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, url_for
 from flask import request
+from flask import jsonify
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager, login_user, logout_user
 from flask_login import current_user
@@ -24,6 +25,7 @@ from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.user_routes import auth_bp
 from backend.services.task_service import get_task_by_id
 from backend.services.time_entry_service import get_time_entries_by_task
+from backend.services.analysis_service import calendar_due_dates
 
 # Load environment variables from .env file
 load_dotenv()
@@ -59,7 +61,7 @@ app.register_blueprint(project_bp)
 # For API-Zugriffe
 app.register_blueprint(project_bp, url_prefix="/api/projects", name="project_api")
 app.register_blueprint(category_bp, url_prefix="/categories")
-app.register_blueprint(analysis_bp, url_prefix="/analysis")
+app.register_blueprint(analysis_bp, url_prefix="/api/analysis")
 
 # Create tables if not exist
 with app.app_context():
@@ -86,6 +88,9 @@ def override_url_for():
 def home():
     return render_template("homepage.html")
 
+@app.route("/calendar-due-dates")
+def get_calendar_due_dates():
+    return jsonify(calendar_due_dates())
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

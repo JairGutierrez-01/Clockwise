@@ -245,7 +245,7 @@ def calendar_due_dates():
                 "title": f"Project: {p.name}",
                 "start": p.due_date.date().isoformat(),
                 "end": p.due_date.date().isoformat(),
-                "color": "#ff4c4c",
+                "color": "#EE0000",
             }
         )
 
