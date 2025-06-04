@@ -1,4 +1,3 @@
-/* Variables */
 :root {
   --bg-gradient-start: #0e1629;
   --bg-gradient-end: #1b263b;
@@ -22,6 +21,12 @@
   --team-card-header-bg: #293141;
   --text-muted-rgb: 148, 163, 184;
   --gap: 2rem;
+
+  /* ADDED/FIXED THESE VARIABLES */
+  --accent-color-dark: #7c3aed; /* A darker shade of purple/accent for active button */
+  --text-color-light: #e0e6ed; /* Explicitly defining this as it was used without -- in one place */
+  --accent-color-light: #a78bfa; /* Light purple accent for hover effects */
+  --background-color-dark: #1b263b;
 }
 
 body {
@@ -633,4 +638,68 @@ body {
 
 .custom-modal-backdrop.prompt-type #customModalConfirmBtn {
   content: "Submit"; /* Text for prompt's confirm button */
+}
+
+/* Keyframes for the shake animation */
+@keyframes shake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(-1deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Apply shake animation to member items when in delete mode */
+.member-item.shake-animation {
+  animation: shake 0.2s infinite alternate; /* Adjust duration and iteration as needed */
+  cursor: pointer; /* Indicate clickability */
+  position: relative; /* For positioning the delete icon */
+  /* No overflow: visible here, as we want it to be contained */
+}
+
+/* Style for the delete icon */
+.member-item .delete-icon {
+  position: absolute;
+  top: 5px;   /* Position 5px from the top edge of member-item's padding box */
+  right: 5px; /* Position 5px from the right edge of member-item's padding box */
+
+  /* Removed transform: translate() to keep it strictly inside the parent */
+
+  background-color: #ff4d4d; /* Red background */
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 1000; /* Ensure it's always on top */
+  border: 3px solid var(--card-bg); /* Thicker border, using card-bg for contrast */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+  opacity: 0;
+  transform: scale(0); /* Keep scale for initial hidden state */
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  box-sizing: border-box;
+}
+
+/* Show delete icon when in shake mode */
+.member-item.shake-animation .delete-icon {
+  opacity: 1;
+  transform: scale(1); /* Only scale when visible */
+}
+
+/* Style for the Delete Member button when in delete mode */
+.delete-member-btn.delete-mode-active {
+  background-color: var(--accent-color-dark); /* Change color to indicate active mode */
+  color: var(--text-color-light);
+  box-shadow: 0 0 10px var(--accent-color-light);
+  transition: all 0.3s ease;
+}
+
+/* Optional: Slight hover effect on deletable items */
+.member-item.shake-animation:hover {
+  filter: brightness(1.1);
 }

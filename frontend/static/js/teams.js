@@ -32,6 +32,10 @@ let customModal, customModalTitle, customModalMessage, customModalInput,
 
 let customModalResolve; // To store the resolve function for promises
 
+// New global variable for delete mode
+let isDeleteMode = false;
+let deleteMemberButton = null; // Reference to the delete member button
+
 // Custom Modal Functions
 function initializeModalElements() {
   customModal = document.getElementById("customModal");
@@ -146,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
   //Team Management Buttons
   const createTeamBtn = document.querySelector(".create-team-btn");
   const addMemberBtn = document.querySelector(".add-member-btn");
-  const deleteMemberBtn = document.querySelector(".delete-member-btn");
+  deleteMemberButton = document.querySelector(".delete-member-btn"); // Assign to global variable
   const deleteTeamBtn = document.querySelector(".delete-team-btn");
 
   //All button event listeners are now at the same level
@@ -221,8 +225,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Exit delete mode if active before adding
+      if (isDeleteMode) {
+        toggleDeleteMode();
+      }
+
       // Clarify prompt: User ID or Username
-      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID or Username and Role (e.g., '123, member' or 'David, admin'):", "User ID or Username, role");
+      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID or Username and Role (e.g., '123, member' or 'john_doe, admin'):", "User ID or Username, role");
       if (!memberInfo || memberInfo.trim() === "") {
         showCustomAlert("Error", "User ID/Username and Role are required.", "error");
         return;
@@ -268,48 +277,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Delete member button listener
-  if (deleteMemberBtn) {
-    deleteMemberBtn.addEventListener("click", async () => {
+  // Toggle delete mode listener
+  if (deleteMemberButton) {
+    deleteMemberButton.addEventListener("click", () => {
       if (!currentDisplayedTeamId) {
         showCustomAlert("Error", "Please select a team first.", "error");
         return;
       }
-
-      //User ID or Username
-      const memberIdentifierToDelete = await showCustomPrompt("Remove Member", "Enter the User ID or Username of the member to delete:", "User ID or Username");
-      if (!memberIdentifierToDelete || memberIdentifierToDelete.trim() === "") {
-        showCustomAlert("Error", "User ID or Username is required.", "error");
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/teams/${currentDisplayedTeamId}/remove-member`, {
-          method: "PATCH",
-          headers: headers,
-          body: JSON.stringify({ user_id: memberIdentifierToDelete }), // Sending user_id or username
-          credentials: "include"
-        });
-
-        const data = await response.json();
-        console.log("Remove Member Response Status:", response.status); // Log status
-        console.log("Remove Member Response Data:", data); // Log data
-
-        if (response.ok) {
-          // Check for specific backend messages even if response.ok is true
-          if (data.error) { // If backend returns 200 but with an 'error' key
-            showCustomAlert("Error", "Error removing member: " + data.error, "error");
-          } else {
-            showCustomAlert("Success!", "Member removed successfully!", "success");
-            fetchUserTeams(); // Re-fetch all teams to update the carousel
-          }
-        } else {
-          showCustomAlert("Error", "Error removing member: " + (data.error || "Unknown error"), "error");
-        }
-      } catch (err) {
-        console.error("Error removing member:", err);
-        showCustomAlert("Error", "Network error. Please try again.", "error");
-      }
+      toggleDeleteMode();
     });
   }
 
@@ -317,6 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (leftArrow) {
     leftArrow.addEventListener("click", () => {
       if (!isDown) { // Prevent clicking during a drag
+        if (isDeleteMode) toggleDeleteMode(); // Exit delete mode on carousel navigation
         updateCarouselPosition(currentCardIndex - 1);
       }
     });
@@ -325,6 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (rightArrow) {
     rightArrow.addEventListener("click", () => {
       if (!isDown) { // Prevent clicking during a drag
+        if (isDeleteMode) toggleDeleteMode(); // Exit delete mode on carousel navigation
         updateCarouselPosition(currentCardIndex + 1);
       }
     });
@@ -399,7 +376,88 @@ document.addEventListener("DOMContentLoaded", () => {
       track.style.transform = `translateX(${newTranslateX}px)`;
     });
   }
+
+  // Add Escape key listener to exit delete mode
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isDeleteMode) {
+      toggleDeleteMode();
+    }
+  });
 });
+
+
+// Function to toggle delete mode
+function toggleDeleteMode() {
+  isDeleteMode = !isDeleteMode;
+  const memberItems = document.querySelectorAll(".member-item");
+
+  if (isDeleteMode) {
+    deleteMemberButton.textContent = "Done";
+    deleteMemberButton.classList.add("delete-mode-active");
+    memberItems.forEach(item => {
+      item.classList.add("shake-animation");
+      // Add click listener for deletion
+      item.addEventListener("click", handleMemberDeleteClick);
+    });
+  } else {
+    deleteMemberButton.textContent = "Delete Member";
+    deleteMemberButton.classList.remove("delete-mode-active");
+    memberItems.forEach(item => {
+      item.classList.remove("shake-animation");
+      // Remove click listener
+      item.removeEventListener("click", handleMemberDeleteClick);
+    });
+  }
+}
+
+// Handler for clicking a member in delete mode
+async function handleMemberDeleteClick(event) {
+  if (!isDeleteMode) return; // Only proceed if in delete mode
+
+  const memberItem = event.currentTarget;
+  const userIdToDelete = memberItem.dataset.userId;
+  const usernameToDelete = memberItem.querySelector(".member-name").textContent; // Get username for confirmation
+
+  if (!userIdToDelete || !currentDisplayedTeamId) {
+    showCustomAlert("Error", "Could not identify member or team.", "error");
+    return;
+  }
+
+  const confirmDelete = await showCustomConfirm(
+    "Remove Member",
+    `Are you sure you want to remove "${usernameToDelete}" from this team?`
+  );
+
+  if (!confirmDelete) {
+    return; // User cancelled
+  }
+
+  try {
+    const response = await fetch(`/api/teams/${currentDisplayedTeamId}/remove-member`, {
+      method: "PATCH",
+      headers: headers,
+      body: JSON.stringify({ user_id: userIdToDelete }), // Send the user ID from the data attribute
+      credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      if (data.error) {
+        showCustomAlert("Error", "Error removing member: " + data.error, "error");
+      } else {
+        showCustomAlert("Success!", "Member removed successfully!", "success");
+        fetchUserTeams(); // Re-fetch all teams to update the carousel
+        toggleDeleteMode(); // Exit delete mode after successful deletion
+      }
+    } else {
+      showCustomAlert("Error", "Error removing member: " + (data.error || "Unknown error"), "error");
+    }
+  } catch (err) {
+    console.error("Error removing member:", err);
+    showCustomAlert("Error", "Network error. Please try again.", "error");
+  }
+}
 
 
 async function fetchUserTeams() {
@@ -455,10 +513,9 @@ async function fetchUserTeams() {
             if (currentLoggedInUserId && member.user_id === currentLoggedInUserId) {
                 username = currentLoggedInUsername;
             } else {
-
                 // Fetch actual username from the CORRECTED dedicated user endpoint
                 try {
-                  const userDetailsResponse = await fetch(`/api/teams/users/${member.user_id}`, {
+                  const userDetailsResponse = await fetch(`/api/teams/users/${member.user_id}`, { // <-- CHANGED THIS LINE
                     method: "GET",
                     headers: headers,
                     credentials: "include"
@@ -538,11 +595,12 @@ function renderMembersForTeams(teams) {
     const members = team.members || [];
 
     const membersHtml = members.map(member => `
-      <div class="member-item">
+      <div class="member-item" data-user-id="${member.user_id}">
         <div class="member-avatar" style="background-color:${member.role === 'admin' ? '#b18aff' : '#6ec5ff'}"></div>
         <div class="member-info">
           <span class="member-name">${member.username}</span> <span class="member-role ${member.role === 'admin' ? 'admin' : ''}">${member.role}</span>
         </div>
+        <span class="delete-icon">✖</span> <!-- Delete icon -->
       </div>
     `).join("");
 
@@ -560,6 +618,14 @@ function renderMembersForTeams(teams) {
 
     trackElement.appendChild(card);
   });
+
+  // Re-apply shake animation if delete mode is active after re-rendering
+  if (isDeleteMode) {
+    document.querySelectorAll(".member-item").forEach(item => {
+      item.classList.add("shake-animation");
+      item.addEventListener("click", handleMemberDeleteClick);
+    });
+  }
 }
 
 function setupCarousel() {
