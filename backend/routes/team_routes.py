@@ -4,7 +4,7 @@ from backend.database import db
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
-from backend.models.user import User
+from backend.models.user import User # Ensure User model is imported
 
 # Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
@@ -94,14 +94,21 @@ def create_team():
 @team_bp.route("/users/<int:user_id>", methods=["GET"])
 def get_user_details(user_id):
     """Returns details for a specific user by ID."""
+    print(f"DEBUG: get_user_details called for user_id: {user_id}")
     if not current_user.is_authenticated:
+        print("DEBUG: User not authenticated in get_user_details.")
         return jsonify({"error": "Not authenticated"}), 401
 
     try:
-        user = User.query.get(user_id)
+        # CHANGED THIS LINE: Use filter_by instead of get()
+        user = User.query.filter_by(user_id=user_id).first()
+        print(f"DEBUG: User query result for {user_id}: {user}") # This will show if user is found
+
         if not user:
+            print(f"DEBUG: User not found in DB for user_id: {user_id}")
             return jsonify({"error": "User not found"}), 404
 
+        print(f"DEBUG: Found user: {user.username} (ID: {user.user_id})")
         return (
             jsonify(
                 {
@@ -113,6 +120,7 @@ def get_user_details(user_id):
         )
 
     except Exception as e:
+        print(f"DEBUG: Exception in get_user_details: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -124,26 +132,36 @@ def add_team_member(team_id):
     try:
         user_id = current_user.user_id
         data = request.get_json()
-        new_member_id = data.get("user_id")
-        role = data.get("role", "member")
 
+        raw_user_input = data.get("user_id")
+        if not raw_user_input:
+            return jsonify({"error": "No user_id or username provided"}), 400
+
+        # If it's a number, use it directly
+        if str(raw_user_input).isdigit():
+            new_member_id = int(raw_user_input)
+        else:
+            # Otherwise, treat it as a username and resolve to user_id
+            user = User.query.filter_by(username=raw_user_input.strip()).first()
+            if not user:
+                return jsonify({"error": f"User '{raw_user_input}' not found"}), 404
+            new_member_id = user.user_id
+
+        role = data.get("role", "member").strip().lower()
+
+        # Check admin rights
         admin_relation = UserTeam.query.filter_by(
             user_id=user_id, team_id=team_id, role="admin"
         ).first()
         if not admin_relation:
-            return (
-                jsonify(
-                    {"error": "You do not have permission to add members to this team"}
-                ),
-                403,
-            )
+            return jsonify({"error": "You do not have permission to add members to this team"}), 403
 
-        existing = UserTeam.query.filter_by(
-            user_id=new_member_id, team_id=team_id
-        ).first()
+        # Check if user already a member
+        existing = UserTeam.query.filter_by(user_id=new_member_id, team_id=team_id).first()
         if existing:
             return jsonify({"error": "User is already a member"}), 400
 
+        # Add new member
         new_member = UserTeam(user_id=new_member_id, team_id=team_id, role=role)
         db.session.add(new_member)
         db.session.commit()
@@ -163,25 +181,32 @@ def remove_team_member(team_id):
     try:
         user_id = current_user.user_id
         data = request.get_json()
-        member_id = data.get("user_id")
 
+        raw_user_input = data.get("user_id")
+        if not raw_user_input:
+            return jsonify({"error": "No user_id or username provided"}), 400
+
+        if str(raw_user_input).isdigit():
+            member_id = int(raw_user_input)
+        else:
+            user = User.query.filter_by(username=raw_user_input.strip()).first()
+            if not user:
+                return jsonify({"error": f"User '{raw_user_input}' not found"}), 404
+            member_id = user.user_id
+
+        # Check admin rights
         admin_relation = UserTeam.query.filter_by(
             user_id=user_id, team_id=team_id, role="admin"
         ).first()
         if not admin_relation:
-            return (
-                jsonify(
-                    {
-                        "error": "You do not have permission to remove members from this team"
-                    }
-                ),
-                403,
-            )
+            return jsonify({"error": "You do not have permission to remove members from this team"}), 403
 
+        # Check if target user is actually in the team
         relation = UserTeam.query.filter_by(user_id=member_id, team_id=team_id).first()
         if not relation:
             return jsonify({"error": "User is not a member of this team"}), 404
 
+        # Remove the member
         db.session.delete(relation)
         db.session.commit()
 
@@ -191,28 +216,21 @@ def remove_team_member(team_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-
-@team_bp.route("/<int:team_id>/members", methods=["GET"])
+@team_bp.route("/<int:team_id>/members", methods=["GET"]) # Corrected route path
 def get_team_members(team_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
 
-    try:
-        user_id = current_user.user_id
+    relation = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id).first()
+    if not relation:
+        return jsonify({"error": "You are not a member of this team"}), 403
 
-        relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
-        if not relation:
-            return jsonify({"error": "You are not a member of this team"}), 403
-
-        members = UserTeam.query.filter_by(team_id=team_id).all()
-        result = [
-            {"user_id": member.user_id, "role": member.role} for member in members
-        ]
-
-        return jsonify(result), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    members = UserTeam.query.filter_by(team_id=team_id).all()
+    result = [
+        {"user_id": m.user_id, "role": m.role}
+        for m in members
+    ]
+    return jsonify(result), 200
 
 
 @team_bp.route("/<int:team_id>", methods=["DELETE"])
