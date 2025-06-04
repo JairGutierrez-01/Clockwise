@@ -1,4 +1,3 @@
-
 const headers = {
   "Content-Type": "application/json"
 };
@@ -214,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add member button listener to use User ID
+  // Add member button listener to use User ID or Username
   if (addMemberBtn) {
     addMemberBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -222,36 +221,43 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Prompt for User ID and Role
-      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID and Role (e.g., '123, member' or '456, admin'):", "User ID, role");
+      // Clarify prompt: User ID or Username
+      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID or Username and Role (e.g., '123, member' or 'David, admin'):", "User ID or Username, role");
       if (!memberInfo || memberInfo.trim() === "") {
-        showCustomAlert("Error", "User ID and Role are required.", "error");
+        showCustomAlert("Error", "User ID/Username and Role are required.", "error");
         return;
       }
 
       const parts = memberInfo.split(',').map(p => p.trim());
-      const newMemberId = parts[0]; // Extract User ID
+      const newMemberIdentifier = parts[0]; // This can be user_id (as string) or username
       const role = parts[1] || 'member'; // Default to 'member' if not specified
 
-      if (!newMemberId) {
-        showCustomAlert("Error", "Invalid User ID provided.", "error");
+      if (!newMemberIdentifier) {
+        showCustomAlert("Error", "Invalid User ID or Username provided.", "error");
         return;
       }
 
       try {
-        // Send user_id to the existing backend endpoint
+        // Send newMemberIdentifier as user_id to the backend, which handles ID or username
         const response = await fetch(`/api/teams/${currentDisplayedTeamId}/add-member`, {
           method: "PATCH",
           headers: headers,
-          body: JSON.stringify({ user_id: newMemberId, role: role }), // Sending user_id
+          body: JSON.stringify({ user_id: newMemberIdentifier, role: role }), // Sending user_id or username
           credentials: "include"
         });
 
         const data = await response.json();
+        console.log("Add Member Response Status:", response.status); // Log status
+        console.log("Add Member Response Data:", data); // Log data
 
         if (response.ok) {
-          showCustomAlert("Success!", "Member added successfully!", "success");
-          fetchUserTeams(); // Re-fetch all teams to update the carousel
+          // Check for specific backend messages even if response.ok is true
+          if (data.error) { // If backend returns 200 but with an 'error' key
+            showCustomAlert("Error", "Error adding member: " + data.error, "error");
+          } else {
+            showCustomAlert("Success!", "Member added successfully!", "success");
+            fetchUserTeams(); // Re-fetch all teams to update the carousel
+          }
         } else {
           showCustomAlert("Error", "Error adding member: " + (data.error || "Unknown error"), "error");
         }
@@ -270,9 +276,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const memberIdToDelete = await showCustomPrompt("Remove Member", "Enter the User ID of the member to delete:", "User ID");
-      if (!memberIdToDelete || memberIdToDelete.trim() === "") {
-        showCustomAlert("Error", "User ID is required.", "error");
+      //User ID or Username
+      const memberIdentifierToDelete = await showCustomPrompt("Remove Member", "Enter the User ID or Username of the member to delete:", "User ID or Username");
+      if (!memberIdentifierToDelete || memberIdentifierToDelete.trim() === "") {
+        showCustomAlert("Error", "User ID or Username is required.", "error");
         return;
       }
 
@@ -280,15 +287,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch(`/api/teams/${currentDisplayedTeamId}/remove-member`, {
           method: "PATCH",
           headers: headers,
-          body: JSON.stringify({ user_id: memberIdToDelete }),
+          body: JSON.stringify({ user_id: memberIdentifierToDelete }), // Sending user_id or username
           credentials: "include"
         });
 
         const data = await response.json();
+        console.log("Remove Member Response Status:", response.status); // Log status
+        console.log("Remove Member Response Data:", data); // Log data
 
         if (response.ok) {
-          showCustomAlert("Success!", "Member removed successfully!", "success");
-          fetchUserTeams(); // Re-fetch all teams to update the carousel
+          // Check for specific backend messages even if response.ok is true
+          if (data.error) { // If backend returns 200 but with an 'error' key
+            showCustomAlert("Error", "Error removing member: " + data.error, "error");
+          } else {
+            showCustomAlert("Success!", "Member removed successfully!", "success");
+            fetchUserTeams(); // Re-fetch all teams to update the carousel
+          }
         } else {
           showCustomAlert("Error", "Error removing member: " + (data.error || "Unknown error"), "error");
         }
@@ -424,15 +438,27 @@ async function fetchUserTeams() {
           });
           const membersData = await membersResponse.json();
 
+          // Check if membersResponse was successful and membersData is an array
+          if (!membersResponse.ok) {
+            console.error(`Error fetching members for team ${team.team_id}:`, membersData.error || "Unknown error");
+            return { ...team, members: [] }; // Return team with empty members on backend error
+          }
+          if (!Array.isArray(membersData)) {
+            console.error(`Unexpected members data format for team ${team.team_id}:`, membersData);
+            return { ...team, members: [] }; // Ensure membersData is an array
+          }
+
+
           const membersWithUsernames = await Promise.all(membersData.map(async (member) => {
             let username = `${member.user_id}`; // Fallback: Use User ID if username can't be fetched
             // Check if the member is the current logged-in user
             if (currentLoggedInUserId && member.user_id === currentLoggedInUserId) {
                 username = currentLoggedInUsername;
             } else {
-                // Fetch actual username from a dedicated user endpoint
+
+                // Fetch actual username from the CORRECTED dedicated user endpoint
                 try {
-                  const userDetailsResponse = await fetch(`/api/users/${member.user_id}`, {
+                  const userDetailsResponse = await fetch(`/api/teams/users/${member.user_id}`, {
                     method: "GET",
                     headers: headers,
                     credentials: "include"
@@ -441,7 +467,7 @@ async function fetchUserTeams() {
                   if (userDetailsResponse.ok && userDetails.username) {
                     username = userDetails.username;
                   } else {
-                    console.warn(`Could not fetch username for user ID: ${member.user_id}`);
+                    console.warn(`Could not fetch username for user ID: ${member.user_id}. Response:`, userDetails);
                   }
                 } catch (userErr) {
                   console.error(`Error fetching user details for ID ${member.user_id}:`, userErr);
@@ -458,6 +484,7 @@ async function fetchUserTeams() {
       });
 
       const teamsWithMembers = await Promise.all(teamsWithMembersPromises);
+      console.log("Final teamsWithMembers data:", teamsWithMembers); // ADDED THIS LOG
       renderTeams(teamsData); // Render teams in the table
       renderMembersForTeams(teamsWithMembers); // Render members into carousel
       setupCarousel(); // Setup carousel *after* members are rendered
