@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import Enum
 
@@ -58,6 +58,17 @@ class Project(db.Model):
     user = db.relationship("User", back_populates="project")
     notifications = db.relationship("Notification", back_populates="project")
 
+    @property
+    def duration_readable(self):
+        """Returns time spent in human-readable form (e.g. '1h 2min 3s')."""
+        total_seconds = sum(task.total_duration_seconds or 0 for task in self.tasks if task.total_duration_seconds)
+
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+
+        return f"{int(hours)}h {int(minutes)}min {int(seconds)}s"
+
     def __repr__(self) -> str:
         """
         Returns a string representation of the project object.
@@ -65,4 +76,4 @@ class Project(db.Model):
         Returns:
             str: A string representation of the project object.
         """
-        return f"<Project(id={self.project_id}, name={self.name}, team={self.team_id} category={self.category_id}, limit={self.time_limit_hours}, current={self.current_hours})>"
+        return f"<Project(id={self.project_id}, name={self.name}, team={self.team_id} category={self.category_id}, limit={self.time_limit_hours}, current={self.current_hours}, readable={self.duration_readable})>"

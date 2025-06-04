@@ -147,6 +147,7 @@ def api_projects():
                 "type": p.type.name if hasattr(p.type, "name") else str(p.type),
                 "time_limit_hours": p.time_limit_hours,
                 "current_hours": p.current_hours or 0,
+                "duration_readable": p.duration_readable,
                 "due_date": p.due_date.isoformat() if p.due_date else None,
                 # Diese 3 Felder extra für FullCalendar:
                 "title": p.name,
