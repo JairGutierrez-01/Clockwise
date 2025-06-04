@@ -634,18 +634,3 @@ body {
 .custom-modal-backdrop.prompt-type #customModalConfirmBtn {
   content: "Submit"; /* Text for prompt's confirm button */
 }
-
-/* Ensure these CSS variables are defined in your global CSS (e.g., dashboard.css or theme.css) */
-/*
-:root {
-  --card-bg: #2a2a3a;
-  --text-light: #f0f0f0;
-  --text-muted: #b0b0b0;
-  --member-color: #6ec5ff;
-  --admin-color: #b18aff;
-  --delete-color: #f87171;
-  --border-color: #444;
-  --input-bg: #1e1e2d;
-  --gap: 20px;
-}
-*/
