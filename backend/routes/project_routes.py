@@ -1,3 +1,4 @@
+from backend.models import UserTeam
 from backend.models.project import Project, ProjectType
 from flask_login import current_user
 from backend.database import db
@@ -137,7 +138,16 @@ def api_projects():
 
         return {"project_id": project.project_id}, 201
 
-    projects = Project.query.filter_by(user_id=current_user.user_id).all()
+    user_id = current_user.user_id
+
+    team_ids = [
+        ut.team_id
+        for ut in UserTeam.query.filter_by(user_id=user_id).all()
+    ]
+
+    projects = Project.query.filter(
+        (Project.user_id == user_id) | (Project.team_id.in_(team_ids))
+    ).all()
     return {
         "projects": [
             {

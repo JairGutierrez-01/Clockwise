@@ -12,6 +12,7 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 
 from backend.database import db
+from backend.models import UserTeam, Team
 from backend.models.notification import Notification
 from backend.models.project import Project
 from backend.models.user import User
@@ -133,7 +134,27 @@ def projects():
 @app.route("/teams")
 @login_required
 def teams():
-    return render_template("teams.html")
+    user_id = current_user.user_id
+
+    user_teams = (
+        db.session.query(UserTeam)
+        .filter_by(user_id=user_id)
+        .join(Team)
+        .all()
+    )
+
+    teams_with_projects = []
+    for ut in user_teams:
+        team = ut.team
+        projects = Project.query.filter_by(team_id=team.team_id).all()
+        teams_with_projects.append({
+            "team_id": team.team_id,
+            "team_name": team.name,
+            "role": ut.role,
+            "projects": projects,
+        })
+
+    return render_template("teams.html", teams=teams_with_projects)
 
 
 @app.route("/logout")

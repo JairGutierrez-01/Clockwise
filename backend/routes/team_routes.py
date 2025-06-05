@@ -5,7 +5,10 @@ from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
 from backend.models.user import User # Ensure User model is imported
-
+from backend.services.team_service import (
+    check_admin, is_team_member,
+    create_team_project, create_task_for_team_project
+)
 # Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
 
@@ -263,3 +266,39 @@ def delete_team(team_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+@team_bp.route("/teams/<int:team_id>/projects", methods=["POST"])
+def api_create_team_project(team_id):
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    if not check_admin(current_user.user_id, team_id):
+        return jsonify({"error": "Only admins can create team projects"}), 403
+
+    data = request.get_json()
+    name = data.get("name")
+    description = data.get("description", "")
+
+    if not name:
+        return jsonify({"error": "Project name is required"}), 400
+
+    result = create_team_project(name, description, team_id)
+    return jsonify(result), 201
+
+
+@team_bp.route("/projects/<int:project_id>/tasks", methods=["POST"])
+def api_create_team_task(project_id):
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    data = request.get_json()
+    name = data.get("name")
+    category_id = data.get("category_id")
+    assigned_user_id = data.get("assigned_user_id")
+
+    if not name or not category_id:
+        return jsonify({"error": "Name and category_id are required"}), 400
+
+    result = create_task_for_team_project(name, category_id, project_id, assigned_user_id)
+    return jsonify(result), 201
