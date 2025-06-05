@@ -10,9 +10,10 @@ from flask_login import current_user
 from flask_login import login_required
 from flask_mail import Mail
 from flask_migrate import Migrate
+from sqlalchemy import select, literal
 
 from backend.database import db
-from backend.models import UserTeam, Team, project
+from backend.models import UserTeam, Team, Project
 from backend.models.notification import Notification
 from backend.models.project import Project
 from backend.models.user import User
@@ -127,9 +128,19 @@ def analysis():
 
 @app.route("/projects", methods=["GET", "POST"])
 def projects():
+    if not current_user.is_authenticated:
+        return redirect(url_for("login"))
     user_projects = Project.query.filter_by(user_id=current_user.user_id).all()
-    # team_projects = Project.query.filter_by(team_id=UserTeam.team_id).all()
-    return render_template("projects.html", projects=user_projects)
+    team_id_select = (
+        select(UserTeam.team_id)
+        .where(UserTeam.user_id == literal(current_user.user_id))
+        .scalar_subquery()
+    )
+    team_projects = Project.query.filter(Project.team_id.in_(team_id_select)).all()
+    all_projects = user_projects + team_projects
+    print("Eigene Projekte:", user_projects)
+    print("Teamprojekte:", team_projects)
+    return render_template("projects.html", projects=all_projects)
 
 
 @app.route("/teams")

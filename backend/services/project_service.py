@@ -35,7 +35,6 @@ def create_project(
         description (str): Project description.
         user_id (int): ID of the user creating the project.
         team_id (int): ID of the associated team.
-        category_id (int): ID of the category.
         time_limit_hours (int): Time limit for the project.
         due_date (datetime): Project deadline.
         type (str): Project type (Solo or Team).
@@ -53,7 +52,6 @@ def create_project(
         description=description,
         user_id=user_id,
         team_id=team_id,
-        category_id=category_id,
         time_limit_hours=time_limit_hours,
         current_hours=0,
         created_at=datetime.now(),

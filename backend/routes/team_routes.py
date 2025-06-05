@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 from flask_login import current_user
 from backend.database import db
 from backend.models import Project
@@ -6,6 +6,8 @@ from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
 from backend.models.user import User # Ensure User model is imported
+from backend.services.team_service import check_admin, create_team_project, create_task_for_team_project
+
 # Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
 
@@ -263,7 +265,6 @@ def delete_team(team_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-"""
 
 @team_bp.route("/teams/<int:team_id>/projects", methods=["POST"])
 def api_create_team_project(team_id):
@@ -273,21 +274,27 @@ def api_create_team_project(team_id):
     if not check_admin(current_user.user_id, team_id):
         return jsonify({"error": "Only admins can create team projects"}), 403
 
-    data = request.get_json()
+    data = request.form
+
     name = data.get("name")
     description = data.get("description", "")
-
     if not name:
         return jsonify({"error": "Project name is required"}), 400
 
     result = create_team_project(name, description, team_id)
-    return jsonify(result), 201
+    if "success" in result:
+        return redirect(url_for("dashboard"))
+
+    return result.get("error", "Project creation failed.")
 
 
 @team_bp.route("/projects/<int:project_id>/tasks", methods=["POST"])
-def api_create_team_task(project_id):
+def api_create_team_task(project_id, team_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
+
+    if not check_admin(current_user.user_id, team_id):
+        return jsonify({"error": "Only admins can create team tasks"}), 403
 
     data = request.get_json()
     name = data.get("name")
@@ -339,6 +346,13 @@ def api_get_user_teams_with_members_and_projects():
                 "project_id": p.project_id,
                 "name": p.name,
                 "description": p.description,
+                "time_limit_hours": p.time_limit_hours,
+                "current_hours": p.current_hours or 0,
+                "duration_readable": p.duration_readable,
+                "due_date": p.due_date.isoformat() if p.due_date else None,
+                "title": p.name,
+                "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
+                "color": "#f44336",  # oder projektabhängig
             }
             for p in projects
         ]
@@ -354,4 +368,3 @@ def api_get_user_teams_with_members_and_projects():
 
     return jsonify(result), 200
 
-"""

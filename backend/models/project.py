@@ -76,4 +76,4 @@ class Project(db.Model):
         Returns:
             str: A string representation of the project object.
         """
-        return f"<Project(id={self.project_id}, name={self.name}, team={self.team_id} category={self.category_id}, limit={self.time_limit_hours}, current={self.current_hours}, readable={self.duration_readable})>"
+        return f"<Project(id={self.project_id}, name={self.name}, team={self.team_id}, limit={self.time_limit_hours}, current={self.current_hours}, readable={self.duration_readable})>"
