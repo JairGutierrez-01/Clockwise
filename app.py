@@ -12,7 +12,7 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 
 from backend.database import db
-from backend.models import UserTeam, Team
+from backend.models import UserTeam, Team, project
 from backend.models.notification import Notification
 from backend.models.project import Project
 from backend.models.user import User
@@ -128,6 +128,7 @@ def analysis():
 @app.route("/projects", methods=["GET", "POST"])
 def projects():
     user_projects = Project.query.filter_by(user_id=current_user.user_id).all()
+    # team_projects = Project.query.filter_by(team_id=UserTeam.team_id).all()
     return render_template("projects.html", projects=user_projects)
 
 
@@ -146,7 +147,7 @@ def teams():
     teams_with_projects = []
     for ut in user_teams:
         team = ut.team
-        projects = Project.query.filter_by(team_id=team.team_id).all()
+        projects = Project.query.filter_by(team_id=UserTeam.team_id).all()
         teams_with_projects.append({
             "team_id": team.team_id,
             "team_name": team.name,

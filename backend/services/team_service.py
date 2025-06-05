@@ -179,8 +179,10 @@ def delete_team_and_members(team_id):
         return True
     return False
 
+
 def create_team_project(name, description, team_id):
-    """Creates a project associated with a team.
+    """
+    Creates a project associated with a team.
 
     Args:
         name (str): Name of the project.
@@ -190,13 +192,15 @@ def create_team_project(name, description, team_id):
     Returns:
         dict: Created project ID and message.
     """
+
     project = Project(name=name.strip(), description=description.strip(), team_id=team_id)
     db.session.add(project)
     db.session.commit()
     return {"project_id": project.project_id, "message": "Team project created"}
 
 def create_task_for_team_project(name, category_id, project_id, assigned_user_id=None):
-    """Creates a task under a team project.
+    """
+    Creates a task under a team project.
 
     Args:
         name (str): Task name.
@@ -211,4 +215,3 @@ def create_task_for_team_project(name, category_id, project_id, assigned_user_id
     db.session.add(task)
     db.session.commit()
     return {"task_id": task.task_id, "message": "Task created under team project"}
-

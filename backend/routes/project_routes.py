@@ -1,6 +1,8 @@
 from backend.models import UserTeam
 from backend.models.project import Project, ProjectType
+from backend.models.task import Task
 from flask_login import current_user
+from sqlalchemy import and_
 from backend.database import db
 from datetime import datetime
 from flask import (
@@ -15,6 +17,7 @@ from backend.services.project_service import (
     get_project,
     delete_project,
     update_project,
+    update_total_duration_for_project,
 )
 
 project_bp = Blueprint("project", __name__)
@@ -108,21 +111,37 @@ def edit_project_route(project_id):
 def api_projects():
     if request.method == "POST":
         data = request.get_json()
+        print("POST /api/projects -> data:", data)
+
         name = data.get("name")
         description = data.get("description")
-        type_ = ProjectType[data.get("type")]
+        type_str = data.get("type")
+        team_id = data.get("team_id")
         time_limit_hours = data.get("time_limit_hours")
 
-        due_date_str = data.get("due_date")
         due_date = None
+        due_date_str = data.get("due_date")
         if due_date_str:
             try:
                 due_date = datetime.strptime(due_date_str, "%d.%m.%Y")
             except ValueError:
                 return {"error": "Invalid date format. Use TT.MM.JJJJ."}, 400
 
-        if not name or not type_:
+        if not name or not type_str:
             return {"error": "Missing fields"}, 400
+
+        try:
+            type_ = ProjectType[type_str]
+        except KeyError:
+            return {"error": f"Unknown project type: {type_str}"}, 400
+
+        if team_id:
+            print(f"Checking membership: user_id={current_user.user_id}, team_id={team_id}")
+            is_member = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id).first()
+            if not is_member:
+                return {"error": "User is not a member of the specified team."}, 403
+        else:
+            team_id = None
 
         project = Project(
             name=name,
@@ -131,6 +150,7 @@ def api_projects():
             time_limit_hours=time_limit_hours,
             due_date=due_date,
             user_id=current_user.user_id,
+            team_id=team_id,
         )
 
         db.session.add(project)
@@ -138,16 +158,8 @@ def api_projects():
 
         return {"project_id": project.project_id}, 201
 
-    user_id = current_user.user_id
+    projects = Project.query.filter_by(user_id=current_user.user_id).all()
 
-    team_ids = [
-        ut.team_id
-        for ut in UserTeam.query.filter_by(user_id=user_id).all()
-    ]
-
-    projects = Project.query.filter(
-        (Project.user_id == user_id) | (Project.team_id.in_(team_ids))
-    ).all()
     return {
         "projects": [
             {
@@ -163,6 +175,7 @@ def api_projects():
                 "title": p.name,
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
                 "color": "#f44336",  # oder projektabhängig
+                "team_id": p.team_id,
             }
             for p in projects
         ]
@@ -174,9 +187,20 @@ def api_project_detail(project_id):
     if not current_user.is_authenticated:
         return {"error": "Not authorized"}, 401
 
-    project = Project.query.filter_by(
-        project_id=project_id, user_id=current_user.user_id
+    project = Project.query.filter_by(project_id=project_id).first()
+
+    is_author = project.user_id == current_user.user_id
+    is_team_member = (
+            project.team_id
+            and UserTeam.query.filter_by(
+        user_id=current_user.user_id,
+        team_id=project.team_id
     ).first()
+    )
+
+    if not (is_author or is_team_member):
+        return {"error": "Not authorized"}, 403
+
     if not project:
         return {"error": "Project not found"}, 404
 
@@ -191,10 +215,12 @@ def api_project_detail(project_id):
         if "time_limit_hours" in data:
             project.time_limit_hours = data["time_limit_hours"]
         if "due_date" in data:
-            try:
-                project.due_date = datetime.strptime(data["due_date"], "%d.%m.%Y")
-            except ValueError:
-                return {"error": "Invalid date format. Use TT.MM.JJJJ."}, 400
+            due_date_str = data["due_date"]
+            if due_date_str:
+                try:
+                    project.due_date = datetime.strptime(due_date_str, "%d.%m.%Y")
+                except ValueError:
+                    return {"error": "Invalid date format. Use TT.MM.JJJJ."}, 400
 
         db.session.commit()
         return {"success": True}

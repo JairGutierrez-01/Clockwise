@@ -1,14 +1,11 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user
 from backend.database import db
+from backend.models import Project
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
 from backend.models.user import User # Ensure User model is imported
-from backend.services.team_service import (
-    check_admin, is_team_member,
-    create_team_project, create_task_for_team_project
-)
 # Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
 
@@ -266,7 +263,7 @@ def delete_team(team_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
+"""
 
 @team_bp.route("/teams/<int:team_id>/projects", methods=["POST"])
 def api_create_team_project(team_id):
@@ -302,3 +299,59 @@ def api_create_team_task(project_id):
 
     result = create_task_for_team_project(name, category_id, project_id, assigned_user_id)
     return jsonify(result), 201
+
+@team_bp.route("/api/teams/full", methods=["GET"])
+def api_get_user_teams_with_members_and_projects():
+    user_id = current_user.user_id
+
+    user_teams = (
+        db.session.query(UserTeam)
+        .filter_by(user_id=user_id)
+        .join(Team)
+        .all()
+    )
+
+    result = []
+    for ut in user_teams:
+        team = ut.team
+
+        members = (
+            db.session.query(UserTeam)
+            .filter_by(team_id=team.team_id)
+            .join(User)
+            .all()
+        )
+
+        member_data = []
+        for m in members:
+            user = User.query.get(m.user_id)
+            if not user:
+                continue
+            member_data.append({
+                "user_id": user.user_id,
+                "username": user.username,
+                "role": m.role
+            })
+
+        projects = Project.query.filter_by(team_id=team.team_id).all()
+        project_data = [
+            {
+                "project_id": p.project_id,
+                "name": p.name,
+                "description": p.description,
+            }
+            for p in projects
+        ]
+
+        result.append({
+            "team_id": team.team_id,
+            "team_name": team.name,
+            "role": ut.role,
+            "created_at": team.created_at.isoformat(),
+            "members": member_data,
+            "projects": project_data
+        })
+
+    return jsonify(result), 200
+
+"""
