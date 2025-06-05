@@ -6,6 +6,8 @@ from backend.models.user import User
 from backend.models.project import Project
 from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
+from backend.services.notifications import notify_user_added_to_team
+
 
 def get_user_teams(user_id):
     """Fetches all teams a user belongs to.
@@ -33,6 +35,7 @@ def get_user_teams(user_id):
         }
         for ut in user_teams
     ]
+
 
 def create_new_team(name, user_id):
     """Creates a new team and assigns the user as admin.
@@ -63,6 +66,7 @@ def create_new_team(name, user_id):
 
     return {"team_id": new_team.team_id, "message": "Team created"}
 
+
 def get_user_by_id(user_id):
     """Fetch a user by ID.
 
@@ -73,6 +77,7 @@ def get_user_by_id(user_id):
         User: User object or None.
     """
     return User.query.filter_by(user_id=user_id).first()
+
 
 def resolve_user_id(raw_user_input):
     """Resolves user ID from user ID or username.
@@ -90,6 +95,7 @@ def resolve_user_id(raw_user_input):
         return user.user_id
     return None
 
+
 def check_admin(user_id, team_id):
     """Checks if the user is an admin of the team.
 
@@ -100,7 +106,10 @@ def check_admin(user_id, team_id):
     Returns:
         UserTeam|None: Admin relation or None.
     """
-    return UserTeam.query.filter_by(user_id=user_id, team_id=team_id, role="admin").first()
+    return UserTeam.query.filter_by(
+        user_id=user_id, team_id=team_id, role="admin"
+    ).first()
+
 
 def is_team_member(user_id, team_id):
     """Checks if the user is a member of the team.
@@ -114,6 +123,7 @@ def is_team_member(user_id, team_id):
     """
     return UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
 
+
 def add_member_to_team(user_id, team_id, role):
     """Adds a user to the team with a role.
 
@@ -126,9 +136,13 @@ def add_member_to_team(user_id, team_id, role):
         bool: True if successful.
     """
     new_member = UserTeam(user_id=user_id, team_id=team_id, role=role)
+    team = Team.query.filter_by(id=team_id).first()
+    team_name = team.name
     db.session.add(new_member)
     db.session.commit()
+    notify_user_added_to_team(user_id, team_name)
     return True
+
 
 def remove_member_from_team(user_id, team_id):
     """Removes a user from a team.
@@ -147,6 +161,7 @@ def remove_member_from_team(user_id, team_id):
         return True
     return False
 
+
 def get_team_members(team_id):
     """Retrieves all members of a team.
 
@@ -157,10 +172,8 @@ def get_team_members(team_id):
         list: List of members with user ID and role.
     """
     members = UserTeam.query.filter_by(team_id=team_id).all()
-    return [
-        {"user_id": m.user_id, "role": m.role}
-        for m in members
-    ]
+    return [{"user_id": m.user_id, "role": m.role} for m in members]
+
 
 def delete_team_and_members(team_id):
     """Deletes a team and all its members.
@@ -193,10 +206,13 @@ def create_team_project(name, description, team_id):
         dict: Created project ID and message.
     """
 
-    project = Project(name=name.strip(), description=description.strip(), team_id=team_id)
+    project = Project(
+        name=name.strip(), description=description.strip(), team_id=team_id
+    )
     db.session.add(project)
     db.session.commit()
     return {"project_id": project.project_id, "message": "Team project created"}
+
 
 def create_task_for_team_project(name, category_id, project_id, assigned_user_id=None):
     """
@@ -211,7 +227,12 @@ def create_task_for_team_project(name, category_id, project_id, assigned_user_id
     Returns:
         dict: Created task ID and message.
     """
-    task = Task(name=name.strip(), category_id=category_id, project_id=project_id, assigned_user_id=assigned_user_id)
+    task = Task(
+        name=name.strip(),
+        category_id=category_id,
+        project_id=project_id,
+        assigned_user_id=assigned_user_id,
+    )
     db.session.add(task)
     db.session.commit()
     return {"task_id": task.task_id, "message": "Task created under team project"}

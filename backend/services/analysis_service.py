@@ -272,7 +272,9 @@ def calendar_worked_time():
     if not time_entries:
         return []
 
-    grouped = defaultdict(lambda: defaultdict(lambda: {"duration": [], "project": None}))
+    grouped = defaultdict(
+        lambda: defaultdict(lambda: {"duration": [], "project": None})
+    )
 
     for entry in time_entries:
         date = entry["start"].date().isoformat()
@@ -290,14 +292,36 @@ def calendar_worked_time():
             seconds = int(total % 60)
             project_name = task_data["project"]
 
-            events.append({
-                "title": f"{task_name}: {hours}h {minutes}min {seconds}s",
-                "start": date,
-                "allDay": True,
-                "color": "#7ab8f5",
-                "extendedProps": {
-                    "project": project_name
+            events.append(
+                {
+                    "title": f"{task_name}: {hours}h {minutes}min {seconds}s",
+                    "start": date,
+                    "allDay": True,
+                    "color": "#7ab8f5",
+                    "extendedProps": {"project": project_name},
                 }
-            })
+            )
 
     return events
+
+
+def worked_time_today():
+    """
+    Calculates the total worked time (in hours) for today.
+
+    Returns:
+        float: Total hours worked today.
+    """
+    time_entries = load_time_entries()
+    if not time_entries:
+        return 0.0
+
+    today = datetime.today().date()
+    total_seconds = 0
+
+    for entry in time_entries:
+        if entry["start"].date() == today:
+            duration = (entry["end"] - entry["start"]).total_seconds()
+            total_seconds += duration
+
+    return round(total_seconds / 3600, 2)

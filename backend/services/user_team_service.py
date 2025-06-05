@@ -1,5 +1,6 @@
 from backend.database import db
-from backend.models import User, Team, UserTeam
+from backend.models import User, Team, UserTeam, Notification
+from backend.services.notifications import notify_user_added_to_team
 
 
 def add_member(username, teamname, role):
@@ -32,9 +33,11 @@ def add_member(username, teamname, role):
     team_id = existing_team.team_id
 
     new_user_team = UserTeam(user_id=user_id, team_id=team_id, role=role)
+
     db.session.add(new_user_team)
     db.session.commit()
 
+    notify_user_added_to_team(user_id, teamname)
     return {"success": True, "message": "Member was added successfully"}
 
 

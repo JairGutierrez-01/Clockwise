@@ -1,13 +1,14 @@
 from datetime import datetime
 
 from flask import Blueprint, request, jsonify
+from flask_login import login_required
 
 from backend.services.analysis_service import (
     load_time_entries,
     load_target_times,
     load_tasks,
     tasks_in_month,
-    filter_time_entries_by_date,
+    filter_time_entries_by_date, worked_time_today,
 )
 from backend.services.analysis_service import (
     progress_per_project,
@@ -119,3 +120,18 @@ def api_actual_vs_planned():
     targets = load_target_times()
     comparison = actual_target_comparison(time_entries, targets)
     return jsonify(comparison)
+
+
+@analysis_bp.route('/worked_time_today', methods=['GET'])
+@login_required
+def get_worked_time_today():
+    """
+    API endpoint that returns the total worked time for today.
+
+    Returns:
+        JSON response with total hours worked today.
+    """
+    hours_today = worked_time_today()
+    return jsonify({
+        "worked_hours_today": hours_today
+    })
