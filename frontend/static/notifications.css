@@ -22,9 +22,6 @@
   cursor: pointer;
 }
 
-.notification-card:hover {
-  background-color: #2a2a2a;
-}
 
 .notification-message {
   font-size: 1.2rem;
@@ -32,7 +29,7 @@
 }
 
 .delete-btn {
-  background-color: #e74c3c;
+  background-color: #a52333;
   color: white;
   border: none;
   padding: 0.4rem 0.8rem;
@@ -42,5 +39,20 @@
 }
 
 .delete-btn:hover {
-  background-color: #c0392b;
+  background-color: #771a27;
+}
+
+.read-btn {
+  background-color: #19487f;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.95rem;
+  margin-left: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.read-btn:hover {
+  background-color: #133863;
 }

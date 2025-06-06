@@ -27,11 +27,17 @@
         <div class="notification-card">
           <div class="notification-message">{{ note.message }}</div>
           <button
-            class="delete-btn"
-            onclick="deleteNotification({{ note.id }})"
-          >
-            Delete
-          </button>
+              class="delete-btn"
+              onclick="deleteNotification({{ note.id }})"
+            >
+              Delete
+            </button>
+            <button
+              class="read-btn"
+              onclick="markAsRead({{ note.id }})"
+            >
+              Mark As Read
+            </button>
         </div>
         {% endfor %}
       </div>
