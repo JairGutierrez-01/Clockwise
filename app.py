@@ -177,7 +177,13 @@ def logout():
 
 @app.context_processor
 def inject_user_status():
-    return dict(user_logged_in=current_user.is_authenticated, has_notifications=False)
+    has_unread = False
+    if current_user.is_authenticated:
+        has_unread = Notification.query.filter_by(
+            user_id=current_user.user_id, is_read=False
+        ).count() > 0
+
+    return dict(user_logged_in=current_user.is_authenticated, has_notifications=has_unread)
 
 
 @login_manager.user_loader
