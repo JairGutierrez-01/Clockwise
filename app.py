@@ -210,6 +210,22 @@ def delete_notification(notification_id):
         return "", 200
     return "", 404
 
+@app.route("/notifications/read/<int:notification_id>", methods=["POST"])
+def mark_notification_as_read(notification_id):
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not logged in"}), 403
+
+    notification = Notification.query.get(notification_id)
+    if not notification or notification.user_id != current_user.user_id:
+        return jsonify({"error": "No Messags found"}), 404
+
+    if notification.is_read:
+        return jsonify({"message": "Already marked as read"}), 200
+
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({"message": "Message marked as read"}), 200
+
 
 # Test notification erstellen
 @app.route("/trigger-test-notification")

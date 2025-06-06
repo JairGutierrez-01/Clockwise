@@ -32,12 +32,14 @@
             >
               Delete
             </button>
-            <button
-              class="read-btn"
-              onclick="markAsRead({{ note.id }})"
-            >
-              Mark As Read
-            </button>
+            {% if not note.is_read %}
+              <button
+                class="read-btn"
+                onclick="markAsRead({{ note.id }})"
+              >
+                Mark As Read
+              </button>
+            {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -46,18 +48,6 @@
       {% endif %}
     </main>
 
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <script>
-      function deleteNotification(id) {
-        fetch(`/notifications/delete/${id}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).then(() => {
-          location.reload(); // Seite neu laden nach Löschen
-        });
-      }
-    </script>
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
   </body>
 </html>
