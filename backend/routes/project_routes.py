@@ -165,6 +165,15 @@ def edit_project_route(project_id):
 
 @project_bp.route("/api/projects", methods=["GET", "POST"])
 def api_projects():
+    """
+    Handle project creation and listing.
+
+    Args:
+        None
+
+    Returns:
+        dict or tuple: List of user projects or response with project ID or error.
+    """
     if request.method == "POST":
         data = request.get_json()
         print("POST /api/projects -> data:", data)
@@ -172,7 +181,7 @@ def api_projects():
         name = data.get("name")
         description = data.get("description")
         type_str = data.get("type")
-        team_id = data.get("team_id")
+        team_id = data.get("team_id") or None
         time_limit_hours = data.get("time_limit_hours")
 
         due_date = None
@@ -188,17 +197,6 @@ def api_projects():
 
         try:
             type_ = ProjectType[type_str]
-            """
-            if type_ == ProjectType.TeamProject:
-                if not team_id:
-                    return {"error": "TeamProject requires a team_id"}, 400
-
-                is_member = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id).first()
-                if not is_member:
-                    return {"error": "User is not a member of the specified team."}, 403
-            else:
-                team_id = None
-            """
         except KeyError:
             return {"error": f"Unknown project type: {type_str}"}, 400
 
@@ -238,11 +236,11 @@ def api_projects():
                 "current_hours": p.current_hours or 0,
                 "duration_readable": p.duration_readable,
                 "due_date": p.due_date.isoformat() if p.due_date else None,
+                "team_id": p.team_id,
                 # Diese 3 Felder extra für FullCalendar:
                 "title": p.name,
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
                 "color": "#f44336",  # oder projektabhängig
-                "team_id": p.team_id,
             }
             for p in projects
         ]
@@ -251,6 +249,15 @@ def api_projects():
 
 @project_bp.route("/api/projects/<int:project_id>", methods=["PATCH", "DELETE"])
 def api_project_detail(project_id):
+    """
+    Modify or delete a specific project.
+
+    Args:
+        project_id (int): ID of the project.
+
+    Returns:
+        dict: Confirmation of success or error message.
+    """
     if not current_user.is_authenticated:
         return {"error": "Not authorized"}, 401
 
@@ -300,6 +307,15 @@ def api_project_detail(project_id):
 
 @project_bp.route("/api/available-teams", methods=["GET"])
 def get_available_teams():
+    """
+    Get all teams the current user is part of.
+
+    Args:
+        None
+
+    Returns:
+        dict: List of team objects.
+        """
     teams = (
         db.session.query(Team)
         .join(UserTeam, Team.team_id == UserTeam.team_id)
@@ -317,3 +333,37 @@ def get_available_teams():
             for team in teams
         ]
     }
+
+@project_bp.route("/team-projects", methods=["GET"])
+def view_team_projects_with_user_tasks():
+    """
+    Display team projects and the user's tasks in them.
+
+    Args:
+        None
+
+    Returns:
+        Response: Rendered HTML with projects and related user tasks.
+    """
+    if not current_user.is_authenticated:
+        return redirect(url_for("login"))
+
+    user_id = current_user.user_id
+
+    team_ids = [ut.team_id for ut in UserTeam.query.filter_by(user_id=user_id).all()]
+    if not team_ids:
+        return render_template("projects.html", projects=[])
+
+    team_projects = Project.query.filter(Project.team_id.in_(team_ids)).all()
+
+    results = []
+    for project in team_projects:
+        tasks = (
+            Task.query.filter_by(project_id=project.project_id, assigned_user_id=user_id).all()
+        )
+        results.append({
+            "project": project,
+            "tasks": tasks
+        })
+
+    return render_template("projects.html", project_tasks=results)

@@ -26,6 +26,7 @@ from backend.routes.team_routes import team_bp
 from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.user_routes import auth_bp
 from backend.services.task_service import get_task_by_id
+from backend.services.team_service import get_user_teams_with_projects
 from backend.services.time_entry_service import get_time_entries_by_task
 from backend.services.analysis_service import calendar_due_dates, calendar_worked_time
 
@@ -146,26 +147,7 @@ def projects():
 @app.route("/teams")
 @login_required
 def teams():
-    user_id = current_user.user_id
-
-    user_teams = (
-        db.session.query(UserTeam)
-        .filter_by(user_id=user_id)
-        .join(Team)
-        .all()
-    )
-
-    teams_with_projects = []
-    for ut in user_teams:
-        team = ut.team
-        projects = Project.query.filter_by(team_id=UserTeam.team_id).all()
-        teams_with_projects.append({
-            "team_id": team.team_id,
-            "team_name": team.name,
-            "role": ut.role,
-            "projects": projects,
-        })
-
+    teams_with_projects = get_user_teams_with_projects(current_user.user_id)
     return render_template("teams.html", teams=teams_with_projects)
 
 
