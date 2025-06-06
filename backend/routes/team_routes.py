@@ -345,7 +345,7 @@ def api_create_team_project(team_id):
         )
     return jsonify({"error": result.get("error", "Project creation failed.")}), 400
 
-@team_bp.route("/api/teams/<int:team_id>/assign_project", methods=["POST"])
+@team_bp.route("/<int:team_id>/assign_project", methods=["POST"])
 def api_assign_project_to_team(team_id):
     """
     Assign an existing project to a team.
@@ -530,4 +530,3 @@ def api_get_user_teams_with_members_and_projects():
         })
 
     return jsonify(result), 200
-
