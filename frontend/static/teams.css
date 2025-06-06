@@ -4,12 +4,12 @@
   --card-bg: #1e2532;
   --text-light: #e0e6ed;
   --text-muted: #94a3b8;
-  --purple: #B18AFF; /* Corrected to a full 8-digit hex for clarity, or use #B18A if it's 6-digit with no alpha. Please confirm this value. */
+  --purple: #B18AFF;
   --border-color: #3f475a;
 
-  /* NEW: Input background color for modals */
+  /* Input background color for modals */
   --input-bg: #1e1e2d; /* A slightly darker shade for input fields */
-  /* NEW: Delete/Cancel button color */
+  /* Delete/Cancel button color */
   --delete-color: #f87171; /* Your existing red for delete actions */
   --delete-color-dark: #dc2626; /* Darker red for hover on delete buttons */
 
@@ -23,13 +23,11 @@
   --text-muted-rgb: 148, 163, 184;
   --gap: 2rem;
 
-  /* ADDED/FIXED THESE VARIABLES - Existing from your snippet */
   --accent-color-dark: #7c3aed; /* A darker shade of purple/accent for active button */
   --text-color-light: #e0e6ed; /* Explicitly defining this as it was used without -- in one place */
   --accent-color-light: #a78bfa; /* Light purple accent for hover effects */
   --background-color-dark: #1b263b;
 
-  /* --- NEWLY ADDED VARIABLES FOR FULL FUNCTIONALITY --- */
   --accent-color: var(--accent-color-light); /* Using your existing light accent as the general accent */
   --surface-bg: #232a39; /* A distinct background for internal modal lists/forms */
   --surface-hover: #2e384b; /* A slightly darker hover state for surfaces */
@@ -666,12 +664,11 @@ body {
   100% { transform: rotate(0deg); }
 }
 
-/* Apply shake animation to member items when in delete mode */
+/* shake animation to member in delete mode */
 .member-item.shake-animation {
   animation: shake 0.2s infinite alternate; /* Adjust duration and iteration as needed */
   cursor: pointer; /* Indicate clickability */
   position: relative; /* For positioning the delete icon */
-  /* No overflow: visible here, as we want it to be contained */
 }
 
 /* Style for the delete icon */
@@ -680,9 +677,9 @@ body {
   top: 5px;   /* Position 5px from the top edge of member-item's padding box */
   right: 5px; /* Position 5px from the right edge of member-item's padding box */
 
-  /* Removed transform: translate() to keep it strictly inside the parent */
 
-  background-color: #ff4d4d; /* Red background */
+
+  background-color: #ff4d4d;
   color: white;
   border-radius: 50%;
   width: 28px;
@@ -716,7 +713,7 @@ body {
   transition: all 0.3s ease;
 }
 
-/* Optional: Slight hover effect on deletable items */
+/*  Slight hover effect on deletable items */
 .member-item.shake-animation:hover {
   filter: brightness(1.1);
 }
@@ -919,7 +916,7 @@ body {
     width: 100%;
 }
 
-/* Styles for lists (e.g., assigning members/projects) within the modal */
+/* Styles for lists */
 .modal-assign-members-list {
     list-style: none;
     padding: 0;
@@ -949,7 +946,7 @@ body {
 }
 
 .modal-assign-members-list button.assign-button {
-    background-color: var(--purple); /* Your defined purple color */
+    background-color: var(--purple);
     color: white;
     padding: 6px 15px;
     border-radius: 4px;
@@ -960,5 +957,5 @@ body {
 }
 
 .modal-assign-members-list button.assign-button:hover {
-    background-color: var(--accent-color-light); /* Your defined light purple for hover */
+    background-color: var(--accent-color-light);
 }
