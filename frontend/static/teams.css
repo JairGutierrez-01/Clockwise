@@ -4,13 +4,14 @@
   --card-bg: #1e2532;
   --text-light: #e0e6ed;
   --text-muted: #94a3b8;
-  --purple: #b18a; /* Corrected to full hex for consistency with other colors */
+  --purple: #B18AFF; /* Corrected to a full 8-digit hex for clarity, or use #B18A if it's 6-digit with no alpha. Please confirm this value. */
   --border-color: #3f475a;
 
   /* NEW: Input background color for modals */
   --input-bg: #1e1e2d; /* A slightly darker shade for input fields */
   /* NEW: Delete/Cancel button color */
   --delete-color: #f87171; /* Your existing red for delete actions */
+  --delete-color-dark: #dc2626; /* Darker red for hover on delete buttons */
 
   /* Specific colors for roles */
   --admin-color: var(--purple);
@@ -22,11 +23,27 @@
   --text-muted-rgb: 148, 163, 184;
   --gap: 2rem;
 
-  /* ADDED/FIXED THESE VARIABLES */
+  /* ADDED/FIXED THESE VARIABLES - Existing from your snippet */
   --accent-color-dark: #7c3aed; /* A darker shade of purple/accent for active button */
   --text-color-light: #e0e6ed; /* Explicitly defining this as it was used without -- in one place */
   --accent-color-light: #a78bfa; /* Light purple accent for hover effects */
   --background-color-dark: #1b263b;
+
+  /* --- NEWLY ADDED VARIABLES FOR FULL FUNCTIONALITY --- */
+  --accent-color: var(--accent-color-light); /* Using your existing light accent as the general accent */
+  --surface-bg: #232a39; /* A distinct background for internal modal lists/forms */
+  --surface-hover: #2e384b; /* A slightly darker hover state for surfaces */
+
+  --primary-color: #6a0dad; /* Example primary color (deep purple) - adjust if needed */
+  --primary-color-dark: #5a0bac; /* Darker shade for primary button hover */
+
+  --surface-dark: #293141; /* Used for carousel track and table header background */
+  --card-bg-light: #2c3340; /* A slightly lighter background for cards/rows */
+
+  /* Example shadow definitions (adjust values as per your design) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 body {
@@ -702,4 +719,246 @@ body {
 /* Optional: Slight hover effect on deletable items */
 .member-item.shake-animation:hover {
   filter: brightness(1.1);
+}
+
+.modal-team-form .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%; /* Ensure header spans the content width */
+    box-sizing: border-box; /* Include padding/border in width */
+}
+
+.modal-team-form .modal-header h3 {
+    font-size: 1.8rem;
+    color: var(--text-light); /* Use your defined text color */
+    margin: 0;
+}
+
+.modal-team-form .modal-close-btn { /* A more prominent close button like Greenfield */
+    background: none;
+    border: 2px solid var(--text-light); /* White border, using your variable */
+    color: var(--text-light);
+    padding: 8px 18px;
+    border-radius: 999px; /* Pill shape */
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-team-form .modal-close-btn:hover {
+    background-color: var(--text-light);
+    color: var(--card-bg); /* Dark text on your card background color */
+    border-color: var(--text-light); /* Keep border color consistent on hover */
+}
+
+/* Styling for input fields specifically within the modal forms */
+.modal-team-form input[type="text"],
+.modal-team-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color); /* Your defined border color */
+    border-radius: 8px;
+    background-color: var(--input-bg); /* Your defined input background */
+    color: var(--text-light); /* Your defined light text color */
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modal-team-form input[type="text"]:focus,
+.modal-team-form textarea:focus {
+    border-color: var(--member-color); /* Your defined member color for focus highlight */
+    box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3); /* Soft glow with member color */
+}
+
+/* Styling for action buttons within the modal forms */
+/* These buttons should also reuse your .custom-modal-btn and .confirm-btn/.cancel-btn classes */
+.modal-team-form .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    width: 100%; /* Ensure buttons span the content width */
+}
+
+/* Styles for lists (e.g., assigning members) within the modal */
+.modal-assign-members-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px; /* Adjust as needed for scrollability */
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg); /* Use your card background for list */
+    padding: 10px;
+}
+
+.modal-assign-members-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.1);
+    color: var(--text-light);
+}
+
+.modal-assign-members-list li:last-child {
+    border-bottom: none;
+}
+
+.modal-assign-members-list button.assign-button { /* Use a specific class name for these buttons */
+    background-color: var(--purple); /* Your defined purple color */
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.modal-assign-members-list button.assign-button:hover {
+    background-color: var(--accent-color-light); /* Your defined light purple for hover */
+}
+
+/* Ensure custom-modal-content itself is flexible for its dynamic content */
+/* Add this if not already present or adjust existing: */
+.custom-modal-content {
+    /* ... existing styles ... */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically if not too tall */
+    /* Make sure this allows dynamic content to expand */
+    gap: 20px; /* Space between elements within the modal content */
+}
+
+/* This class will wrap the dynamically injected content */
+.dynamic-content-area {
+    width: 100%; /* Ensure it takes full width of the modal content */
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spacing for elements within the dynamic area */
+    box-sizing: border-box;
+}
+
+.dynamic-content-area .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dynamic-content-area .modal-header h3 {
+    font-size: 1.8rem;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.dynamic-content-area .modal-close-btn {
+    background: none;
+    border: 2px solid var(--text-light);
+    color: var(--text-light);
+    padding: 8px 18px;
+    border-radius: 999px; /* Pill shape */
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.dynamic-content-area .modal-close-btn:hover {
+    background-color: var(--text-light);
+    color: var(--card-bg);
+    border-color: var(--text-light);
+}
+
+/* Styling for generic form content within the popover-like modals */
+.dynamic-content-area .popover-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.dynamic-content-area .popover-content input[type="text"],
+.dynamic-content-area .popover-content textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-light);
+    font-size: 1rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dynamic-content-area .popover-content input[type="text"]:focus,
+.dynamic-content-area .popover-content textarea:focus {
+    border-color: var(--member-color);
+    box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3);
+}
+
+.dynamic-content-area .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+/* Styles for lists (e.g., assigning members/projects) within the modal */
+.modal-assign-members-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 250px; /* Max height for scrollability */
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--surface-bg); /* Use a distinct background */
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-assign-members-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5px;
+    border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.1);
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.modal-assign-members-list li:last-child {
+    border-bottom: none;
+}
+
+.modal-assign-members-list button.assign-button {
+    background-color: var(--purple); /* Your defined purple color */
+    color: white;
+    padding: 6px 15px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.modal-assign-members-list button.assign-button:hover {
+    background-color: var(--accent-color-light); /* Your defined light purple for hover */
 }

@@ -32,6 +32,9 @@ let customModal, customModalTitle, customModalMessage, customModalInput,
 
 let customModalResolve; // To store the resolve function for promises
 
+// Global variable for the dynamic content area inside the modal
+let dynamicContentArea;
+
 // New global variable for delete mode
 let isDeleteMode = false;
 let deleteMemberButton = null; // Reference to the delete member button
@@ -44,32 +47,52 @@ function initializeModalElements() {
   customModalInput = document.getElementById("customModalInput");
   customModalConfirmBtn = document.getElementById("customModalConfirmBtn");
   customModalCancelBtn = document.getElementById("customModalCancelBtn");
-  customModalContent = customModal.querySelector(".custom-modal-content"); //Initialize customModalContent
+  customModalContent = customModal.querySelector(".custom-modal-content");
+  // NEW: Initialize dynamicContentArea
+  dynamicContentArea = customModal.querySelector(".dynamic-content-area");
 }
 
-function showCustomModal(title, message, inputPlaceholder, confirmText, cancelText, type) {
+// showCustomModal to accept customContentHtml and manage default elements' visibility
+function showCustomModal({ title, message = '', inputPlaceholder = '', confirmText = 'OK', cancelText = 'Cancel', type = 'alert', onConfirm = null, onCancel = null, customContentHtml = '' }) {
   return new Promise(resolve => {
     customModalResolve = resolve;
 
     customModalTitle.textContent = title;
     customModalMessage.textContent = message;
 
-    // Reset and configure input
+    // Reset input value
     customModalInput.value = '';
-    customModalInput.placeholder = inputPlaceholder || '';
-    customModalInput.style.display = inputPlaceholder ? 'block' : 'none';
 
-    // Configure buttons
-    customModalConfirmBtn.textContent = confirmText || 'OK';
-    customModalCancelBtn.textContent = cancelText || 'Cancel';
-    customModalCancelBtn.style.display = cancelText ? 'inline-block' : 'none';
+    // Inject custom content or clear if not provided
+    if (dynamicContentArea) {
+        dynamicContentArea.innerHTML = customContentHtml;
+    }
+
+    // Manage visibility of standard modal elements based on whether custom content is provided
+    if (customContentHtml) {
+        customModalInput.style.display = 'none';
+        customModalMessage.style.display = 'none'; // Hide default message
+        customModalConfirmBtn.style.display = 'none'; // Hide default confirm button
+        customModalCancelBtn.style.display = 'none'; // Hide default cancel button
+        customModalTitle.style.display = 'none'; // Hide default title if custom content has its own header
+    } else {
+        customModalInput.style.display = inputPlaceholder ? 'block' : 'none';
+        customModalInput.placeholder = inputPlaceholder; // Set placeholder only if input is shown
+
+        customModalMessage.style.display = 'block'; // Show default message
+        customModalConfirmBtn.style.display = 'inline-block'; // Show default confirm
+        customModalConfirmBtn.textContent = confirmText; // Set text for default confirm
+        customModalCancelBtn.style.display = cancelText ? 'inline-block' : 'none'; // Show default cancel
+        customModalCancelBtn.textContent = cancelText; // Set text for default cancel
+        customModalTitle.style.display = 'block'; // Show default title
+    }
 
     // Set modal type class for CSS styling
     customModal.classList.remove('prompt-type', 'alert-type', 'confirm-type');
     customModal.classList.add(`${type}-type`);
 
     // Add success/error class to content for color changes
-    if (customModalContent) { // Ensure customModalContent is initialized
+    if (customModalContent) {
         customModalContent.classList.remove('success', 'error');
         if (type === 'alert' && title.includes('Success')) {
             customModalContent.classList.add('success');
@@ -78,68 +101,102 @@ function showCustomModal(title, message, inputPlaceholder, confirmText, cancelTe
         }
     }
 
-
-    // Event listeners for buttons
-    const handleConfirm = () => {
+    // Define handlers for default buttons (used when customContentHtml is NOT present)
+    const handleConfirmDefault = () => {
       hideCustomModal();
       resolve(inputPlaceholder ? customModalInput.value : true);
-      removeListeners();
+      removeDefaultListeners();
     };
 
-    const handleCancel = () => {
+    const handleCancelDefault = () => {
       hideCustomModal();
       resolve(false);
-      removeListeners();
+      removeDefaultListeners();
     };
 
-    const handleKeydown = (e) => {
+    const handleKeydownDefault = (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        handleConfirm();
-      } else if (e.key === 'Escape' && cancelText) {
+        if (customModalConfirmBtn.style.display !== 'none') { // Only trigger if confirm button is visible
+          handleConfirmDefault();
+        }
+      } else if (e.key === 'Escape' && customModalCancelBtn.style.display !== 'none') { // Only trigger if cancel button is visible
         e.preventDefault();
-        handleCancel();
+        handleCancelDefault();
       }
     };
 
-    customModalConfirmBtn.addEventListener('click', handleConfirm);
-    customModalCancelBtn.addEventListener('click', handleCancel);
-    document.addEventListener('keydown', handleKeydown);
-
-    // Function to remove event listeners to prevent memory leaks
-    const removeListeners = () => {
-      customModalConfirmBtn.removeEventListener('click', handleConfirm);
-      customModalCancelBtn.removeEventListener('click', handleCancel);
-      document.removeEventListener('keydown', handleKeydown);
+    // Function to remove default event listeners to prevent memory leaks
+    const removeDefaultListeners = () => {
+      customModalConfirmBtn.removeEventListener('click', handleConfirmDefault);
+      customModalCancelBtn.removeEventListener('click', handleCancelDefault);
+      document.removeEventListener('keydown', handleKeydownDefault);
     };
 
+    // Clear previous default listeners before attaching new ones
+    removeDefaultListeners();
+
+    // Attach default listeners only if no custom content is provided
+    if (!customContentHtml) {
+      customModalConfirmBtn.addEventListener('click', handleConfirmDefault);
+      customModalCancelBtn.addEventListener('click', handleCancelDefault);
+      document.addEventListener('keydown', handleKeydownDefault);
+    }
+
     customModal.classList.add('active');
-    if (inputPlaceholder) {
-      setTimeout(() => customModalInput.focus(), 300); // Focus input after animation
-    } else {
-      setTimeout(() => customModalConfirmBtn.focus(), 300); // Focus confirm button
+    document.body.style.overflow = 'hidden'; // Disable scrolling
+
+    // Focus management
+    if (customContentHtml) {
+        // For custom content, attempt to focus the first focusable element inside dynamicContentArea
+        setTimeout(() => {
+            const firstFocusable = dynamicContentArea.querySelector('input, button, a, [tabindex]:not([tabindex="-1"])');
+            if (firstFocusable) {
+                firstFocusable.focus();
+            } else {
+                // Fallback to customModalConfirmBtn if no focusable elements in custom content and it's visible
+                if (customModalConfirmBtn.style.display !== 'none') {
+                    customModalConfirmBtn.focus();
+                }
+            }
+        }, 300);
+    } else if (inputPlaceholder && customModalInput.style.display !== 'none') {
+        setTimeout(() => customModalInput.focus(), 300);
+    } else if (customModalConfirmBtn.style.display !== 'none') {
+        setTimeout(() => customModalConfirmBtn.focus(), 300);
     }
   });
 }
 
+// hideCustomModal to clear dynamic content
 function hideCustomModal() {
   customModal.classList.remove('active');
-  if (customModalContent) { // Ensure customModalContent is initialized
+  document.body.style.overflow = ''; // Re-enable scrolling
+  if (customModalContent) {
       customModalContent.classList.remove('success', 'error'); // Clean up type classes
   }
+  if (dynamicContentArea) { // Clear dynamic content when hiding
+      dynamicContentArea.innerHTML = '';
+  }
+  // Ensure default modal elements are in a consistent hidden state after clearing custom content
+  customModalInput.style.display = 'none';
+  customModalMessage.style.display = 'block'; // Default to visible for next standard modal call
+  customModalTitle.style.display = 'block'; // Default to visible
+  customModalConfirmBtn.style.display = 'inline-block'; // Default to visible (will be hidden by next showCustomModal if needed)
+  customModalCancelBtn.style.display = 'inline-block'; // Default to visible
 }
 
-// Wrapper functions for convenience
+// Wrapper functions for convenience (remain unchanged)
 function showCustomPrompt(title, message, placeholder) {
-  return showCustomModal(title, message, placeholder, 'Submit', 'Cancel', 'prompt');
+  return showCustomModal({title, message, inputPlaceholder: placeholder, confirmText: 'Submit', cancelText: 'Cancel', type: 'prompt'});
 }
 
-function showCustomAlert(title, message, type = 'alert') { // type can be 'success' or 'error' for styling
-  return showCustomModal(title, message, null, 'OK', null, 'alert');
+function showCustomAlert(title, message, type = 'alert') {
+  return showCustomModal({title, message, confirmText: 'OK', type: 'alert'});
 }
 
 function showCustomConfirm(title, message) {
-  return showCustomModal(title, message, null, 'Confirm', 'Cancel', 'confirm');
+  return showCustomModal({title, message, confirmText: 'Confirm', cancelText: 'Cancel', type: 'confirm'});
 }
 
 
@@ -153,38 +210,240 @@ document.addEventListener("DOMContentLoaded", () => {
   deleteMemberButton = document.querySelector(".delete-member-btn"); // Assign to global variable
   const deleteTeamBtn = document.querySelector(".delete-team-btn");
 
-  //All button event listeners are now at the same level
-  if (createTeamBtn) {
-    createTeamBtn.addEventListener("click", async () => {
-      const teamName = await showCustomPrompt("Create New Team", "Enter the name for your new team:", "Team Name");
-      if (!teamName || teamName.trim() === "") {
-        showCustomAlert("Error", "Team name is required.", "error");
-        return;
-      }
+  // Add event listener for team table rows to open the modal for project assignment
+  let teamsTableBody = document.getElementById("teamsBody");
+
+  if (teamsTableBody) {
+      teamsTableBody.addEventListener("click", async (event) => {
+          const row = event.target.closest("tr");
+          if (!row || !row.dataset.teamId) return;
+
+          const teamId = row.dataset.teamId;
+          const teamName = row.dataset.teamName;
+
+          // Show loading state initially within the modal
+          const loadingHtml = `
+              <div class="modal-header">
+                  <h3 id="modalDynamicTitle">Assign Project to <strong>${teamName}</strong></h3>
+                  <button class="modal-close-btn">X</button>
+              </div>
+              <div class="modal-content-area">
+                  <p style="text-align: center; color: var(--text-muted);">Loading projects...</p>
+              </div>
+          `;
+
+          // Pass custom content to showCustomModal
+          showCustomModal({
+              title: `Assign Project to ${teamName}`, // Default title for general modal tracking if needed
+              customContentHtml: loadingHtml,
+              type: 'custom' // Use a generic 'custom' type to indicate it's not a standard alert/prompt
+          });
+
+          // Attach close button listener immediately after showing modal with loading content
+          // This listener needs to be re-attached each time the custom content is updated
+          const modalCloseBtn = customModal.querySelector('.modal-close-btn');
+          if (modalCloseBtn) {
+              modalCloseBtn.addEventListener('click', hideCustomModal);
+          }
+
+          try {
+              const response = await fetch("/api/projects");
+              const result = await response.json();
+
+              if (!result.projects || !Array.isArray(result.projects)) {
+                  // Update content area with error message
+                  if (dynamicContentArea) {
+                      dynamicContentArea.querySelector('.modal-content-area').innerHTML = "<p>Error loading projects.</p>";
+                  }
+                  return;
+              }
+
+              const allTeamProjects = result.projects.filter(p => p.type === "TeamProject");
+
+              const assignedProjects = allTeamProjects.filter(p => p.team_id == teamId);
+              const availableProjects = allTeamProjects.filter(p => !p.team_id);
+
+              let html = `
+                  <div class="modal-header">
+                      <h3 id="modalDynamicTitle">Assign Project to <strong>${teamName}</strong></h3>
+                      <button class="modal-close-btn">X</button>
+                  </div>
+                  <div class="modal-content-area">
+              `;
+
+              if (assignedProjects.length > 0) {
+                  html += "<p><strong>Already Assigned:</strong></p><ul class='modal-assign-members-list'>"; // Reusing list style
+                  assignedProjects.forEach(p => {
+                      html += `<li>${p.name}</li>`;
+                  });
+                  html += "</ul>";
+              }
+
+              if (availableProjects.length > 0) {
+                  html += "<p><strong>Available to Assign:</strong></p><ul class='modal-assign-members-list'>";
+                  availableProjects.forEach(p => {
+                      html += `
+                          <li>
+                              <span>${p.name}</span>
+                              <button class="assign-project-btn assign-button" data-project-id="${p.project_id}" data-team-id="${teamId}">Assign</button>
+                          </li>
+                      `;
+                  });
+                  html += "</ul>";
+              } else {
+                  html += "<p>No available projects to assign.</p>";
+              }
+
+              html += `</div>`; // Close modal-content-area div
+
+              // Update the modal's content with the fetched project data
+              if (dynamicContentArea) {
+                  dynamicContentArea.innerHTML = html;
+              }
+
+              // Re-attach close button listener (important because innerHTML overwrites it)
+              const updatedModalCloseBtn = customModal.querySelector('.modal-close-btn');
+              if (updatedModalCloseBtn) {
+                  updatedModalCloseBtn.addEventListener('click', hideCustomModal);
+              }
+
+              // Attach event listener for the new "Assign" buttons
+              if (dynamicContentArea) { // Check if dynamicContentArea exists before querying
+                  dynamicContentArea.querySelectorAll(".assign-project-btn").forEach(button => {
+                      button.addEventListener("click", handleAssignProject);
+                  });
+              }
+
+          } catch (err) {
+              console.error(err);
+              if (dynamicContentArea) { // Check if dynamicContentArea exists before querying
+                  dynamicContentArea.innerHTML = `
+                      <div class="modal-header">
+                          <h3 id="modalDynamicTitle">Error</h3>
+                          <button class="modal-close-btn">X</button>
+                      </div>
+                      <div class="modal-content-area">
+                          <p style="text-align: center; color: var(--delete-color);">Failed to fetch projects.</p>
+                      </div>
+                  `;
+                  const errorModalCloseBtn = customModal.querySelector('.modal-close-btn');
+                  if (errorModalCloseBtn) {
+                      errorModalCloseBtn.addEventListener('click', hideCustomModal);
+                  }
+              }
+          }
+      });
+  }
+
+  // Separate function for handling project assignment (previously embedded in popover listener)
+  async function handleAssignProject(e) {
+      const projectId = e.target.dataset.projectId;
+      const teamId = e.target.dataset.teamId;
+
+      // Get teamName for re-rendering refreshed modal content if needed
+      const teamRow = document.querySelector(`tr[data-team-id="${teamId}"]`);
+      const teamName = teamRow ? teamRow.dataset.teamName : "";
 
       try {
-        const response = await fetch("/api/teams/", {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify({ name: teamName.trim() }),
-          credentials: "include"
-        });
+          const response = await fetch(`/api/teams/${teamId}/assign_project`, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({ project_id: projectId }),
+          });
 
-        const data = await response.json();
+          const result = await response.json();
 
-        if (response.ok) {
-          showCustomAlert("Success!", `Team "${teamName.trim()}" created successfully!`, "success");
-          fetchUserTeams();
-        } else {
-          showCustomAlert("Error", "Error: " + (data.error || "Unknown error"), "error");
-        }
+          if (response.ok) {
+              showCustomAlert("Success!", "Project assigned successfully!", "success");
+              hideCustomModal(); // Close the modal after successful assignment
+              fetchUserTeams(); // This will refresh everything
+          } else {
+              const errorMessage = result.error || "Failed to assign project.";
+              showCustomAlert("Error", errorMessage, "error");
+          }
       } catch (err) {
-        console.error("Error at creating the Team:", err);
-        showCustomAlert("Error", "Network error. Please try again.", "error");
+          console.error("Error assigning project:", err);
+          showCustomAlert("Error", "Network error. Error assigning project.", "error");
+      }
+  }
+
+
+  // createTeamBtn listener to use customContentHtml
+  if (createTeamBtn) {
+    createTeamBtn.addEventListener("click", async () => {
+      const createTeamFormHtml = `
+          <div class="modal-header">
+              <h3 id="modalDynamicTitle">Create New Team</h3>
+              <button class="modal-close-btn">X</button>
+          </div>
+          <div class="popover-content">
+              <input type="text" id="newTeamName" placeholder="Team Name">
+              <textarea id="newTeamDescription" placeholder="Team Description (optional)"></textarea>
+              <div class="action-buttons">
+                  <button id="createTeamConfirm" class="custom-modal-btn confirm-btn">Create Team</button>
+                  <button id="createTeamCancel" class="custom-modal-btn cancel-btn">Cancel</button>
+              </div>
+          </div>
+      `;
+
+      showCustomModal({
+          title: 'Create Team', // This will be the fallback title if modalDynamicTitle isn't used
+          customContentHtml: createTeamFormHtml,
+          type: 'custom' // Indicate it's a custom content modal
+      });
+
+      // Attach listeners to dynamically created elements
+      const newTeamNameInput = document.getElementById('newTeamName');
+      const newTeamDescriptionInput = document.getElementById('newTeamDescription');
+      const createTeamConfirm = document.getElementById('createTeamConfirm');
+      const createTeamCancel = document.getElementById('createTeamCancel');
+      const modalCloseBtn = customModal.querySelector('.modal-close-btn'); // Get the close button
+
+      // Focus on the input
+      if (newTeamNameInput) {
+          setTimeout(() => newTeamNameInput.focus(), 300);
+      }
+
+      createTeamConfirm.onclick = async () => {
+          const teamName = newTeamNameInput.value.trim();
+          const teamDescription = newTeamDescriptionInput.value.trim();
+
+          if (!teamName) {
+              showCustomAlert("Error", "Team name is required.", "error");
+              return; // Don't hide modal, let user fix
+          }
+
+          try {
+              const response = await fetch("/api/teams/", {
+                  method: "POST",
+                  headers: headers,
+                  body: JSON.stringify({ name: teamName, description: teamDescription }), // Include description
+                  credentials: "include"
+              });
+
+              const data = await response.json();
+
+              if (response.ok) {
+                  showCustomAlert("Success!", `Team "${teamName}" created successfully!`, "success");
+                  hideCustomModal(); // Hide modal after success
+                  fetchUserTeams();
+              } else {
+                  showCustomAlert("Error", "Error: " + (data.error || "Unknown error"), "error");
+              }
+          } catch (err) {
+              console.error("Error at creating the Team:", err);
+              showCustomAlert("Error", "Network error. Please try again.", "error");
+          }
+      };
+
+      createTeamCancel.onclick = hideCustomModal;
+      if (modalCloseBtn) { // Attach to the 'X' button
+          modalCloseBtn.onclick = hideCustomModal;
       }
     });
   }
 
+  // deleteTeamBtn listener (no custom HTML, uses standard confirm)
   if (deleteTeamBtn) {
     deleteTeamBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -217,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add member button listener to use User ID or Username
+  // Add member button listener to use customContentHtml
   if (addMemberBtn) {
     addMemberBtn.addEventListener("click", async () => {
       if (!currentDisplayedTeamId) {
@@ -230,54 +489,84 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleDeleteMode();
       }
 
-      // Clarify prompt: User ID or Username
-      const memberInfo = await showCustomPrompt("Add New Member", "Enter new member's User ID or Username and Role (e.g., '123, member' or 'john_doe, admin'):", "User ID or Username, role");
-      if (!memberInfo || memberInfo.trim() === "") {
-        showCustomAlert("Error", "User ID/Username and Role are required.", "error");
-        return;
+      const addMemberFormHtml = `
+          <div class="modal-header">
+              <h3 id="modalDynamicTitle">Add New Member</h3>
+              <button class="modal-close-btn">X</button>
+          </div>
+          <div class="popover-content">
+              <p style="color: var(--text-muted); text-align: center;">Enter new member's User ID or Username and Role:</p>
+              <input type="text" id="memberIdentifierInput" placeholder="User ID or Username">
+              <input type="text" id="memberRoleInput" placeholder="Role (e.g., member, admin - default: member)">
+              <div class="action-buttons">
+                  <button id="addMemberConfirm" class="custom-modal-btn confirm-btn">Add Member</button>
+                  <button id="addMemberCancel" class="custom-modal-btn cancel-btn">Cancel</button>
+              </div>
+          </div>
+      `;
+
+      showCustomModal({
+          title: 'Add New Member',
+          customContentHtml: addMemberFormHtml,
+          type: 'custom'
+      });
+
+      // Attach listeners to dynamically created elements
+      const memberIdentifierInput = document.getElementById('memberIdentifierInput');
+      const memberRoleInput = document.getElementById('memberRoleInput');
+      const addMemberConfirm = document.getElementById('addMemberConfirm');
+      const addMemberCancel = document.getElementById('addMemberCancel');
+      const modalCloseBtn = customModal.querySelector('.modal-close-btn');
+
+      if (memberIdentifierInput) {
+          setTimeout(() => memberIdentifierInput.focus(), 300);
       }
 
-      const parts = memberInfo.split(',').map(p => p.trim());
-      const newMemberIdentifier = parts[0]; // This can be user_id (as string) or username
-      const role = parts[1] || 'member'; // Default to 'member' if not specified
+      addMemberConfirm.onclick = async () => {
+          const newMemberIdentifier = memberIdentifierInput.value.trim();
+          const role = memberRoleInput.value.trim() || 'member'; // Default to 'member' if not specified
 
-      if (!newMemberIdentifier) {
-        showCustomAlert("Error", "Invalid User ID or Username provided.", "error");
-        return;
-      }
-
-      try {
-        // Send newMemberIdentifier as user_id to the backend, which handles ID or username
-        const response = await fetch(`/api/teams/${currentDisplayedTeamId}/add-member`, {
-          method: "PATCH",
-          headers: headers,
-          body: JSON.stringify({ user_id: newMemberIdentifier, role: role }), // Sending user_id or username
-          credentials: "include"
-        });
-
-        const data = await response.json();
-        console.log("Add Member Response Status:", response.status); // Log status
-        console.log("Add Member Response Data:", data); // Log data
-
-        if (response.ok) {
-          // Check for specific backend messages even if response.ok is true
-          if (data.error) { // If backend returns 200 but with an 'error' key
-            showCustomAlert("Error", "Error adding member: " + data.error, "error");
-          } else {
-            showCustomAlert("Success!", "Member added successfully!", "success");
-            fetchUserTeams(); // Re-fetch all teams to update the carousel
+          if (!newMemberIdentifier) {
+              showCustomAlert("Error", "User ID or Username is required.", "error");
+              return;
           }
-        } else {
-          showCustomAlert("Error", "Error adding member: " + (data.error || "Unknown error"), "error");
-        }
-      } catch (err) {
-        console.error("Error adding member:", err);
-        showCustomAlert("Error", "Network error. Please try again.", "error");
+
+          try {
+              // Send newMemberIdentifier as user_id to the backend, which handles ID or username
+              const response = await fetch(`/api/teams/${currentDisplayedTeamId}/add-member`, {
+                  method: "PATCH",
+                  headers: headers,
+                  body: JSON.stringify({ user_id: newMemberIdentifier, role: role }),
+                  credentials: "include"
+              });
+
+              const data = await response.json();
+
+              if (response.ok) {
+                  if (data.error) {
+                    showCustomAlert("Error", "Error adding member: " + data.error, "error");
+                  } else {
+                    showCustomAlert("Success!", "Member added successfully!", "success");
+                    hideCustomModal();
+                    fetchUserTeams(); // Re-fetch all teams to update the carousel
+                  }
+              } else {
+                  showCustomAlert("Error", "Error adding member: " + (data.error || "Unknown error"), "error");
+              }
+          } catch (err) {
+              console.error("Error adding member:", err);
+              showCustomAlert("Error", "Network error. Please try again.", "error");
+          }
+      };
+
+      addMemberCancel.onclick = hideCustomModal;
+      if (modalCloseBtn) {
+          modalCloseBtn.onclick = hideCustomModal;
       }
     });
   }
 
-  // Toggle delete mode listener
+  // Toggle delete mode listener (remains unchanged, it's specific to the carousel)
   if (deleteMemberButton) {
     deleteMemberButton.addEventListener("click", () => {
       if (!currentDisplayedTeamId) {
@@ -288,7 +577,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Carousel Event Listeners
+  // Carousel Event Listeners (remain unchanged)
   if (leftArrow) {
     leftArrow.addEventListener("click", () => {
       if (!isDown) { // Prevent clicking during a drag
@@ -307,7 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Carousel drag event listeners
+  // Carousel drag event listeners (remain unchanged)
   if (wrapper && track) {
     wrapper.addEventListener("mousedown", (e) => {
       isDown = true;
@@ -377,7 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add Escape key listener to exit delete mode
+  // Add Escape key listener to exit delete mode (remains unchanged)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isDeleteMode) {
       toggleDeleteMode();
@@ -386,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// Function to toggle delete mode
+// Function to toggle delete mode (remains unchanged)
 function toggleDeleteMode() {
   isDeleteMode = !isDeleteMode;
   const memberItems = document.querySelectorAll(".member-item");
@@ -410,7 +699,7 @@ function toggleDeleteMode() {
   }
 }
 
-// Handler for clicking a member in delete mode
+// Handler for clicking a member in delete mode (remains unchanged)
 async function handleMemberDeleteClick(event) {
   if (!isDeleteMode) return; // Only proceed if in delete mode
 
@@ -471,7 +760,7 @@ async function fetchUserTeams() {
     const responseData = await response.json();
 
     if (response.ok) {
-      // Assuming /api/teams/ endpoint returns current_user info
+
       if (responseData.current_user) {
         currentLoggedInUserId = responseData.current_user.user_id;
         currentLoggedInUsername = responseData.current_user.username;
@@ -541,7 +830,7 @@ async function fetchUserTeams() {
       });
 
       const teamsWithMembers = await Promise.all(teamsWithMembersPromises);
-      console.log("Final teamsWithMembers data:", teamsWithMembers); // ADDED THIS LOG
+      console.log("Final teamsWithMembers data:", teamsWithMembers);
       renderTeams(teamsData); // Render teams in the table
       renderMembersForTeams(teamsWithMembers); // Render members into carousel
       setupCarousel(); // Setup carousel *after* members are rendered
@@ -564,12 +853,13 @@ function renderTeams(teams) {
   teams.forEach(team => {
     const tr = document.createElement("tr");
 
+    tr.dataset.teamId = team.team_id;
+    tr.dataset.teamName = team.team_name;
     tr.innerHTML = `
       <td>${team.team_name}</td>
       <td>${new Date(team.created_at).toLocaleDateString()}</td>
       <td class="${team.role === 'admin' ? 'role-admin' : 'role-member'}">${team.role}</td>
     `;
-
     tbody.appendChild(tr);
   });
 }
@@ -600,8 +890,7 @@ function renderMembersForTeams(teams) {
         <div class="member-info">
           <span class="member-name">${member.username}</span> <span class="member-role ${member.role === 'admin' ? 'admin' : ''}">${member.role}</span>
         </div>
-        <span class="delete-icon">✖</span> <!-- Delete icon -->
-      </div>
+        <span class="delete-icon">✖</span> </div>
     `).join("");
 
     // Display current user's role in this team
@@ -628,6 +917,7 @@ function renderMembersForTeams(teams) {
   }
 }
 
+// Carousel helper functions (remain unchanged)
 function setupCarousel() {
   if (!track || track.children.length === 0) {
     currentCardIndex = 0; // Reset index if no cards
@@ -680,7 +970,7 @@ function updateCarouselPosition(index) {
   }, 300);
 }
 
-// Function to show/hide arrows
+// Function to show/hide arrows (remains unchanged)
 function updateCarouselArrows() {
   if (!leftArrow || !rightArrow || !track || track.children.length === 0) return;
 
