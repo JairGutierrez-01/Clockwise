@@ -1,3 +1,33 @@
+// ==== Notification Filtering ====
+document.addEventListener("DOMContentLoaded", () => {
+  const filterButtons = document.querySelectorAll("#filter-controls button");
+  const cards = document.querySelectorAll(".notification-card");
+
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      // Reset active class
+      filterButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const selectedType = btn.dataset.filter;
+
+      cards.forEach((card) => {
+        const cardType = card.dataset.type;
+
+        if (
+          selectedType === "all" ||
+          (selectedType === "info" && !["task", "team", "project", "progress"].includes(cardType)) ||
+          cardType === selectedType
+        ) {
+          card.style.display = "";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    });
+  });
+});
+
 // Benachrichtigung als gelesen markieren
 function markAsRead(id) {
   fetch(`/notifications/read/${id}`, {

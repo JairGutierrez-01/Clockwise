@@ -56,3 +56,28 @@
 .read-btn:hover {
   background-color: #133863;
 }
+
+/* ========== Notification Filter Buttons ========== */
+#filter-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+#filter-controls button {
+  background-color: #173044;
+  color: #e0e0e0;
+  border: 1px solid #95a6b5;
+  padding: 4px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#filter-controls button:hover,
+#filter-controls button.active {
+  background-color: #95a6b5;
+  color: #173044;
+}
