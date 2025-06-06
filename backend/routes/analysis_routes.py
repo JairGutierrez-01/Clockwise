@@ -2,6 +2,9 @@ from datetime import datetime
 
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
+from datetime import datetime, timedelta
+from backend.services.analysis_service import aggregate_weekly_time
+
 
 from backend.services.analysis_service import (
     load_time_entries,
@@ -134,3 +137,25 @@ def get_worked_time_today():
     """
     hours_today = worked_time_today()
     return jsonify({"worked_hours_today": hours_today})
+
+@analysis_bp.route("/weekly-time")
+@login_required
+def api_weekly_time():
+    """
+    API endpoint that returns the aggregated worked time per project for the current week (Monday to Sunday).
+
+    Returns:
+        JSON response with:
+            - labels (list of str): Weekday labels ["Mo", "Di", ..., "So"].
+            - projects (dict): Mapping of project names to a list of 7 floats,
+                               each representing the total hours worked on that day.
+    """
+    today = datetime.today()
+    monday = today - timedelta(days=today.weekday())
+    entries = load_time_entries()
+    aggregated = aggregate_weekly_time(entries, monday)
+
+    return jsonify({
+        "labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+        "projects": aggregated
+    })

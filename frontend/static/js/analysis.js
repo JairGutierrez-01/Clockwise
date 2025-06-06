@@ -9,48 +9,125 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartInstance = null;
   let calendarInstance = null;
 
-  function renderChart() {
+    const colorPalette = [
+    // Rottöne & Orange
+    "#F94144", "#F3722C", "#F8961E", "#F9C74F",
+
+    // Grüntöne
+    "#90BE6D", "#43AA8B", "#2A9D8F", "#06D6A0",
+
+    // Blautöne
+    "#577590", "#277DA1", "#118AB2", "#1D3557",
+
+    // Violett & Pink
+    "#9B5DE5", "#F15BB5", "#C77DFF", "#A2D2FF",
+
+    // Türkis & Mint
+    "#00BBF9", "#00F5D4", "#38B000", "#80FFDB",
+
+    // Dunkel- und Kontrastfarben
+    "#6A4C93", "#8338EC", "#3A0CA3", "#FF6D00"
+  ];
+
+  // Farbe pro Projektname zuweisen
+  function getColorForProject(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colorPalette.length;
+    return colorPalette[index];
+  }
+
+
+  function getColorForProject(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colorPalette.length;
+    return colorPalette[index];
+  }
+
+  async function renderChart() {
     const ctx = document.getElementById("timeChart").getContext("2d");
 
     if (chartInstance) {
       chartInstance.destroy();
     }
 
-    chartInstance = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
-        datasets: [
-          {
-            label: "Analysis",
-            data: [2, 3, 0, 0, 0, 0, 0],
-            backgroundColor: "#4dd0e1",
-          },
-          {
-            label: "SEP",
-            data: [1, 0, 2, 1, 0, 0, 0],
-            backgroundColor: "#f06292",
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        animation: {
-          duration: 800,
-          easing: "easeOutQuart",
+    try {
+      const res = await fetch("/api/analysis/weekly-time");
+      const json = await res.json();
+      const { labels, projects } = json;
+
+      const datasets = Object.entries(projects).map(([project, data]) => ({
+        label: project || "No Project",
+        data: data,
+        backgroundColor: getColorForProject(project),
+      }));
+
+      chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: datasets,
         },
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: "Hours",
+        options: {
+          responsive: true,
+          animation: {
+            duration: 800,
+            easing: "easeOutQuart",
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#ffffff"
+              },
+              grid: {
+                color: "rgba(255, 255, 255, 0.1)"
+              }
             },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: "Hours",
+                color: "#ffffff"
+              },
+              ticks: {
+                color: "#ffffff"
+              },
+              grid: {
+                color: "rgba(255, 255, 255, 0.1)"
+              }
+            }
           },
-        },
-      },
-    });
+          plugins: {
+            legend: {
+              labels: {
+                color: "#ffffff"
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const totalSeconds = context.raw * 3600;
+                  const h = Math.floor(totalSeconds / 3600);
+                  const m = Math.floor((totalSeconds % 3600) / 60);
+                  const s = Math.floor(totalSeconds % 60);
+                  return `${context.dataset.label}: ${h}h ${m}min ${s}s`;
+                }
+              }
+            }
+          }
+        }
+      });
+    } catch (err) {
+      console.error("Error occured while loading chart data:", err);
+    }
   }
+
 
   function renderFullCalendar() {
   const calendarEl = document.getElementById("calendar");
