@@ -165,12 +165,19 @@ def api_weekly_time():
 @analysis_bp.route("/weekly-time-stacked")
 @login_required
 def api_weekly_time_stacked():
-    today = datetime.today()
-    monday = today - timedelta(days=today.weekday())
+    start_param = request.args.get("start")
+    if start_param:
+        try:
+            monday = datetime.fromisoformat(start_param)
+        except ValueError:
+            return jsonify({"error": "Invalid start date format"}), 400
+    else:
+        today = datetime.today()
+        monday = today - timedelta(days=today.weekday())
+
     entries = load_time_entries()
     grouped = aggregate_time_by_day_project_task(entries, monday)
 
-    # Frontendfreundliches Format
     datasets = []
     for (project, task), data in grouped.items():
         datasets.append({

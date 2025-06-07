@@ -61,3 +61,34 @@
   width: 100%;
   font-size: 1.5rem;
 }
+
+.week-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.week-controls button {
+  padding: 0.5rem 0.75rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border: 1px solid var(--color-accent);
+  background-color: var(--color-card-bg);
+  color: var(--color-fg);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.week-controls button:hover {
+  background-color: var(--color-accent);
+  color: var(--color-card-bg);
+}
+
+#week-label {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+}

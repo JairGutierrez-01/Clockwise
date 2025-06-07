@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let chartInstance = null;
   let calendarInstance = null;
+  let currentWeekOffset = 0;
 
   const colorPalette = [
     "#00ff7f",
@@ -114,12 +115,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return `#${newColor}`;
   }
 
-  async function renderChart() {
+  async function renderChart(weekStart = null) {
     const ctx = document.getElementById("timeChart").getContext("2d");
     if (chartInstance) chartInstance.destroy();
 
     try {
-      const res = await fetch("/api/analysis/weekly-time-stacked");
+      const url = weekStart ? `/api/analysis/weekly-time-stacked?start=${weekStart}` : `/api/analysis/weekly-time-stacked`;
+      const res = await fetch(url);
       const { labels, datasets } = await res.json();
 
       // Gruppieren nach Projekt
@@ -201,6 +203,35 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error occured while loading chart data:", e);
     }
   }
+
+  function getStartOfWeekWithOffset(offset) {
+    const now = new Date();
+    const day = now.getDay(); // 0=So, 1=Mo
+    const monday = new Date(now);
+    const diff = day === 0 ? -6 : 1 - day;
+    monday.setDate(monday.getDate() + diff + offset * 7);
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  }
+
+
+  function updateChartForWeek() {
+    const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+    // Formatieren für Label
+    const weekLabel = `${startOfWeek.toLocaleDateString("de-DE", {
+      day: "numeric",
+      month: "short"
+    })} – ${endOfWeek.toLocaleDateString("de-DE", {day: "numeric", month: "long", year: "numeric"})}`;
+    document.getElementById("week-label").textContent = weekLabel;
+
+    //
+    const isoStart = startOfWeek.toISOString().split("T")[0];
+    renderChart(isoStart);
+  }
+
 
 
   function renderFullCalendar() {
@@ -335,6 +366,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.getElementById("prev-week").addEventListener("click", () => {
+    currentWeekOffset--;
+    updateChartForWeek();
+  });
+
+  document.getElementById("next-week").addEventListener("click", () => {
+    currentWeekOffset++;
+    updateChartForWeek();
+  });
+
   // === Initial Load (Default: Weekly) ===
-  renderChart();
+  updateChartForWeek();
 });
