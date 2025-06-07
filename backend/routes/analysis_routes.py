@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required
 from datetime import datetime, timedelta
 from backend.services.analysis_service import aggregate_weekly_time
+from backend.services.analysis_service import aggregate_time_by_day_project_task
 
 
 from backend.services.analysis_service import (
@@ -158,4 +159,27 @@ def api_weekly_time():
     return jsonify({
         "labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
         "projects": aggregated
+    })
+
+
+@analysis_bp.route("/weekly-time-stacked")
+@login_required
+def api_weekly_time_stacked():
+    today = datetime.today()
+    monday = today - timedelta(days=today.weekday())
+    entries = load_time_entries()
+    grouped = aggregate_time_by_day_project_task(entries, monday)
+
+    # Frontendfreundliches Format
+    datasets = []
+    for (project, task), data in grouped.items():
+        datasets.append({
+            "label": f"{project}: {task}",
+            "data": data,
+            "stack": project
+        })
+
+    return jsonify({
+        "labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+        "datasets": datasets
     })

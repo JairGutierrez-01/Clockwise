@@ -325,3 +325,22 @@ def worked_time_today():
             total_seconds += duration
 
     return round(total_seconds / 3600, 2)
+
+
+def aggregate_time_by_day_project_task(entries, week_start):
+    """
+    Gibt ein dict zurück: { (project, task): [Mo–So] }
+    """
+    result = defaultdict(lambda: [0] * 7)
+    for e in entries:
+        start = e["start"]
+        end = e["end"]
+        if not (week_start.date() <= start.date() < (week_start + timedelta(days=7)).date()):
+            continue
+        day_index = (start.date() - week_start.date()).days
+        hours = (end - start).total_seconds() / 3600
+        key = (e["project"] or "No Project", e["task"])
+        result[key][day_index] += hours
+    return result
+
+

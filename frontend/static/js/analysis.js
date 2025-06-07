@@ -9,113 +9,187 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartInstance = null;
   let calendarInstance = null;
 
-    const colorPalette = [
-    // Rottöne & Orange
-    "#F94144", "#F3722C", "#F8961E", "#F9C74F",
-
-    // Grüntöne
-    "#90BE6D", "#43AA8B", "#2A9D8F", "#06D6A0",
-
-    // Blautöne
-    "#577590", "#277DA1", "#118AB2", "#1D3557",
-
-    // Violett & Pink
-    "#9B5DE5", "#F15BB5", "#C77DFF", "#A2D2FF",
-
-    // Türkis & Mint
-    "#00BBF9", "#00F5D4", "#38B000", "#80FFDB",
-
-    // Dunkel- und Kontrastfarben
-    "#6A4C93", "#8338EC", "#3A0CA3", "#FF6D00"
+  const colorPalette = [
+    "#00ff7f",
+    "#b700ff",
+    "#00f8dc",
+    "#ff6b00",
+    "#5a4132",
+    "#0bd800",
+    "#f032e6",
+    "#f8ff00",
+    "#c59595",
+    "#008080",
+    "#765595",
+    "#ffc200",
+    "#800000",
+    "#57956a",
+    "#808000",
   ];
 
-  // Farbe pro Projektname zuweisen
-  function getColorForProject(name) {
+
+  function hexToRgb(hex) {
+    // Entferne das "#" falls vorhanden
+    hex = hex.replace(/^#/, "");
+    if (hex.length === 3) {
+      hex = hex.split("").map(c => c + c).join("");
+    }
+    const bigint = parseInt(hex, 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255
+    };
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0; // Grau
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+        case g: h = ((b - r) / d + 2); break;
+        case b: h = ((r - g) / d + 4); break;
+      }
+      h /= 6;
+    }
+
+    return [
+      Math.round(h * 360),
+      Math.round(s * 100),
+      Math.round(l * 100)
+    ];
+  }
+
+
+  function getColorForProject(projectName) {
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    const full = projectName + "_hash";
+    for (let i = 0; i < full.length; i++) {
+      hash = full.charCodeAt(i) + ((hash << 5) - hash);
     }
     const index = Math.abs(hash) % colorPalette.length;
     return colorPalette[index];
   }
 
 
-  function getColorForProject(name) {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash) % colorPalette.length;
-    return colorPalette[index];
+  function getTaskColor(project, task, indexInStack = 0, total = 1) {
+    const baseColor = getColorForProject(project);
+    const rgb = hexToRgb(baseColor);
+    let [h, s, l] = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+    // Staffelung: dunkel unten (index = 0), hell oben
+    const step = 40 / Math.max(total - 1, 1); // max. 40% Unterschied
+    l = Math.min(90, Math.max(10, l - 20 + step * indexInStack));
+
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  }
+
+
+  // Funktion zur Helligkeitsanpassung in Prozent
+  function shadeColor(color, percent) {
+    const f = parseInt(color.slice(1), 16),
+      t = percent < 0 ? 0 : 255,
+      p = Math.abs(percent) / 100,
+      R = f >> 16,
+      G = (f >> 8) & 0x00FF,
+      B = f & 0x0000FF;
+
+    const newColor = (
+      0x1000000 +
+      (Math.round((t - R) * p) + R) * 0x10000 +
+      (Math.round((t - G) * p) + G) * 0x100 +
+      (Math.round((t - B) * p) + B)
+    ).toString(16).slice(1);
+
+    return `#${newColor}`;
   }
 
   async function renderChart() {
     const ctx = document.getElementById("timeChart").getContext("2d");
-
-    if (chartInstance) {
-      chartInstance.destroy();
-    }
+    if (chartInstance) chartInstance.destroy();
 
     try {
-      const res = await fetch("/api/analysis/weekly-time");
-      const json = await res.json();
-      const { labels, projects } = json;
+      const res = await fetch("/api/analysis/weekly-time-stacked");
+      const { labels, datasets } = await res.json();
 
-      const datasets = Object.entries(projects).map(([project, data]) => ({
-        label: project || "No Project",
-        data: data,
-        backgroundColor: getColorForProject(project),
-      }));
+      // Gruppieren nach Projekt
+      const groupedByProject = {};
+
+      datasets.forEach(d => {
+        const [project, task] = d.label.split(":").map(s => s.trim());
+        if (!groupedByProject[project]) groupedByProject[project] = [];
+        groupedByProject[project].push({ ...d, project, task });
+      });
+
+      // Tasks pro Projekt sortieren und abgestufte Farben nutzen
+      const coloredDatasets = Object.values(groupedByProject).flatMap(entries => {
+        entries.sort((a, b) => a.task.localeCompare(b.task));
+        const total = entries.length;
+
+        return entries.map((entry, i) => ({
+          ...entry,
+          backgroundColor: getTaskColor(entry.project, entry.task, i, total)
+        }));
+      });
 
       chartInstance = new Chart(ctx, {
         type: "bar",
         data: {
           labels: labels,
-          datasets: datasets,
+          datasets: coloredDatasets
         },
         options: {
           responsive: true,
-          animation: {
-            duration: 800,
-            easing: "easeOutQuart",
+          elements: {
+            bar: {
+              borderRadius: 2,
+              barThickness: 50,
+              maxBarThickness: 60,
+              minBarLength: 1,
+              borderSkipped: false
+            }
           },
           scales: {
             x: {
-              ticks: {
-                color: "#ffffff"
-              },
-              grid: {
-                color: "rgba(255, 255, 255, 0.1)"
-              }
+              stacked: true,
+              ticks: { color: "#fff" },
+              grid: { color: "rgba(255,255,255,0.1)" },
+              categoryPercentage: 0.7,
+              barPercentage: 1.0
             },
             y: {
+              stacked: true,
               beginAtZero: true,
               title: {
                 display: true,
                 text: "Hours",
-                color: "#ffffff"
+                color: "#fff"
               },
-              ticks: {
-                color: "#ffffff"
-              },
-              grid: {
-                color: "rgba(255, 255, 255, 0.1)"
-              }
+              ticks: { color: "#fff" },
+              grid: { color: "rgba(255,255,255,0.1)" }
             }
           },
           plugins: {
             legend: {
-              labels: {
-                color: "#ffffff"
-              }
+              labels: { color: "#fff" }
             },
             tooltip: {
               callbacks: {
                 label: function (context) {
-                  const totalSeconds = context.raw * 3600;
-                  const h = Math.floor(totalSeconds / 3600);
-                  const m = Math.floor((totalSeconds % 3600) / 60);
-                  const s = Math.floor(totalSeconds % 60);
+                  const sec = context.raw * 3600;
+                  const h = Math.floor(sec / 3600);
+                  const m = Math.floor((sec % 3600) / 60);
+                  const s = Math.floor(sec % 60);
                   return `${context.dataset.label}: ${h}h ${m}min ${s}s`;
                 }
               }
@@ -123,8 +197,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       });
-    } catch (err) {
-      console.error("Error occured while loading chart data:", err);
+    } catch (e) {
+      console.error("Error occured while loading chart data:", e);
     }
   }
 
