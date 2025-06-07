@@ -14,8 +14,9 @@ from backend.services.task_service import (
 from backend.services.task_service import (
     get_unassigned_tasks as get_unassigned_tasks_from_service,
 )
+from backend.services.task_service import get_tasks_assigned_to_user
 
-task_bp = Blueprint("tasks", __name__, url_prefix="/api")
+task_bp = Blueprint("tasks", __name__)
 
 
 @task_bp.route("/tasks", methods=["GET"])
@@ -186,3 +187,12 @@ def get_unassigned_tasks():
         task_list.append(task_dict)
 
     return jsonify(task_list)
+
+"""New route added just to experiment. Please dont kill me """
+@task_bp.route("/users/<int:user_id>/tasks", methods=["GET"])
+def get_tasks_by_user(user_id):
+    """
+    Return all tasks assigned to a specific user.
+    """
+    tasks = get_tasks_assigned_to_user(user_id)
+    return jsonify([task.to_dict() for task in tasks])

@@ -216,3 +216,8 @@ def update_total_duration_for_task(task_id):
         "total_duration_seconds": total_seconds,
         "total_duration_formatted": str(timedelta(seconds=total_seconds)),
     }
+
+"""This function also for the new route users/user_id..."""
+def get_tasks_assigned_to_user(user_id):
+    """Retrieve all tasks assigned to a specific user."""
+    return Task.query.filter_by(user_id=user_id).all()
