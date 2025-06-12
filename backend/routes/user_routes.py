@@ -3,6 +3,7 @@ from flask import (
     request,
     redirect,
     url_for,
+    jsonify,
 )
 from flask_login import login_user as flask_login_user
 
@@ -183,3 +184,27 @@ def profile():
         Response: A Flask response object that renders the profile page.
     """
     return render_template("profile.html", user=current_user)
+
+
+@auth_bp.route("/resend-reset-email", methods=["POST"])
+def resend_reset_email():
+    """
+    Handle AJAX resend reset email requests.
+    Returns a JSON response with success or error message.
+    """
+    data = request.get_json() or {}
+    email = data.get("email")
+
+    if not email:
+        return jsonify({"success": False, "error": "Email is required."}), 400
+
+    result = password_forget(email)  # Muss dict mit 'success' und ggf. 'error' liefern
+    if result.get("success"):
+        return jsonify({"success": True, "message": "Reset instructions resent."}), 200
+    else:
+        return (
+            jsonify(
+                {"success": False, "error": result.get("error", "An error occurred.")}
+            ),
+            500,
+        )
