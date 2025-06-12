@@ -237,6 +237,7 @@ def create_task_for_team_project(name, category_id, project_id, assigned_user_id
     db.session.commit()
     return {"task_id": task.task_id, "message": "Task created under team project"}
 
+
 def get_user_teams_with_projects(user_id):
     """
     Retrieve all teams a user is in, along with their projects.
@@ -247,21 +248,18 @@ def get_user_teams_with_projects(user_id):
     Returns:
         list: List of dicts containing team and project information.
     """
-    user_teams = (
-        db.session.query(UserTeam)
-        .filter_by(user_id=user_id)
-        .join(Team)
-        .all()
-    )
+    user_teams = db.session.query(UserTeam).filter_by(user_id=user_id).join(Team).all()
 
     result = []
     for ut in user_teams:
         team = ut.team
         projects = Project.query.filter_by(team_id=team.team_id).all()
-        result.append({
-            "team_id": team.team_id,
-            "team_name": team.name,
-            "role": ut.role,
-            "projects": projects,
-        })
+        result.append(
+            {
+                "team_id": team.team_id,
+                "team_name": team.name,
+                "role": ut.role,
+                "projects": projects,
+            }
+        )
     return result

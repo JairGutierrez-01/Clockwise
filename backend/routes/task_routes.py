@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import Blueprint, request
 from flask import jsonify
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from backend.services.task_service import (
     create_task,
@@ -20,6 +20,7 @@ task_bp = Blueprint("tasks", __name__)
 
 
 @task_bp.route("/tasks", methods=["GET"])
+@login_required
 def get_tasks():
     """
     Return a list of tasks (optionally filtered by project_id),
@@ -50,6 +51,7 @@ def get_tasks():
 
 
 @task_bp.route("/tasks", methods=["POST"])
+@login_required
 def create_task_api():
     """
     Create a new task using a JSON request.
@@ -103,6 +105,7 @@ def create_task_api():
 
 
 @task_bp.route("/tasks/<int:task_id>", methods=["PUT"])
+@login_required
 def update_task_api(task_id):
     """
     Edit an existing task via JSON.
@@ -134,6 +137,7 @@ def update_task_api(task_id):
 
 
 @task_bp.route("/tasks/<int:task_id>", methods=["GET"])
+@login_required
 def get_task_by_id_api(task_id):
     """
     Returns the task with the given ID.
@@ -145,6 +149,7 @@ def get_task_by_id_api(task_id):
 
 
 @task_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
+@login_required
 def delete_task_api(task_id):
     """
     Delete a task by its ID.
@@ -160,6 +165,7 @@ def delete_task_api(task_id):
 
 
 @task_bp.route("/tasks/unassigned", methods=["GET"])
+@login_required
 def get_unassigned_tasks():
     """
     Return tasks without project assignment (unassigned tasks).
@@ -188,8 +194,12 @@ def get_unassigned_tasks():
 
     return jsonify(task_list)
 
+
 """New route added just to experiment. Please dont kill me """
+
+
 @task_bp.route("/users/<int:user_id>/tasks", methods=["GET"])
+@login_required
 def get_tasks_by_user(user_id):
     """
     Return all tasks assigned to a specific user.

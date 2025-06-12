@@ -16,7 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (
           selectedType === "all" ||
-          (selectedType === "info" && !["task", "team", "project", "progress"].includes(cardType)) ||
+          (selectedType === "info" &&
+            !["task", "team", "project", "progress"].includes(cardType)) ||
           cardType === selectedType
         ) {
           card.style.display = "";
@@ -37,7 +38,8 @@ function markAsRead(id) {
     },
   })
     .then((res) => {
-      if (!res.ok) throw new Error("Error occured while marking message as read");
+      if (!res.ok)
+        throw new Error("Error occured while marking message as read");
       return res.json();
     })
     .then((data) => {

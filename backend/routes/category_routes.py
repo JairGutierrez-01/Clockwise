@@ -1,4 +1,6 @@
 from flask import Blueprint, request, redirect, url_for, render_template
+from flask_login import login_required
+
 from backend.services.category_service import (
     create_category,
     get_category,
@@ -11,6 +13,7 @@ category_bp = Blueprint("category", __name__)
 
 
 @category_bp.route("/categories", methods=["GET"])
+@login_required
 def list_categories():
     """Display all available categories.
 
@@ -22,6 +25,7 @@ def list_categories():
 
 
 @category_bp.route("/category/<int:category_id>", methods=["GET"])
+@login_required
 def view_category(category_id):
     """Display a single category.
 
@@ -38,6 +42,7 @@ def view_category(category_id):
 
 
 @category_bp.route("/category/create", methods=["GET", "POST"])
+@login_required
 def create_category_route():
     """Treat creation of a new category.
 
@@ -54,6 +59,7 @@ def create_category_route():
 
 
 @category_bp.route("/category/edit/<int:category_id>", methods=["GET", "POST"])
+@login_required
 def edit_category_route(category_id):
     """Edit an existing category.
 
@@ -77,6 +83,7 @@ def edit_category_route(category_id):
 
 
 @category_bp.route("/category/delete/<int:category_id>", methods=["POST"])
+@login_required
 def delete_category_route(category_id):
     """Delete a category.
 

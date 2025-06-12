@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_login import login_required
+
 from backend.database import db
 from backend.models.notification import Notification
 
@@ -16,6 +18,7 @@ notification_bp = Blueprint("notifications", __name__)
 #    - To get only unread notifications:
 #         GET /notifications?unread=true
 @notification_bp.route("/notifications", methods=["GET"])
+@login_required
 @jwt_required()
 def get_notifications():
     """Returns a list of notifications for the authenticated user."""
@@ -57,6 +60,7 @@ def get_notifications():
 #    - Requires JWT token in Authorization header
 @notification_bp.route("/notifications/<int:notification_id>", methods=["PATCH"])
 @jwt_required()
+@login_required
 def mark_notification_as_read(notification_id):
     """Mark a specific notification as read."""
     user_id = get_jwt_identity()

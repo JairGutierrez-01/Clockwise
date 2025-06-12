@@ -61,7 +61,11 @@ class Project(db.Model):
     @property
     def duration_readable(self):
         """Returns time spent in human-readable form (e.g. '1h 2min 3s')."""
-        total_seconds = sum(task.total_duration_seconds or 0 for task in self.tasks if task.total_duration_seconds)
+        total_seconds = sum(
+            task.total_duration_seconds or 0
+            for task in self.tasks
+            if task.total_duration_seconds
+        )
 
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60

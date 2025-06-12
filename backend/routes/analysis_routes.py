@@ -25,6 +25,7 @@ analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
 # For Testing: /time-entries?start_date=2025-06-01&end_date=2025-06-07
 @analysis_bp.route("/time-entries")
+@login_required
 def api_time_entries():
     """
     Get time entries filtered by a date range.
@@ -69,6 +70,7 @@ def api_time_entries():
 
 # For Testing: /tasks-in-month?month=2025-05
 @analysis_bp.route("/tasks-in-month")
+@login_required
 def api_tasks_in_month():
     """
     Get all tasks for a specific month.
@@ -99,6 +101,7 @@ def api_tasks_in_month():
 
 
 @analysis_bp.route("/project-progress")
+@login_required
 def api_project_progress():
     """
     Get progress ratio per project based on completed tasks.
@@ -112,6 +115,7 @@ def api_project_progress():
 
 
 @analysis_bp.route("/actual-vs-planned")
+@login_required
 def api_actual_vs_planned():
     """
     Compare actual worked hours against planned target hours per project.
@@ -139,6 +143,7 @@ def get_worked_time_today():
     hours_today = worked_time_today()
     return jsonify({"worked_hours_today": hours_today})
 
+
 @analysis_bp.route("/weekly-time")
 @login_required
 def api_weekly_time():
@@ -156,10 +161,9 @@ def api_weekly_time():
     entries = load_time_entries()
     aggregated = aggregate_weekly_time(entries, monday)
 
-    return jsonify({
-        "labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
-        "projects": aggregated
-    })
+    return jsonify(
+        {"labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], "projects": aggregated}
+    )
 
 
 @analysis_bp.route("/weekly-time-stacked")
@@ -180,13 +184,8 @@ def api_weekly_time_stacked():
 
     datasets = []
     for (project, task), data in grouped.items():
-        datasets.append({
-            "label": f"{project}: {task}",
-            "data": data,
-            "stack": project
-        })
+        datasets.append({"label": f"{project}: {task}", "data": data, "stack": project})
 
-    return jsonify({
-        "labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
-        "datasets": datasets
-    })
+    return jsonify(
+        {"labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], "datasets": datasets}
+    )

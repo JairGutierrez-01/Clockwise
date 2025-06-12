@@ -335,12 +335,12 @@ def aggregate_time_by_day_project_task(entries, week_start):
     for e in entries:
         start = e["start"]
         end = e["end"]
-        if not (week_start.date() <= start.date() < (week_start + timedelta(days=7)).date()):
+        if not (
+            week_start.date() <= start.date() < (week_start + timedelta(days=7)).date()
+        ):
             continue
         day_index = (start.date() - week_start.date()).days
         hours = (end - start).total_seconds() / 3600
         key = (e["project"] or "No Project", e["task"])
         result[key][day_index] += hours
     return result
-
-

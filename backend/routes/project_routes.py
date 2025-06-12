@@ -1,7 +1,7 @@
 from backend.models import UserTeam, Team
 from backend.models.project import Project, ProjectType
 from backend.models.task import Task
-from flask_login import current_user
+from flask_login import current_user, login_required
 from sqlalchemy import and_
 from backend.database import db
 from datetime import datetime
@@ -24,6 +24,7 @@ project_bp = Blueprint("project", __name__)
 
 
 @project_bp.route("/project/create", methods=["GET", "POST"])
+@login_required
 def create_project_route():
     """Create a new project.
 
@@ -80,9 +81,7 @@ def create_project_route():
                 return "Ungültiges Team", 400
 
             is_admin = UserTeam.query.filter_by(
-                user_id=current_user.user_id,
-                team_id=team_id,
-                role="admin"
+                user_id=current_user.user_id, team_id=team_id, role="admin"
             ).first()
             if team_id and not is_admin:
                 return "Keine Adminrechte für dieses Team", 403
@@ -108,6 +107,7 @@ def create_project_route():
 
 
 @project_bp.route("/project/<int:project_id>", methods=["GET"])
+@login_required
 def view_project(project_id):
     """View a specific project by ID.
 
@@ -124,6 +124,7 @@ def view_project(project_id):
 
 
 @project_bp.route("/project/delete/<int:project_id>", methods=["POST"])
+@login_required
 def delete_project_route(project_id):
     """Delete a project by ID.
 
@@ -141,6 +142,7 @@ def delete_project_route(project_id):
 
 
 @project_bp.route("/project/edit/<int:project_id>", methods=["GET", "POST"])
+@login_required
 def edit_project_route(project_id):
     """Edit an existing project by ID.
 
@@ -164,6 +166,7 @@ def edit_project_route(project_id):
 
 
 @project_bp.route("/api/projects", methods=["GET", "POST"])
+@login_required
 def api_projects():
     """
     Handle project creation and listing.
@@ -201,8 +204,12 @@ def api_projects():
             return {"error": f"Unknown project type: {type_str}"}, 400
 
         if team_id:
-            print(f"Checking membership: user_id={current_user.user_id}, team_id={team_id}")
-            is_member = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id).first()
+            print(
+                f"Checking membership: user_id={current_user.user_id}, team_id={team_id}"
+            )
+            is_member = UserTeam.query.filter_by(
+                user_id=current_user.user_id, team_id=team_id
+            ).first()
             if not is_member:
                 return {"error": "User is not a member of the specified team."}, 403
         else:
@@ -248,6 +255,7 @@ def api_projects():
 
 
 @project_bp.route("/api/projects/<int:project_id>", methods=["PATCH", "DELETE"])
+@login_required
 def api_project_detail(project_id):
     """
     Modify or delete a specific project.
@@ -265,11 +273,10 @@ def api_project_detail(project_id):
 
     is_author = project.user_id == current_user.user_id
     is_team_member = (
-            project.team_id
-            and UserTeam.query.filter_by(
-        user_id=current_user.user_id,
-        team_id=project.team_id
-    ).first()
+        project.team_id
+        and UserTeam.query.filter_by(
+            user_id=current_user.user_id, team_id=project.team_id
+        ).first()
     )
 
     if not (is_author or is_team_member):
@@ -306,6 +313,7 @@ def api_project_detail(project_id):
 
 
 @project_bp.route("/api/available-teams", methods=["GET"])
+@login_required
 def get_available_teams():
     """
     Get all teams the current user is part of.
@@ -315,7 +323,7 @@ def get_available_teams():
 
     Returns:
         dict: List of team objects.
-        """
+    """
     teams = (
         db.session.query(Team)
         .join(UserTeam, Team.team_id == UserTeam.team_id)
@@ -334,7 +342,9 @@ def get_available_teams():
         ]
     }
 
+
 @project_bp.route("/team-projects", methods=["GET"])
+@login_required
 def view_team_projects_with_user_tasks():
     """
     Display team projects and the user's tasks in them.
@@ -358,12 +368,9 @@ def view_team_projects_with_user_tasks():
 
     results = []
     for project in team_projects:
-        tasks = (
-            Task.query.filter_by(project_id=project.project_id, assigned_user_id=user_id).all()
-        )
-        results.append({
-            "project": project,
-            "tasks": tasks
-        })
+        tasks = Task.query.filter_by(
+            project_id=project.project_id, assigned_user_id=user_id
+        ).all()
+        results.append({"project": project, "tasks": tasks})
 
     return render_template("projects.html", project_tasks=results)

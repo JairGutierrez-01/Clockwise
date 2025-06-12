@@ -141,7 +141,11 @@ def update_total_duration_for_project(project_id):
         return {"error": "Project not found"}
 
     tasks = Task.query.filter_by(project_id=project_id).all()
-    total_seconds = sum(task.total_duration_seconds or 0 for task in tasks if task.total_duration_seconds is not None)
+    total_seconds = sum(
+        task.total_duration_seconds or 0
+        for task in tasks
+        if task.total_duration_seconds is not None
+    )
 
     total_hours = total_seconds / 3600.0
 
@@ -152,5 +156,5 @@ def update_total_duration_for_project(project_id):
     return {
         "success": True,
         "project_id": project_id,
-        "current_hours": project.current_hours
+        "current_hours": project.current_hours,
     }

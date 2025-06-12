@@ -6,6 +6,7 @@ from flask import (
     url_for,
     session,
 )
+from flask_login import login_required
 
 from backend.services.user_team_service import add_member
 
@@ -13,6 +14,7 @@ team_bp = Blueprint("team", __name__)
 
 
 @team_bp.route("/team/members", methods=["GET", "POST"])
+@login_required
 def members():
     """
     Handle adding members to a team.

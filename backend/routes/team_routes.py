@@ -1,14 +1,19 @@
 from flask import Blueprint, request, jsonify, redirect, url_for
-from flask_login import current_user
+from flask_login import current_user, login_required
 from backend.database import db
 from backend.models import Project, Team, UserTeam, Task, Notification, User
-from backend.services.team_service import check_admin, create_team_project, create_task_for_team_project
+from backend.services.team_service import (
+    check_admin,
+    create_team_project,
+    create_task_for_team_project,
+)
 
 # Create a Flask Blueprint for team-related routes
 team_bp = Blueprint("teams", __name__)
 
 
 @team_bp.route("/", methods=["GET"])
+@login_required
 def get_user_teams():
     """
     Returns all teams the authenticated user is a member of.
@@ -57,6 +62,7 @@ def get_user_teams():
 
 
 @team_bp.route("/", methods=["POST"])
+@login_required
 def create_team():
     """
     Create a new team and assign the current user as admin.
@@ -104,6 +110,7 @@ def create_team():
 
 
 @team_bp.route("/users/<int:user_id>", methods=["GET"])
+@login_required
 def get_user_details(user_id):
     """
     Get details of a specific user.
@@ -145,6 +152,7 @@ def get_user_details(user_id):
 
 
 @team_bp.route("/<int:team_id>/add-member", methods=["PATCH"])
+@login_required
 def add_team_member(team_id):
     """
     Add a new user to the specified team.
@@ -180,9 +188,16 @@ def add_team_member(team_id):
             user_id=user_id, team_id=team_id, role="admin"
         ).first()
         if not admin_relation:
-            return jsonify({"error": "You do not have permission to add members to this team"}), 403
+            return (
+                jsonify(
+                    {"error": "You do not have permission to add members to this team"}
+                ),
+                403,
+            )
 
-        existing = UserTeam.query.filter_by(user_id=new_member_id, team_id=team_id).first()
+        existing = UserTeam.query.filter_by(
+            user_id=new_member_id, team_id=team_id
+        ).first()
         if existing:
             return jsonify({"error": "User is already a member"}), 400
 
@@ -198,6 +213,7 @@ def add_team_member(team_id):
 
 
 @team_bp.route("/<int:team_id>/remove-member", methods=["PATCH"])
+@login_required
 def remove_team_member(team_id):
     """
     Remove a user from the specified team.
@@ -231,7 +247,14 @@ def remove_team_member(team_id):
             user_id=user_id, team_id=team_id, role="admin"
         ).first()
         if not admin_relation:
-            return jsonify({"error": "You do not have permission to remove members from this team"}), 403
+            return (
+                jsonify(
+                    {
+                        "error": "You do not have permission to remove members from this team"
+                    }
+                ),
+                403,
+            )
 
         relation = UserTeam.query.filter_by(user_id=member_id, team_id=team_id).first()
         if not relation:
@@ -246,7 +269,9 @@ def remove_team_member(team_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@team_bp.route("/<int:team_id>/members", methods=["GET"]) # Corrected route path
+
+@team_bp.route("/<int:team_id>/members", methods=["GET"])  # Corrected route path
+@login_required
 def get_team_members(team_id):
     """
     Get all members of a team.
@@ -260,19 +285,19 @@ def get_team_members(team_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
 
-    relation = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id).first()
+    relation = UserTeam.query.filter_by(
+        user_id=current_user.user_id, team_id=team_id
+    ).first()
     if not relation:
         return jsonify({"error": "You are not a member of this team"}), 403
 
     members = UserTeam.query.filter_by(team_id=team_id).all()
-    result = [
-        {"user_id": m.user_id, "role": m.role}
-        for m in members
-    ]
+    result = [{"user_id": m.user_id, "role": m.role} for m in members]
     return jsonify(result), 200
 
 
 @team_bp.route("/<int:team_id>", methods=["DELETE"])
+@login_required
 def delete_team(team_id):
     """
     Delete a team if the user is an admin.
@@ -293,7 +318,10 @@ def delete_team(team_id):
             user_id=user_id, team_id=team_id, role="admin"
         ).first()
         if not relation:
-            return jsonify({"error": "You do not have permission to delete this team"}), 403
+            return (
+                jsonify({"error": "You do not have permission to delete this team"}),
+                403,
+            )
 
         UserTeam.query.filter_by(team_id=team_id).delete()
 
@@ -309,7 +337,9 @@ def delete_team(team_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
+
 @team_bp.route("/teams/<int:team_id>/projects", methods=["POST"])
+@login_required
 def api_create_team_project(team_id):
     """
     Create a new project under the specified team.
@@ -341,11 +371,13 @@ def api_create_team_project(team_id):
         return (
             jsonify({"message": "Project created", "project_id": project_id}),
             201,
-            {"Location": url_for("team_bp.api_get_project", project_id=project_id)}
+            {"Location": url_for("team_bp.api_get_project", project_id=project_id)},
         )
     return jsonify({"error": result.get("error", "Project creation failed.")}), 400
 
+
 @team_bp.route("/<int:team_id>/assign_project", methods=["POST"])
+@login_required
 def api_assign_project_to_team(team_id):
     """
     Assign an existing project to a team.
@@ -359,7 +391,9 @@ def api_assign_project_to_team(team_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
 
-    is_admin = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id, role="admin").first()
+    is_admin = UserTeam.query.filter_by(
+        user_id=current_user.user_id, team_id=team_id, role="admin"
+    ).first()
     if not is_admin:
         return jsonify({"error": "Only admins can assign projects to teams"}), 403
 
@@ -379,9 +413,21 @@ def api_assign_project_to_team(team_id):
     project.team_id = team_id
     db.session.commit()
 
-    return jsonify({"success": True, "message": "Project assigned to team", "project_id": project_id, "team_id": team_id}), 200
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": "Project assigned to team",
+                "project_id": project_id,
+                "team_id": team_id,
+            }
+        ),
+        200,
+    )
+
 
 @team_bp.route("/api/projects/<int:project_id>/tasks", methods=["POST"])
+@login_required
 def api_create_task_for_team_project(project_id):
     """
     Create a task within a team project.
@@ -399,7 +445,9 @@ def api_create_task_for_team_project(project_id):
     if not project or not project.team_id:
         return jsonify({"error": "Invalid team project"}), 404
 
-    is_admin = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=project.team_id, role="admin").first()
+    is_admin = UserTeam.query.filter_by(
+        user_id=current_user.user_id, team_id=project.team_id, role="admin"
+    ).first()
     if not is_admin:
         return jsonify({"error": "Only team admins can create tasks"}), 403
 
@@ -418,14 +466,16 @@ def api_create_task_for_team_project(project_id):
         name=name,
         category_id=category_id,
         project_id=project_id,
-        assigned_user_id=assigned_user_id
+        assigned_user_id=assigned_user_id,
     )
 
     if "success" in result:
         return jsonify({"message": "Task created", "task_id": result["task_id"]}), 201
     return jsonify({"error": result.get("error", "Task creation failed.")}), 400
 
+
 @team_bp.route("/api/teams/<int:team_id>/tasks", methods=["GET"])
+@login_required
 def api_get_all_team_tasks(team_id):
     """
     Get all tasks for the specified team.
@@ -439,7 +489,9 @@ def api_get_all_team_tasks(team_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
 
-    relation = UserTeam.query.filter_by(user_id=current_user.user_id, team_id=team_id).first()
+    relation = UserTeam.query.filter_by(
+        user_id=current_user.user_id, team_id=team_id
+    ).first()
     if not relation:
         return jsonify({"error": "You are not a member of this team"}), 403
 
@@ -450,20 +502,26 @@ def api_get_all_team_tasks(team_id):
         .all()
     )
 
-    return jsonify([
-        {
-            "task_id": t.task_id,
-            "name": t.name,
-            "project_id": t.project_id,
-            "assigned_user_id": t.assigned_user_id,
-            "category_id": t.category_id,
-            "status": t.status,
-        }
-        for t in tasks
-    ]), 200
+    return (
+        jsonify(
+            [
+                {
+                    "task_id": t.task_id,
+                    "name": t.name,
+                    "project_id": t.project_id,
+                    "assigned_user_id": t.assigned_user_id,
+                    "category_id": t.category_id,
+                    "status": t.status,
+                }
+                for t in tasks
+            ]
+        ),
+        200,
+    )
 
 
 @team_bp.route("/api/teams/full", methods=["GET"])
+@login_required
 def api_get_user_teams_with_members_and_projects():
     """
     Get user teams including members and their projects.
@@ -478,29 +536,18 @@ def api_get_user_teams_with_members_and_projects():
         return jsonify({"error": "Not authenticated"}), 401
 
     user_id = current_user.user_id
-    user_teams = (
-        db.session.query(UserTeam)
-        .filter_by(user_id=user_id)
-        .join(Team)
-        .all()
-    )
+    user_teams = db.session.query(UserTeam).filter_by(user_id=user_id).join(Team).all()
 
     result = []
     for ut in user_teams:
         team = ut.team
         members = (
-            db.session.query(UserTeam)
-            .filter_by(team_id=team.team_id)
-            .join(User)
-            .all()
+            db.session.query(UserTeam).filter_by(team_id=team.team_id).join(User).all()
         )
         member_data = [
-            {
-                "user_id": m.user.user_id,
-                "username": m.user.username,
-                "role": m.role
-            }
-            for m in members if m.user
+            {"user_id": m.user.user_id, "username": m.user.username, "role": m.role}
+            for m in members
+            if m.user
         ]
 
         projects = Project.query.filter_by(team_id=team.team_id).all()
@@ -515,18 +562,20 @@ def api_get_user_teams_with_members_and_projects():
                 "due_date": p.due_date.isoformat() if p.due_date else None,
                 "title": p.name,
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
-                "color": "#f44336"
+                "color": "#f44336",
             }
             for p in projects
         ]
 
-        result.append({
-            "team_id": team.team_id,
-            "team_name": team.name,
-            "role": ut.role,
-            "created_at": team.created_at.isoformat(),
-            "members": member_data,
-            "projects": project_data
-        })
+        result.append(
+            {
+                "team_id": team.team_id,
+                "team_name": team.name,
+                "role": ut.role,
+                "created_at": team.created_at.isoformat(),
+                "members": member_data,
+                "projects": project_data,
+            }
+        )
 
     return jsonify(result), 200

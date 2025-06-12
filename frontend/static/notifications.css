@@ -22,7 +22,6 @@
   cursor: pointer;
 }
 
-
 .notification-message {
   font-size: 1.2rem;
   flex: 1;
@@ -73,7 +72,9 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 1.1rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 #filter-controls button:hover,

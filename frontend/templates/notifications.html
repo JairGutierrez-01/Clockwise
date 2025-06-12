@@ -21,33 +21,30 @@
 
     <main class="notification-container">
       <h1>Notifications</h1>
-        <div id="filter-controls">
-          <button data-filter="all" class="active">All</button>
-          <button data-filter="info">Info</button>
-          <button data-filter="task">Task</button>
-          <button data-filter="team">Team</button>
-          <button data-filter="project">Project</button>
-          <button data-filter="progress">Progress</button>
-        </div>
+      <div id="filter-controls">
+        <button data-filter="all" class="active">All</button>
+        <button data-filter="info">Info</button>
+        <button data-filter="task">Task</button>
+        <button data-filter="team">Team</button>
+        <button data-filter="project">Project</button>
+        <button data-filter="progress">Progress</button>
+      </div>
       {% if notifications %}
       <div class="notification-list">
         {% for note in notifications %}
         <div class="notification-card" data-type="{{ note.type }}">
           <div class="notification-message">{{ note.message }}</div>
           <button
-              class="delete-btn"
-              onclick="deleteNotification({{ note.id }})"
-            >
-              Delete
-            </button>
-            {% if not note.is_read %}
-              <button
-                class="read-btn"
-                onclick="markAsRead({{ note.id }})"
-              >
-                Mark As Read
-              </button>
-            {% endif %}
+            class="delete-btn"
+            onclick="deleteNotification({{ note.id }})"
+          >
+            Delete
+          </button>
+          {% if not note.is_read %}
+          <button class="read-btn" onclick="markAsRead({{ note.id }})">
+            Mark As Read
+          </button>
+          {% endif %}
         </div>
         {% endfor %}
       </div>

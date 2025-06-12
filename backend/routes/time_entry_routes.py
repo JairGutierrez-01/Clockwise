@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from backend.models.time_entry import TimeEntry
 from backend.services import time_entry_service
@@ -23,6 +23,7 @@ time_entry_bp = Blueprint("time_entries", __name__, url_prefix="/api/time_entrie
 
 
 @time_entry_bp.route("/", methods=["POST"])
+@login_required
 def create_time_entry_api():
     """
     Create a new time entry manually.
@@ -56,6 +57,7 @@ def create_time_entry_api():
 
 
 @time_entry_bp.route("/<int:entry_id>", methods=["GET"])
+@login_required
 def get_entry(entry_id):
     """
     Get a single time entry by its ID.
@@ -71,6 +73,7 @@ def get_entry(entry_id):
 
 
 @time_entry_bp.route("/task/<int:task_id>", methods=["GET"])
+@login_required
 def get_entries_by_task(task_id):
     entries = get_time_entries_by_task(task_id)
     if not entries:
@@ -79,6 +82,7 @@ def get_entries_by_task(task_id):
 
 
 @time_entry_bp.route("/available-tasks", methods=["GET"])
+@login_required
 def get_tasks_without_entries():
     """
     Get all tasks that do not have a time entry yet.
@@ -92,6 +96,7 @@ def get_tasks_without_entries():
 
 
 @time_entry_bp.route("/start", methods=["POST"])
+@login_required
 def start_entry():
     """
     Start a new time entry for a given task or create an untitled task if none provided.
@@ -130,6 +135,7 @@ def start_entry():
 
 
 @time_entry_bp.route("/stop/<int:entry_id>", methods=["POST"])
+@login_required
 def stop_entry(entry_id):
     """
     Stop a running time entry.
@@ -165,6 +171,7 @@ def stop_entry(entry_id):
 
 
 @time_entry_bp.route("/pause/<int:entry_id>", methods=["POST"])
+@login_required
 def pause_entry(entry_id):
     """
     Pause a running time entry.
@@ -179,6 +186,7 @@ def pause_entry(entry_id):
 
 
 @time_entry_bp.route("/resume/<int:entry_id>", methods=["POST"])
+@login_required
 def resume_entry(entry_id):
     """
     Resume a paused time entry.
@@ -193,6 +201,7 @@ def resume_entry(entry_id):
 
 
 @time_entry_bp.route("/<int:entry_id>", methods=["DELETE"])
+@login_required
 def delete_entry(entry_id):
     """
     Delete a time entry by its ID.
@@ -212,6 +221,7 @@ def delete_entry(entry_id):
 
 
 @time_entry_bp.route("/<int:entry_id>", methods=["PUT"])
+@login_required
 def update_entry(entry_id):
     """
     Update fields of a time entry.
@@ -236,6 +246,7 @@ def update_entry(entry_id):
 
 
 @time_entry_bp.route("/latest_sessions", methods=["GET"])
+@login_required
 def get_latest_sessions():
     """
     Get all tasks that have at least one time entry (Latest Sessions).

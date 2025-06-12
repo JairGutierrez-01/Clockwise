@@ -92,9 +92,12 @@ def override_url_for():
 def home():
     return render_template("homepage.html")
 
+
 @app.route("/calendar-due-dates")
+@login_required
 def get_calendar_due_dates():
     return jsonify(calendar_due_dates())
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -118,16 +121,19 @@ def dashboard():
 
 
 @app.route("/TimeTracking")
+@login_required
 def timeTracking():
     return render_template("timeTracking.html")
 
 
 @app.route("/analysis")
+@login_required
 def analysis():
     return render_template("analysis.html")
 
 
 @app.route("/projects", methods=["GET", "POST"])
+@login_required
 def projects():
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
@@ -151,21 +157,38 @@ def teams():
     return render_template("teams.html", teams=teams_with_projects)
 
 
-@app.route("/logout")
+"""
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
     logout_user()
+
+    if request.method == "POST":
+        return jsonify({"success": True}), 200
+
     return redirect(url_for("home"))
+"""
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    logout_user()
+    return "", 204
 
 
 @app.context_processor
 def inject_user_status():
     has_unread = False
     if current_user.is_authenticated:
-        has_unread = Notification.query.filter_by(
-            user_id=current_user.user_id, is_read=False
-        ).count() > 0
+        has_unread = (
+            Notification.query.filter_by(
+                user_id=current_user.user_id, is_read=False
+            ).count()
+            > 0
+        )
 
-    return dict(user_logged_in=current_user.is_authenticated, has_notifications=has_unread)
+    return dict(
+        user_logged_in=current_user.is_authenticated, has_notifications=has_unread
+    )
 
 
 @login_manager.user_loader
@@ -174,6 +197,7 @@ def load_user(user_id):
 
 
 @app.route("/notifications")
+@login_required
 def notifications():
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
@@ -187,6 +211,7 @@ def notifications():
 
 
 @app.route("/notifications/delete/<int:notification_id>", methods=["POST"])
+@login_required
 def delete_notification(notification_id):
     if not current_user.is_authenticated:
         return "", 403
@@ -198,7 +223,9 @@ def delete_notification(notification_id):
         return "", 200
     return "", 404
 
+
 @app.route("/notifications/read/<int:notification_id>", methods=["POST"])
+@login_required
 def mark_notification_as_read(notification_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not logged in"}), 403
@@ -217,6 +244,7 @@ def mark_notification_as_read(notification_id):
 
 # Test notification erstellen
 @app.route("/trigger-test-notification")
+@login_required
 def trigger_test_notification():
     if not current_user.is_authenticated:
         return "Not logged in", 403
@@ -232,6 +260,7 @@ def trigger_test_notification():
 
 
 @app.route("/time_entries")
+@login_required
 def time_entry_page():
     task_id = int(request.args.get("id"))
     task = get_task_by_id(task_id)
@@ -246,6 +275,7 @@ def time_entry_page():
 
 
 @app.route("/calendar-worked-time")
+@login_required
 def get_calendar_worked_time():
     return jsonify(calendar_worked_time())
 

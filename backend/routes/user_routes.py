@@ -16,6 +16,8 @@ from backend.services.user_service import (
     edit_user,
     new_password,
 )
+from flask_login import login_required, current_user
+from flask import render_template
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -73,6 +75,7 @@ def login():
 
 
 @auth_bp.route("/user/delete/<int:user_id>", methods=["GET", "POST"])
+@login_required
 def user_delete(user_id):
     """
     Handle user deletion.
@@ -124,6 +127,7 @@ def reset_password(token, user_id):
 
 
 @auth_bp.route("/edit/profile/<int:user_id>", methods=["GET", "POST"])
+@login_required
 def edit_profile(user_id):
     """
     Handle user profile editing.
@@ -168,10 +172,6 @@ def forgot_password():
             return result.get("error", "Error resetting the password.")
 
     return render_template("forgotpassword.html")
-
-
-from flask_login import login_required, current_user
-from flask import render_template
 
 
 @auth_bp.route("/profile")
