@@ -233,7 +233,6 @@ def api_projects():
     team_ids = [
         row.team_id for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
     ]
-
     own_projects = Project.query.filter(Project.user_id == current_user.user_id)
 
     if team_ids:
