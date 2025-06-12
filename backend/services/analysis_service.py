@@ -10,6 +10,7 @@ from io import StringIO, BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
+
 def export_time_entries_pdf(time_entries):
     """
     Export time entries as PDF Bytes.
@@ -50,6 +51,7 @@ def export_time_entries_pdf(time_entries):
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
+
 
 def export_time_entries_csv(time_entries):
     """
