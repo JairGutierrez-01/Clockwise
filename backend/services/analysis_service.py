@@ -4,6 +4,81 @@ from datetime import datetime, timedelta
 from flask_login import current_user
 
 from backend.models import TimeEntry, Task, Project
+import csv
+from io import StringIO, BytesIO
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+def export_time_entries_pdf(time_entries):
+    """
+    Export time entries as PDF Bytes.
+
+    Args:
+        time_entries (list of dict): Time entries with the keys 'start', 'end', 'task', 'project'
+
+    Returns:
+        bytes: PDF data
+    """
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    c.setFont("Helvetica", 12)
+    y = height - 40
+    line_height = 18
+
+    # Header
+    c.drawString(30, y, "Start")
+    c.drawString(150, y, "End")
+    c.drawString(270, y, "Task")
+    c.drawString(400, y, "Project")
+    y -= line_height
+
+    for entry in time_entries:
+        if y < 40:  # New Site if full
+            c.showPage()
+            c.setFont("Helvetica", 12)
+            y = height - 40
+        c.drawString(30, y, entry["start"].strftime("%Y-%m-%d %H:%M"))
+        c.drawString(150, y, entry["end"].strftime("%Y-%m-%d %H:%M"))
+        c.drawString(270, y, entry["task"][:25])  # Max 25 Zeichen
+        c.drawString(400, y, entry["project"] or "")
+        y -= line_height
+
+    c.save()
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
+
+def export_time_entries_csv(time_entries):
+    """
+    Export time entries as CSV string.
+
+    Args:
+        time_entries (list of dict): Time entries with keys 'start', 'end', 'task', 'project'
+
+    Returns:
+        str: CSV formated text
+    """
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow(["Start", "End", "Task", "Project"])
+
+    # Rows
+    for entry in time_entries:
+        writer.writerow(
+            [
+                entry["start"].isoformat(),
+                entry["end"].isoformat(),
+                entry["task"],
+                entry["project"] or "",
+            ]
+        )
+
+    return output.getvalue()
 
 
 def load_time_entries():
@@ -15,7 +90,7 @@ def load_time_entries():
             - 'start' (datetime): Start datetime of the time entry
             - 'end' (datetime): End datetime of the time entry
             - 'task' (str): Task title
-            - 'project' (str): Project name (may be None)
+            - 'project' (str): Project name (maybe None)
     """
     if not current_user.is_authenticated:
         return []
@@ -100,7 +175,7 @@ def aggregate_weekly_time(time_entries, week_start_date):
         week_start_date (datetime): The start date of the week (e.g., Monday)
 
     Returns:
-        defaultdict: Dictionary mapping project names to a list of 7 floats,
+        default dict: Dictionary mapping project names to a list of 7 floats,
                      each representing total hours worked on each day of the week
                      starting from `week_start_date`.
     """
