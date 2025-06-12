@@ -137,16 +137,17 @@ def analysis():
 def projects():
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
-    user_projects = Project.query.filter_by(user_id=current_user.user_id).all()
+
     team_id_select = (
         select(UserTeam.team_id)
-        .where(UserTeam.user_id == literal(current_user.user_id))
-        .scalar_subquery()
+        .where(UserTeam.user_id == current_user.user_id)
+        .subquery()
     )
-    team_projects = Project.query.filter(Project.team_id.in_(team_id_select)).all()
-    all_projects = user_projects + team_projects
-    print("Eigene Projekte:", user_projects)
-    print("Teamprojekte:", team_projects)
+    user_q = Project.query.filter(Project.user_id == current_user.user_id)
+    team_q = Project.query.filter(Project.team_id.in_(team_id_select))
+
+    all_projects = user_q.union(team_q).all()
+    print("Alle Projekte:", all_projects)
     return render_template("projects.html", projects=all_projects)
 
 

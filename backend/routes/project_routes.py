@@ -230,7 +230,17 @@ def api_projects():
 
         return {"project_id": project.project_id}, 201
 
-    projects = Project.query.filter_by(user_id=current_user.user_id).all()
+    team_ids = [
+        row.team_id for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
+    ]
+
+    own_projects = Project.query.filter(Project.user_id == current_user.user_id)
+
+    if team_ids:
+        team_projects = Project.query.filter(Project.team_id.in_(team_ids))
+        all_projects = own_projects.union(team_projects).all()
+    else:
+        all_projects = own_projects.all()
 
     return {
         "projects": [
@@ -249,7 +259,7 @@ def api_projects():
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
                 "color": "#f44336",  # oder projektabhängig
             }
-            for p in projects
+            for p in all_projects
         ]
     }
 
