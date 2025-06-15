@@ -1,11 +1,10 @@
 from backend.database import db
-from backend.models.team import Team
-from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
-from backend.models.user import User
 from backend.models.project import Project
 from backend.models.task import Task
-from backend.models.time_entry import TimeEntry
+from backend.models.team import Team
+from backend.models.user import User
+from backend.models.user_team import UserTeam
 from backend.services.notifications import notify_user_added_to_team
 
 
@@ -136,12 +135,11 @@ def add_member_to_team(user_id, team_id, role):
         bool: True if successful.
     """
     new_member = UserTeam(user_id=user_id, team_id=team_id, role=role)
-    team = Team.query.filter_by(id=team_id).first()
-    team_name = team.name
+    team = Team.query.filter_by(team_id=team_id).first()
     db.session.add(new_member)
     db.session.commit()
 
-    team_name = Team.query.filter_by(id=team_id).first().name
+    team_name = Team.query.filter_by(team_id=team_id).first().name
     notification = Notification(
         user_id=user_id,
         project_id=None,

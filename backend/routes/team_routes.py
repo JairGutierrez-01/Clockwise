@@ -1,5 +1,6 @@
-from flask import Blueprint, request, jsonify, redirect, url_for
+from flask import Blueprint, request, jsonify, url_for
 from flask_login import current_user, login_required
+
 from backend.database import db
 from backend.models import Project, Team, UserTeam, Task, Notification, User
 from backend.services.team_service import (
@@ -205,7 +206,7 @@ def add_team_member(team_id):
         db.session.add(new_member)
         db.session.commit()
 
-        team_name = Team.query.filter_by(id=team_id).first().name
+        team_name = Team.query.filter_by(team_id=team_id).first().name
         notification = Notification(
             user_id=new_member_id,
             project_id=None,

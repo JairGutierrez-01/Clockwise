@@ -37,7 +37,7 @@ def add_member(username, teamname, role):
     db.session.add(new_user_team)
 
     db.session.commit()
-    team_name = Team.query.filter_by(id=team_id).first().name
+    team_name = Team.query.filter_by(team_id=team_id).first().name
     notification = Notification(
         user_id=user_id,
         project_id=None,
