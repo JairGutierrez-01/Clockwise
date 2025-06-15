@@ -5,31 +5,31 @@ document.addEventListener("DOMContentLoaded", async function () {
   try {
     // Lade Due Dates und Time Entries parallel
     const [dueRes, workedRes] = await Promise.all([
-      fetch("/calendar-due-dates").then(res => res.json()),
-      fetch("/calendar-worked-time").then(res => res.json())
+      fetch("/calendar-due-dates").then((res) => res.json()),
+      fetch("/calendar-worked-time").then((res) => res.json()),
     ]);
 
     const events = [];
 
     // Falls Due Date vorhanden → roten Balken setzen
-    dueRes.forEach(entry => {
+    dueRes.forEach((entry) => {
       if (!entry.start) return;
       events.push({
         title: "",
         start: entry.start,
         allDay: true,
-        className: "bg-red"
+        className: "bg-red",
       });
     });
 
     // Falls Time Entry vorhanden → blauen Balken setzen
-    workedRes.forEach(entry => {
+    workedRes.forEach((entry) => {
       if (!entry.start) return;
       events.push({
         title: "",
         start: entry.start,
         allDay: true,
-        className: "bg-blue"
+        className: "bg-blue",
       });
     });
 
@@ -40,17 +40,16 @@ document.addEventListener("DOMContentLoaded", async function () {
       headerToolbar: {
         start: "title",
         center: "",
-        end: ""
+        end: "",
       },
       navLinks: false,
       editable: false,
       fixedWeekCount: false,
       showNonCurrentDates: false,
-      events: events
+      events: events,
     });
 
     calendar.render();
-
   } catch (err) {
     console.error("Error occured while initializing calendar:", err);
   }

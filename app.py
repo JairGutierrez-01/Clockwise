@@ -50,7 +50,7 @@ login_manager.login_view = "auth.login"
 login_manager.init_app(app)
 jwt = JWTManager(app)
 
-# Create upload folder if not exists
+# Create an upload folder if not exists
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # Register Blueprints
@@ -158,7 +158,6 @@ def teams():
     return render_template("teams.html", teams=teams_with_projects)
 
 
-"""
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     logout_user()
@@ -167,13 +166,14 @@ def logout():
         return jsonify({"success": True}), 200
 
     return redirect(url_for("home"))
+
+
 """
-
-
 @app.route("/logout", methods=["POST"])
 def logout():
     logout_user()
     return "", 204
+"""
 
 
 @app.context_processor

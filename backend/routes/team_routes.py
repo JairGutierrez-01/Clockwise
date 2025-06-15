@@ -205,6 +205,17 @@ def add_team_member(team_id):
         db.session.add(new_member)
         db.session.commit()
 
+        team_name = Team.query.filter_by(id=team_id).first().name
+        notification = Notification(
+            user_id=new_member_id,
+            project_id=None,
+            message=f"You were added to the team '{team_name}'",
+            type="team",
+        )
+        print(f"Creating notification for user {new_member_id}")
+        db.session.add(notification)
+        db.session.commit()
+
         return jsonify({"message": "Member added successfully"}), 200
 
     except Exception as e:

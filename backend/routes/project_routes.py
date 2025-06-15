@@ -231,7 +231,8 @@ def api_projects():
         return {"project_id": project.project_id}, 201
 
     team_ids = [
-        row.team_id for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
+        row.team_id
+        for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
     ]
     own_projects = Project.query.filter(Project.user_id == current_user.user_id)
 

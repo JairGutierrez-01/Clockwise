@@ -35,6 +35,17 @@ def add_member(username, teamname, role):
     new_user_team = UserTeam(user_id=user_id, team_id=team_id, role=role)
 
     db.session.add(new_user_team)
+
+    db.session.commit()
+    team_name = Team.query.filter_by(id=team_id).first().name
+    notification = Notification(
+        user_id=user_id,
+        project_id=None,
+        message=f"You were added to the team '{team_name}'",
+        type="team",
+    )
+    print(f"Creating notification for user {user_id}")
+    db.session.add(notification)
     db.session.commit()
 
     notify_user_added_to_team(user_id, teamname)
