@@ -8,6 +8,11 @@ from backend.services.mail_service import send_forgot_password
 
 @pytest.fixture
 def app():
+    """Create a minimal Flask app with mail configuration for testing.
+
+    Yields:
+        Flask: A Flask application with configured mail settings.
+    """
     app = Flask(__name__)
     app.config["MAIL_SERVER"] = "localhost"
     app.config["MAIL_PORT"] = 25
@@ -17,6 +22,14 @@ def app():
 
 
 def test_send_forgot_password(app):
+    """Test that a password reset email is correctly composed and sent.
+
+    This test mocks the mail sending function to ensure the email is
+    created with the correct recipient, subject, body content, and sender.
+
+    Args:
+        app (Flask): The Flask application fixture.
+    """
     with patch("backend.services.mail_service.mail.send") as mock_send:
         email = "test@example.com"
         reset_url = "http://example.com/reset?token=abc123"

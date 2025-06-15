@@ -1,16 +1,15 @@
+from datetime import datetime, timedelta
 from io import BytesIO
 
 from flask import Blueprint, request, jsonify, make_response, send_file
 from flask_login import login_required
-from datetime import datetime, timedelta
+
+from backend.services.analysis_service import aggregate_time_by_day_project_task
 from backend.services.analysis_service import (
     aggregate_weekly_time,
     export_time_entries_pdf,
     export_time_entries_csv,
 )
-from backend.services.analysis_service import aggregate_time_by_day_project_task
-
-
 from backend.services.analysis_service import (
     load_time_entries,
     load_target_times,
@@ -62,12 +61,12 @@ def api_time_entries():
     filtered = filter_time_entries_by_date(entries, start_date, end_date)
     result = [
         {
-            "task": e["task"],
-            "start": e["start"].isoformat(),
-            "end": e["end"].isoformat(),
-            "duration_hours": (e["end"] - e["start"]).total_seconds() / 3600,
+            "task": entry["task"],
+            "start": entry["start"].isoformat(),
+            "end": entry["end"].isoformat(),
+            "duration_hours": (entry["end"] - entry["start"]).total_seconds() / 3600,
         }
-        for e in filtered
+        for entry in filtered
     ]
     return jsonify(result)
 
@@ -99,7 +98,10 @@ def api_tasks_in_month():
     tasks = load_tasks()
     filtered_tasks = tasks_in_month(tasks, year, month)
     task_names = list(
-        {t["project"] + ": " + t.get("title", "Unknown Task") for t in filtered_tasks}
+        {
+            task["project"] + ": " + task.get("title", "Unknown Task")
+            for task in filtered_tasks
+        }
     )
     return jsonify(task_names)
 

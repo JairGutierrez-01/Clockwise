@@ -5,6 +5,8 @@ from flask import (
     url_for,
     jsonify,
 )
+from flask import render_template
+from flask_login import login_required, current_user
 from flask_login import login_user as flask_login_user
 
 from backend.services.token_service import verify_reset_token
@@ -16,8 +18,6 @@ from backend.services.user_service import (
     edit_user,
     new_password,
 )
-from flask_login import login_required, current_user
-from flask import render_template
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -28,7 +28,7 @@ def register():
     Handle user registration.
 
     Returns:
-        str or Response: Redirect to login on success, error message on failure,
+        str or Response: Redirect to log in on success, error message on failure,
         or registration page on GET.
     """
     if request.method == "POST":
@@ -106,7 +106,7 @@ def reset_password(token, user_id):
         user_id (int): User id to indentify user.
 
     Returns:
-        str or Response: Redirect to login on success, error or expired token message,
+        str or Response: Redirect to log in on success, error or expired token message,
         or password form on GET.
     """
     email = verify_reset_token(token)
@@ -198,7 +198,7 @@ def resend_reset_email():
     if not email:
         return jsonify({"success": False, "error": "Email is required."}), 400
 
-    result = password_forget(email)  # Muss dict mit 'success' und ggf. 'error' liefern
+    result = password_forget(email)  # dict with 'success' and maybe 'error'
     if result.get("success"):
         return jsonify({"success": True, "message": "Reset instructions resent."}), 200
     else:

@@ -55,7 +55,7 @@ def get_notifications():
 # Endpoint: PATCH /notifications/<notification_id>
 # Marks a single notification as "read"
 # Frontend usage:
-#    - After user clicks a notification:
+#    - After the user clicks a notification:
 #         PATCH /notifications/5
 #    - Requires JWT token in Authorization header
 @notification_bp.route("/notifications/<int:notification_id>", methods=["PATCH"])
