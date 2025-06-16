@@ -65,7 +65,7 @@ def create_new_team(name, user_id):
 
     return {"team_id": new_team.team_id, "message": "Team created"}
 
-# brauch ich nicht?
+# unnötig?
 def get_user_by_id(user_id):
     """Fetch a user by ID.
 
@@ -77,7 +77,7 @@ def get_user_by_id(user_id):
     """
     return User.query.filter_by(user_id=user_id).first()
 
-# brauch ich nicht?
+# unnötig?
 def resolve_user_id(raw_user_input):
     """Resolves user ID from user ID or username.
 
@@ -134,25 +134,26 @@ def add_member_to_team(user_id, team_id, role):
     Returns:
         bool: True if successful.
     """
-    team = Team.query.filter_by(team_id=team_id).first()
-    if not team:
-        raise ValueError(f"Team with ID {team_id} not found.")
-
-    team_name = team.name
-
-    existing = UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
-    if existing:
-        raise ValueError("User is already a member of this team.")
-
     new_member = UserTeam(user_id=user_id, team_id=team_id, role=role)
+    team = Team.query.filter_by(team_id=team_id).first()
     db.session.add(new_member)
     db.session.commit()
 
-    notify_user_added_to_team(user_id, team_name)
+    team_name = Team.query.filter_by(team_id=team_id).first().name
+    notification = Notification(
+        user_id=user_id,
+        project_id=None,
+        message=f"You were added to the team '{team_name}'",
+        type="team",
+    )
+    print(f"Creating notification for user {user_id}")
+    db.session.add(notification)
+    db.session.commit()
 
+    notify_user_added_to_team(user_id, team_name)
     return True
 
-# brauch ich nicht?
+# unnötig?
 def remove_member_from_team(user_id, team_id):
     """Removes a user from a team.
 
@@ -200,7 +201,6 @@ def delete_team_and_members(team_id):
         db.session.commit()
         return True
     return False
-
 
 def get_teams(user_id):
     """

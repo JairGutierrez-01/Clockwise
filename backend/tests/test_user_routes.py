@@ -2,12 +2,26 @@ import io
 
 
 def test_register_get(client):
+    """Test the GET request to the registration page.
+
+    Args:
+        client (FlaskClient): The test client.
+    """
     response = client.get("/auth/register")
     assert response.status_code == 200
     assert b"Register" in response.data
 
 
 def test_register_post_success(monkeypatch, client):
+    """Test a successful POST request to register a new user.
+
+    This test mocks `register_user` and simulates profile picture upload.
+
+    Args:
+        monkeypatch (MonkeyPatch): Pytest fixture to override functions.
+        client (FlaskClient): The test client.
+    """
+
     def mock_register_user(
         username, email, first_name, last_name, password, profile_picture
     ):
@@ -29,16 +43,28 @@ def test_register_post_success(monkeypatch, client):
         content_type="multipart/form-data",
         follow_redirects=False,
     )
-    assert response.status_code == 302  # Redirect to log in
+    assert response.status_code == 302  # Redirect to login
 
 
 def test_login_get(client):
+    """Test the GET request to the login page.
+
+    Args:
+        client (FlaskClient): The test client.
+    """
     response = client.get("/auth/login")
     assert response.status_code == 200
     assert b"Login" in response.data
 
 
 def test_login_post_success(monkeypatch, client):
+    """Test a successful login via POST request.
+
+    Args:
+        monkeypatch (MonkeyPatch): Used to patch login logic.
+        client (FlaskClient): The test client.
+    """
+
     class MockUser:
         is_authenticated = True
 
@@ -52,10 +78,17 @@ def test_login_post_success(monkeypatch, client):
 
     data = {"username": "test", "password": "<PASSWORD>"}
     response = client.post("/auth/login", data=data, follow_redirects=False)
-    assert response.status_code == 302  # Redirect to Dashboard
+    assert response.status_code == 302  # Redirect to dashboard
 
 
 def test_forgot_passwort_post(monkeypatch, client):
+    """Test the forgot password POST request for email submission.
+
+    Args:
+        monkeypatch (MonkeyPatch): Used to patch the password reset handler.
+        client (FlaskClient): The test client.
+    """
+
     def mock_password_forget(email):
         return {"success": True}
 
@@ -67,6 +100,12 @@ def test_forgot_passwort_post(monkeypatch, client):
 
 
 def test_reset_passwort_token_invalid(monkeypatch, client):
+    """Test password reset with an invalid or expired token.
+
+    Args:
+        monkeypatch (MonkeyPatch): Used to mock token validation logic.
+        client (FlaskClient): The test client.
+    """
     monkeypatch.setattr("backend.routes.user_routes.new_password", lambda token: None)
     response = client.post(
         "/auth/forgot-password/invalidtoken/1", data={"email": "<EMAIL>"}
@@ -75,12 +114,20 @@ def test_reset_passwort_token_invalid(monkeypatch, client):
 
 
 def test_edit_profile_post_success(monkeypatch, client):
+    """Test a successful profile edit via POST request.
+
+    Args:
+        monkeypatch (MonkeyPatch): Used to patch the edit profile handler.
+        client (FlaskClient): The test client.
+    """
+
     def mock_edit_profile(
         user_id, username, email, first_name, last_name, password, profile_picture
     ):
         return {"success": True}
 
     monkeypatch.setattr("backend.routes.user_routes.edit_user", mock_edit_profile)
+
     data = {
         "username": "test",
         "email": "<EMAIL>",

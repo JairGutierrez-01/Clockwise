@@ -1,12 +1,15 @@
-from datetime import datetime
-
-from flask import Blueprint, request, jsonify
-from flask_login import login_required
 from datetime import datetime, timedelta
-from backend.services.analysis_service import aggregate_weekly_time
+from io import BytesIO
+
+from flask import Blueprint, request, jsonify, make_response, send_file
+from flask_login import login_required
+
 from backend.services.analysis_service import aggregate_time_by_day_project_task
-
-
+from backend.services.analysis_service import (
+    aggregate_weekly_time,
+    export_time_entries_pdf,
+    export_time_entries_csv,
+)
 from backend.services.analysis_service import (
     load_time_entries,
     load_target_times,
@@ -58,12 +61,12 @@ def api_time_entries():
     filtered = filter_time_entries_by_date(entries, start_date, end_date)
     result = [
         {
-            "task": e["task"],
-            "start": e["start"].isoformat(),
-            "end": e["end"].isoformat(),
-            "duration_hours": (e["end"] - e["start"]).total_seconds() / 3600,
+            "task": entry["task"],
+            "start": entry["start"].isoformat(),
+            "end": entry["end"].isoformat(),
+            "duration_hours": (entry["end"] - entry["start"]).total_seconds() / 3600,
         }
-        for e in filtered
+        for entry in filtered
     ]
     return jsonify(result)
 
@@ -79,7 +82,7 @@ def api_tasks_in_month():
         month (str): Month in format "YYYY-MM".
 
     Returns:
-        JSON response containing a list of task names with project prefix.
+        JSON response containing a list of task names with the project prefix.
 
     Errors:
         400 if the month parameter is missing or formatted incorrectly.
@@ -95,7 +98,10 @@ def api_tasks_in_month():
     tasks = load_tasks()
     filtered_tasks = tasks_in_month(tasks, year, month)
     task_names = list(
-        {t["project"] + ": " + t.get("title", "Unknown Task") for t in filtered_tasks}
+        {
+            task["project"] + ": " + task.get("title", "Unknown Task")
+            for task in filtered_tasks
+        }
     )
     return jsonify(task_names)
 
@@ -104,7 +110,7 @@ def api_tasks_in_month():
 @login_required
 def api_project_progress():
     """
-    Get progress ratio per project based on completed tasks.
+    Get the progress ratio per project based on completed tasks.
 
     Returns:
         JSON response mapping project names to progress ratios (float between 0 and 1).
@@ -189,3 +195,81 @@ def api_weekly_time_stacked():
     return jsonify(
         {"labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], "datasets": datasets}
     )
+
+
+@analysis_bp.route("/export/pdf")
+@login_required
+def export_pdf():
+    """Exports time entries as a downloadable PDF file.
+
+    Retrieves all time entries for the currently authenticated user and
+    optionally filters them by a provided date range. The result is returned
+    as a downloadable PDF file.
+
+    Query Parameters:
+        start (str, optional): Start date in ISO format (YYYY-MM-DD). Required if `end` is provided.
+        end (str, optional): End date in ISO format (YYYY-MM-DD). Required if `start` is provided.
+
+    Returns:
+        flask.Response: A file download response containing the generated PDF.
+                        Returns HTTP 400 if the date parameters are invalid.
+    """
+    start_str = request.args.get("start")
+    end_str = request.args.get("end")
+
+    time_entries = load_time_entries()
+
+    # optional time filter
+    if start_str and end_str:
+        try:
+            start = datetime.fromisoformat(start_str)
+            end = datetime.fromisoformat(end_str)
+            time_entries = filter_time_entries_by_date(time_entries, start, end)
+        except ValueError:
+            return "Invalid date format (expected YYYY-MM-DD)", 400
+
+    pdf_bytes = export_time_entries_pdf(time_entries)
+
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="time_report.pdf",
+    )
+
+
+@analysis_bp.route("/export/csv")
+def export_csv():
+    """Exports time entries as a downloadable CSV file.
+
+    Retrieves all time entries for the currently logged-in user and returns them
+    as a CSV file. Optionally, entries can be filtered by a start and end date
+    provided via query parameters.
+
+    Query Parameters:
+        start (str, optional): ISO 8601 date string (YYYY-MM-DD) indicating the start date.
+        end (str, optional): ISO 8601 date string (YYYY-MM-DD) indicating the end date.
+
+    Returns:
+        flask.Response: A response object containing the CSV file as an attachment.
+                        Returns HTTP 400 if the date format is invalid.
+    """
+    entries = load_time_entries()
+    # optional time filter
+    start_str = request.args.get("start")
+    end_str = request.args.get("end")
+
+    if start_str and end_str:
+        try:
+            start = datetime.fromisoformat(start_str)
+            end = datetime.fromisoformat(end_str)
+            entries = filter_time_entries_by_date(entries, start, end)
+        except ValueError:
+            return "Invalid date format. Use YYYY-MM-DD.", 400
+
+    csv_text = export_time_entries_csv(entries)
+
+    response = make_response(csv_text)
+    response.headers["Content-Disposition"] = "attachment; filename=time_entries.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response

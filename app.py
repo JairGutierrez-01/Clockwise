@@ -2,18 +2,18 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, url_for
-from flask import request
 from flask import jsonify
+from flask import request
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager, login_user, logout_user
 from flask_login import current_user
 from flask_login import login_required
 from flask_mail import Mail
 from flask_migrate import Migrate
-from sqlalchemy import select, literal
+from sqlalchemy import select
 
 from backend.database import db
-from backend.models import UserTeam, Team, Project
+from backend.models import UserTeam
 from backend.models.notification import Notification
 from backend.models.project import Project
 from backend.models.user import User
@@ -25,11 +25,63 @@ from backend.routes.task_routes import task_bp
 from backend.routes.team_routes import team_bp
 from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.user_routes import auth_bp
+from backend.services.analysis_service import calendar_due_dates, calendar_worked_time
 from backend.services.task_service import get_task_by_id
 from backend.services.team_service import get_teams
 from backend.services.time_entry_service import get_time_entries_by_task
-from backend.services.analysis_service import calendar_due_dates, calendar_worked_time
 
+"""
+Main Flask application module for the backend API and frontend rendering.
+
+This module initializes the Flask app, loads configuration from environment variables,
+registers blueprints for modular route handling, and sets up extensions such as SQLAlchemy,
+Flask-Migrate, Flask-Mail, Flask-Login, and Flask-JWT-Extended.
+
+Routes include user authentication (login/logout), project and team views, time tracking,
+notifications, and various API endpoints for analysis, categories, tasks, time entries, and more.
+
+Key Features:
+- Environment configuration loading via python-dotenv
+- SQLAlchemy ORM for database interaction with migrations support
+- User session management and authentication with Flask-Login and JWT
+- Modular route structure via Blueprints
+- Template rendering for frontend pages with static asset cache busting
+- Notification management including reading, deleting, and test notifications
+- JSON APIs for calendar data and analysis services
+- Secure file upload folder initialization
+
+Usage:
+    Run this module directly to start the Flask development server:
+
+        python app.py
+
+    Or use a production WSGI server pointing to `app` Flask instance.
+
+Modules and Blueprints:
+- `auth_bp`: User authentication routes (login, logout, register)
+- `team_bp`: Team-related API endpoints
+- `notification_bp`: Notification management endpoints
+- `task_bp`: Task API endpoints
+- `time_entry_bp`: Time entry management API
+- `project_bp`: Project views and APIs
+- `category_bp`: Category management API
+- `analysis_bp`: Data analysis endpoints (calendar views, reports)
+
+Template Context Processors:
+- `override_url_for`: Adds cache-busting query parameter to static file URLs
+- `inject_user_status`: Injects user login status and unread notification flag
+
+Flask-Login User Loader:
+- Loads a user by user ID for session management
+
+Example routes:
+- `/login`: User login page and submission
+- `/dashboard`: Main user dashboard page
+- `/projects`: List of user and team projects
+- `/notifications`: List and management of user notifications
+- `/calendar-due-dates`: API returning due dates for calendar visualization
+- `/time_entries`: Time entry page for specific tasks
+"""
 
 # Load environment variables from .env file
 load_dotenv()
@@ -50,7 +102,7 @@ login_manager.login_view = "auth.login"
 login_manager.init_app(app)
 jwt = JWTManager(app)
 
-# Create upload folder if not exists
+# Create an upload folder if not exists
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 # Register Blueprints
@@ -76,6 +128,16 @@ with app.app_context():
 
 @app.context_processor
 def override_url_for():
+    """
+    Context processor to add cache-busting query parameter to static file URLs.
+
+    This helps force the browser to reload static files (like CSS/JS/images)
+    when they change, by appending a timestamp based on the file's last modification time.
+
+    Returns:
+        dict: A dictionary with a custom 'url_for' function to use in Jinja2 templates.
+    """
+
     def dated_url_for(endpoint, **values):
         if endpoint == "static":
             filename = values.get("filename", None)
@@ -90,17 +152,42 @@ def override_url_for():
 
 @app.route("/")
 def home():
+    """
+    Render the homepage.
+
+    Returns:
+        str: Rendered HTML template for the homepage.
+    """
     return render_template("homepage.html")
 
 
 @app.route("/calendar-due-dates")
 @login_required
 def get_calendar_due_dates():
+    """
+    API endpoint to return calendar due dates as JSON.
+
+    Requires user to be logged in.
+
+    Returns:
+        Response: JSON response containing due dates data.
+    """
     return jsonify(calendar_due_dates())
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """
+    User login endpoint. Handles GET and POST requests.
+
+    GET: Render login page.
+    POST: Authenticate user with username and password.
+          On success, log in the user and redirect to dashboard.
+          On failure, show login page with error message.
+
+    Returns:
+        str or Response: Rendered template or redirect response.
+    """
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -117,24 +204,56 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
+    """
+    Render the main dashboard page.
+
+    Returns:
+        str: Rendered HTML template for the dashboard.
+    """
     return render_template("dashboard.html")
 
 
 @app.route("/TimeTracking")
 @login_required
 def timeTracking():
+    """
+    Render the time tracking page.
+
+    Requires user login.
+
+    Returns:
+        str: Rendered HTML template for time tracking.
+    """
     return render_template("timeTracking.html")
 
 
 @app.route("/analysis")
 @login_required
 def analysis():
+    """
+    Render the analysis page showing reports and charts.
+
+    Requires user login.
+
+    Returns:
+        str: Rendered HTML template for analysis.
+    """
+
     return render_template("analysis.html")
 
 
 @app.route("/projects", methods=["GET", "POST"])
 @login_required
 def projects():
+    """
+    Display a list of projects for the current user.
+
+    Fetches projects directly owned by the user and those linked to user's teams.
+    Combines results and renders the projects page.
+
+    Returns:
+        str: Rendered HTML template with user's projects.
+    """
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
 
@@ -154,30 +273,54 @@ def projects():
 @app.route("/teams")
 @login_required
 def teams():
+    """
+    Display teams associated with the current user, including their projects.
+
+    Returns:
+        str: Rendered HTML template showing user's teams.
+    """
     teams = get_teams(current_user.user_id)
     return render_template("teams.html", teams=teams)
 
 
-"""
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
+    """
+    Log out the current user.
+
+    Supports GET and POST requests.
+    On POST, returns JSON success message.
+    On GET, redirects to homepage.
+
+    Returns:
+        Response or str: JSON response or redirect.
+    """
     logout_user()
 
     if request.method == "POST":
         return jsonify({"success": True}), 200
 
     return redirect(url_for("home"))
+
+
 """
-
-
 @app.route("/logout", methods=["POST"])
 def logout():
     logout_user()
     return "", 204
+"""
 
 
 @app.context_processor
 def inject_user_status():
+    """
+    Inject user login status and notification status into templates.
+
+    Checks if current user is authenticated and has unread notifications.
+
+    Returns:
+        dict: Contains flags 'user_logged_in' and 'has_notifications'.
+    """
     has_unread = False
     if current_user.is_authenticated:
         has_unread = (
@@ -194,12 +337,31 @@ def inject_user_status():
 
 @login_manager.user_loader
 def load_user(user_id):
+    """
+    Flask-Login user loader callback.
+
+    Loads and returns the User object by user_id.
+
+    Args:
+        user_id (str or int): User ID from the session.
+
+    Returns:
+        User or None: User instance if found, else None.
+    """
     return User.query.get(int(user_id))
 
 
 @app.route("/notifications")
 @login_required
 def notifications():
+    """
+    Display the logged-in user's notifications.
+
+    Notifications are ordered by creation date descending.
+
+    Returns:
+        str: Rendered HTML template with notifications list.
+    """
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
 
@@ -214,6 +376,19 @@ def notifications():
 @app.route("/notifications/delete/<int:notification_id>", methods=["POST"])
 @login_required
 def delete_notification(notification_id):
+    """
+    Delete a notification by its ID.
+
+    Only allows deletion if the notification belongs to the current user.
+
+    Args:
+        notification_id (int): ID of the notification to delete.
+
+    Returns:
+        tuple: Empty response with status code 200 if successful,
+               403 if unauthorized,
+               404 if notification not found or unauthorized.
+    """
     if not current_user.is_authenticated:
         return "", 403
 
@@ -228,6 +403,17 @@ def delete_notification(notification_id):
 @app.route("/notifications/read/<int:notification_id>", methods=["POST"])
 @login_required
 def mark_notification_as_read(notification_id):
+    """
+    Mark a notification as read.
+
+    Only marks if notification belongs to current user and isn't already read.
+
+    Args:
+        notification_id (int): ID of the notification to mark as read.
+
+    Returns:
+        Response: JSON with success or error message and HTTP status code.
+    """
     if not current_user.is_authenticated:
         return jsonify({"error": "Not logged in"}), 403
 
@@ -247,6 +433,14 @@ def mark_notification_as_read(notification_id):
 @app.route("/trigger-test-notification")
 @login_required
 def trigger_test_notification():
+    """
+    Create a test notification for the current user.
+
+    Useful for testing notification system.
+
+    Returns:
+        Response: Redirect to notifications page.
+    """
     if not current_user.is_authenticated:
         return "Not logged in", 403
 
@@ -263,6 +457,17 @@ def trigger_test_notification():
 @app.route("/time_entries")
 @login_required
 def time_entry_page():
+    """
+    Render time entries page for a specific task.
+
+    Expects query parameter 'id' for task ID.
+
+    Args:
+        id (int, query param): Task ID.
+
+    Returns:
+        str: Rendered HTML template showing time entries for the task.
+    """
     task_id = int(request.args.get("id"))
     task = get_task_by_id(task_id)
     task_title = task.title if task else "Unbekannte Aufgabe"
@@ -278,6 +483,14 @@ def time_entry_page():
 @app.route("/calendar-worked-time")
 @login_required
 def get_calendar_worked_time():
+    """
+    API endpoint to return calendar worked time data as JSON.
+
+    Requires user login.
+
+    Returns:
+        Response: JSON response containing worked time data.
+    """
     return jsonify(calendar_worked_time())
 
 

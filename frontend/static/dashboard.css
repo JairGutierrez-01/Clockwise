@@ -2,7 +2,7 @@
   --foreground-color: #000;
   --card-bg: #ffffff;
   --projects-table-bg: #fff9e5;
-  --calendar-bg: #ddf4f0;
+  --calendar-bg: #0f2c44;
   --project-details-bg: #fbedeb;
   --reports-bg: #173044;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -23,7 +23,7 @@ body.dark-mode {
   --foreground-color: #e0e0e0;
   --card-bg: #1f1f1f;
   --projects-table-bg: #292929;
-  --calendar-bg: #2a2a2a;
+  --calendar-bg: #0f2c44;
   --project-details-bg: #242424;
   --reports-bg: #2e2e2e;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
@@ -252,4 +252,47 @@ body.dark-mode .reports {
 .reports canvas {
   width: 100%;
   height: 180px;
+}
+
+/* Kalenderkarte im Dashboard */
+.calendar {
+  background-color: var(--calendar-bg);
+}
+body.dark-mode .calendar {
+  background-color: var(--calendar-bg);
+}
+.calendar h3 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+.fc-daygrid-day-frame {
+  position: relative;
+}
+
+/* Gemeinsamer Balken Stil */
+.fc-event {
+  position: absolute !important;
+  left: 4px;
+  right: 4px;
+  height: 6px;
+  border: none !important;
+  border-radius: 4px;
+  font-size: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Balken für Due Date */
+.fc-event.bg-red {
+  background-color: red !important;
+  bottom: -4px;
+}
+
+/* Balken für Time Entry */
+.fc-event.bg-blue {
+  background-color: #00bfff !important;
+  bottom: 4px;
 }

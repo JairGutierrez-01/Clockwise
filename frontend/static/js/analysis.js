@@ -382,6 +382,15 @@ document.addEventListener("DOMContentLoaded", () => {
     updateChartForWeek();
   });
 
-  // === Initial Load (Default: Weekly) ===
-  updateChartForWeek();
+  // === Initial Load: prüfe URL-Parameter
+  const params = new URLSearchParams(window.location.search);
+  const view = params.get("view") || "weekly";
+
+  // falls Seite über Dashboard Calender Card aufgerufen wird => Kalender aufrufen, ansonsten immer weekly aufrufen
+  const targetBtn = document.querySelector(`button[data-view="${view}"]`);
+  if (targetBtn) {
+    targetBtn.click();
+  } else {
+    updateChartForWeek();
+  }
 });

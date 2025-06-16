@@ -231,7 +231,8 @@ def api_projects():
         return {"project_id": project.project_id}, 201
 
     team_ids = [
-        row.team_id for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
+        row.team_id
+        for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
     ]
     own_projects = Project.query.filter(Project.user_id == current_user.user_id)
 
@@ -356,20 +357,20 @@ def get_available_teams():
 @login_required
 def view_team_projects_with_user_tasks():
     """
-    Display team projects and the user's tasks in them.
-
-    Args:
-        None
+    Display team projects and only the tasks assigned to the current user.
 
     Returns:
-        Response: Rendered HTML with projects and related user tasks.
+        Response: Rendered HTML with user's assigned tasks per team project.
     """
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
 
     user_id = current_user.user_id
 
-    team_ids = [ut.team_id for ut in UserTeam.query.filter_by(user_id=user_id).all()]
+    team_ids = [
+        ut.team_id for ut in UserTeam.query.filter_by(user_id=user_id).all()
+    ]
+
     if not team_ids:
         return render_template("projects.html", projects=[])
 
@@ -378,8 +379,11 @@ def view_team_projects_with_user_tasks():
     results = []
     for project in team_projects:
         tasks = Task.query.filter_by(
-            project_id=project.project_id, assigned_user_id=user_id
+            project_id=project.project_id,
+            assigned_user_id=user_id
         ).all()
-        results.append({"project": project, "tasks": tasks})
+
+        if tasks:
+            results.append({"project": project, "tasks": tasks})
 
     return render_template("projects.html", project_tasks=results)
