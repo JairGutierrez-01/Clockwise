@@ -109,7 +109,7 @@ os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 app.register_blueprint(auth_bp, url_prefix="/auth")
 app.register_blueprint(team_bp, url_prefix="/api/teams")
 
-app.register_blueprint(notification_bp, url_prefix="/api/notifications")
+app.register_blueprint(notification_bp, url_prefix="/notifications")
 app.register_blueprint(task_bp, url_prefix="/api")
 app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
 # For HTML Tempaltes
@@ -372,65 +372,8 @@ def notifications():
     )
     return render_template("notifications.html", notifications=user_notifications)
 
-
-@app.route("/notifications/delete/<int:notification_id>", methods=["POST"])
-@login_required
-def delete_notification(notification_id):
-    """
-    Delete a notification by its ID.
-
-    Only allows deletion if the notification belongs to the current user.
-
-    Args:
-        notification_id (int): ID of the notification to delete.
-
-    Returns:
-        tuple: Empty response with status code 200 if successful,
-               403 if unauthorized,
-               404 if notification not found or unauthorized.
-    """
-    if not current_user.is_authenticated:
-        return "", 403
-
-    notification = Notification.query.get(notification_id)
-    if notification and notification.user_id == current_user.user_id:  # <- Fix hier
-        db.session.delete(notification)
-        db.session.commit()
-        return "", 200
-    return "", 404
-
-
-@app.route("/notifications/read/<int:notification_id>", methods=["POST"])
-@login_required
-def mark_notification_as_read(notification_id):
-    """
-    Mark a notification as read.
-
-    Only marks if notification belongs to current user and isn't already read.
-
-    Args:
-        notification_id (int): ID of the notification to mark as read.
-
-    Returns:
-        Response: JSON with success or error message and HTTP status code.
-    """
-    if not current_user.is_authenticated:
-        return jsonify({"error": "Not logged in"}), 403
-
-    notification = Notification.query.get(notification_id)
-    if not notification or notification.user_id != current_user.user_id:
-        return jsonify({"error": "No Messags found"}), 404
-
-    if notification.is_read:
-        return jsonify({"message": "Already marked as read"}), 200
-
-    notification.is_read = True
-    db.session.commit()
-    return jsonify({"message": "Message marked as read"}), 200
-
-
 # Test notification erstellen
-@app.route("/trigger-test-notification")
+@app.route("/notifications/trigger-test-notification")
 @login_required
 def trigger_test_notification():
     """
@@ -452,7 +395,6 @@ def trigger_test_notification():
         notif_type="info",
     )
     return redirect(url_for("notifications"))
-
 
 @app.route("/time_entries")
 @login_required

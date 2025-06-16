@@ -1,9 +1,9 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, redirect, url_for
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from backend.database import db
-from backend.models.notification import Notification
+from backend.models import Notification
 
 # Blueprint for notification-related endpoints
 notification_bp = Blueprint("notifications", __name__)
@@ -58,11 +58,11 @@ def get_notifications():
 #    - After the user clicks a notification:
 #         PATCH /notifications/5
 #    - Requires JWT token in Authorization header
+"""
 @notification_bp.route("/notifications/<int:notification_id>", methods=["PATCH"])
 @jwt_required()
 @login_required
 def mark_notification_as_read(notification_id):
-    """Mark a specific notification as read."""
     user_id = get_jwt_identity()
 
     notification = Notification.query.filter_by(
@@ -79,3 +79,65 @@ def mark_notification_as_read(notification_id):
     db.session.commit()
 
     return jsonify({"message": "Notification marked as read"}), 200
+"""
+
+
+@notification_bp.route("/read/<int:notification_id>", methods=["POST"])
+@login_required
+def mark_notification_as_read(notification_id):
+    """
+    Mark a notification as read.
+
+    Only marks if notification belongs to current user and isn't already read.
+
+    Args:
+        notification_id (int): ID of the notification to mark as read.
+
+    Returns:
+        Response: JSON with success or error message and HTTP status code.
+    """
+    print(">>> REACHED")
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not logged in"}), 403
+
+    notification = Notification.query.get(notification_id)
+    if not notification or notification.user_id != current_user.user_id:
+        print(">>> Found notification:", notification)
+        return jsonify({"error": "No Messags found"}), 404
+
+    if notification.is_read:
+        return jsonify({"message": "Already marked as read"}), 200
+
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({"message": "Message marked as read"}), 200
+
+@notification_bp.route("/delete/<int:notification_id>", methods=["POST"])
+@login_required
+def delete_notification(notification_id):
+    """
+    Delete a notification by its ID.
+
+    Only allows deletion if the notification belongs to the current user.
+
+    Args:
+        notification_id (int): ID of the notification to delete.
+
+    Returns:
+        tuple: Empty response with status code 200 if successful,
+               403 if unauthorized,
+               404 if notification not found or unauthorized.
+    """
+    print(">>> REACHED")
+    if not current_user.is_authenticated:
+        return "", 403
+
+    notification = Notification.query.get(notification_id)
+    if notification and notification.user_id == current_user.user_id:  # <- Fix hier
+        print(">>> Found notification:", notification)
+        db.session.delete(notification)
+        db.session.commit()
+        return "", 302
+    return "", 404
+
+

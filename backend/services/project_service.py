@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from backend.database import db
-from backend.models import Project, Task
+from backend.models import Project, Task, Notification
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -61,6 +61,15 @@ def create_project(
     )
 
     db.session.add(new_project)
+    db.session.commit()
+
+    notification = Notification(
+        user_id=user_id,
+        project_id=new_project.project_id,
+        message=f"Project created '{new_project.name}'.",
+        type="project",
+    )
+    db.session.add(notification)
     db.session.commit()
 
     return {"success": True, "project_id": new_project.project_id}

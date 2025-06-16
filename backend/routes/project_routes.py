@@ -1,4 +1,4 @@
-from backend.models import UserTeam, Team
+from backend.models import UserTeam, Team, Notification
 from backend.models.project import Project, ProjectType
 from backend.models.task import Task
 from flask_login import current_user, login_required
@@ -227,8 +227,18 @@ def api_projects():
 
         db.session.add(project)
         db.session.commit()
+        db.session.refresh(project)
 
-        return {"project_id": project.project_id}, 201
+        notification = Notification(
+            user_id=current_user.user_id,
+            project_id=project.project_id,
+            message=f"Project created '{project.name}'.",
+            type="project",
+        )
+        db.session.add(notification)
+        db.session.commit()
+
+        return {"project_id": project.project_id}, 200
 
     team_ids = [
         row.team_id

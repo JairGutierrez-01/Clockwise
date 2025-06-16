@@ -1,8 +1,8 @@
 from backend.database import db
-from backend.models import Category
+from backend.models import Category, Notification
 
 
-def create_category(name):
+def create_category(name, user_id, ):
     """Create a new category.
 
     Args:
@@ -17,6 +17,15 @@ def create_category(name):
 
     category = Category(name=name)
     db.session.add(category)
+    db.session.commit()
+
+    notification = Notification(
+        user_id=user_id,
+        project_id=None,
+        message=f"Category created '{category.name}'.",
+        type="category",
+    )
+    db.session.add(notification)
     db.session.commit()
     return {"success": True, "category_id": category.category_id}
 
