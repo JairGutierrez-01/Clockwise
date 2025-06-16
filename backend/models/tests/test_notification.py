@@ -32,7 +32,7 @@ def test_create_notification(db_session):
     db_session.add(note)
     db_session.commit()
 
-    assert note.notification_id is not None
+    assert note._id is not None
     assert note.is_read is False
     assert note.user == user
     assert note.project == project
