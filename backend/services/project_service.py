@@ -21,7 +21,6 @@ def create_project(
     description,
     user_id,
     team_id,
-    category_id,
     time_limit_hours,
     due_date,
     type,

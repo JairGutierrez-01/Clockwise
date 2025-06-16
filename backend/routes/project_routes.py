@@ -321,7 +321,7 @@ def api_project_detail(project_id):
         db.session.commit()
         return {"success": True}
 
-
+# unnötig?
 @project_bp.route("/api/available-teams", methods=["GET"])
 @login_required
 def get_available_teams():
