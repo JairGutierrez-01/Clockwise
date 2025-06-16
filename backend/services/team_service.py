@@ -5,7 +5,6 @@ from backend.models.notification import Notification
 from backend.models.user import User
 from backend.models.project import Project
 from backend.models.task import Task
-from backend.models.time_entry import TimeEntry
 from backend.services.notifications import notify_user_added_to_team
 
 
@@ -66,7 +65,7 @@ def create_new_team(name, user_id):
 
     return {"team_id": new_team.team_id, "message": "Team created"}
 
-
+# brauch ich nicht?
 def get_user_by_id(user_id):
     """Fetch a user by ID.
 
@@ -78,7 +77,7 @@ def get_user_by_id(user_id):
     """
     return User.query.filter_by(user_id=user_id).first()
 
-
+# brauch ich nicht?
 def resolve_user_id(raw_user_input):
     """Resolves user ID from user ID or username.
 
@@ -123,7 +122,7 @@ def is_team_member(user_id, team_id):
     """
     return UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
 
-
+# brauch ich nicht?
 def add_member_to_team(user_id, team_id, role):
     """Adds a user to the team with a role.
 
@@ -135,15 +134,25 @@ def add_member_to_team(user_id, team_id, role):
     Returns:
         bool: True if successful.
     """
-    new_member = UserTeam(user_id=user_id, team_id=team_id, role=role)
-    team = Team.query.filter_by(id=team_id).first()
+    team = Team.query.filter_by(team_id=team_id).first()
+    if not team:
+        raise ValueError(f"Team with ID {team_id} not found.")
+
     team_name = team.name
+
+    existing = UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
+    if existing:
+        raise ValueError("User is already a member of this team.")
+
+    new_member = UserTeam(user_id=user_id, team_id=team_id, role=role)
     db.session.add(new_member)
     db.session.commit()
+
     notify_user_added_to_team(user_id, team_name)
+
     return True
 
-
+# brauch ich nicht?
 def remove_member_from_team(user_id, team_id):
     """Removes a user from a team.
 
@@ -193,52 +202,7 @@ def delete_team_and_members(team_id):
     return False
 
 
-def create_team_project(name, description, team_id):
-    """
-    Creates a project associated with a team.
-
-    Args:
-        name (str): Name of the project.
-        description (str): Project description.
-        team_id (int): Team ID to associate.
-
-    Returns:
-        dict: Created project ID and message.
-    """
-
-    project = Project(
-        name=name.strip(), description=description.strip(), team_id=team_id
-    )
-    db.session.add(project)
-    db.session.commit()
-    return {"project_id": project.project_id, "message": "Team project created"}
-
-
-def create_task_for_team_project(name, category_id, project_id, assigned_user_id=None):
-    """
-    Creates a task under a team project.
-
-    Args:
-        name (str): Task name.
-        category_id (int): Related category ID.
-        project_id (int): ID of the parent team project.
-        assigned_user_id (int, optional): Assigned user.
-
-    Returns:
-        dict: Created task ID and message.
-    """
-    task = Task(
-        name=name.strip(),
-        category_id=category_id,
-        project_id=project_id,
-        assigned_user_id=assigned_user_id,
-    )
-    db.session.add(task)
-    db.session.commit()
-    return {"task_id": task.task_id, "message": "Task created under team project"}
-
-
-def get_user_teams_with_projects(user_id):
+def get_teams(user_id):
     """
     Retrieve all teams a user is in, along with their projects.
 
