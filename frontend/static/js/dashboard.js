@@ -1,3 +1,8 @@
+/**
+ * Initialisiert den Mini-Kalender auf der Dashboard-Seite.
+ * Lädt Due Dates (rote Balken) und Time Entries (blaue Balken) (max. 1 pro Tag für Übersichtlichkeit) asynchron
+ * und rendert diese im eingebetteten Monatskalender.
+ */
 document.addEventListener("DOMContentLoaded", async function () {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) return;
@@ -55,6 +60,10 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 });
 
+/**
+ * Aktiviert die Klick-Weiterleitung auf die Kalenderansicht innerhalb der Dashboard-Kachel.
+ * Leitet zur Analysis-Seite mit aktivierter Kalender-Ansicht weiter.
+ */
 document.addEventListener("DOMContentLoaded", function () {
   const calendarCard = document.querySelector(".calendar");
 

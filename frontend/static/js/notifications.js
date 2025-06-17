@@ -1,11 +1,14 @@
-// ==== Notification Filtering ====
+/**
+ * Initialisiert die Filterfunktion für Benachrichtigungskarten.
+ * Reagiert auf Button-Klicks und blendet Karten je nach Typ dynamisch ein/aus.
+ */
 document.addEventListener("DOMContentLoaded", () => {
   const filterButtons = document.querySelectorAll("#filter-controls button");
   const cards = document.querySelectorAll(".notification-card");
 
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      // Reset active class
+      // Entfernt aktive Hervorhebung von allen Buttons und markiert den geklickten als aktiv
       filterButtons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
@@ -29,7 +32,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Benachrichtigung als gelesen markieren
+/**
+ * Markiert eine Benachrichtigung auf dem Server als gelesen.
+ * @param {string} id - Die ID der Benachrichtigung.
+ */
 function markAsRead(id) {
   fetch(`/notifications/read/${id}`, {
     method: "POST",
@@ -51,7 +57,10 @@ function markAsRead(id) {
     });
 }
 
-// Benachrichtigung löschen
+/**
+ * Löscht eine Benachrichtigung auf dem Server.
+ * @param {string} id - Die ID der Benachrichtigung.
+ */
 function deleteNotification(id) {
   fetch(`/notifications/delete/${id}`, {
     method: "POST",
