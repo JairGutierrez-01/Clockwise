@@ -1,7 +1,7 @@
 import pytest
-from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from backend.database import Base
 from backend.models import Notification, User, Project
 
@@ -18,7 +18,13 @@ def db_session():
 
 def test_create_notification(db_session):
     """Test creating a Notification with valid user and project references."""
-    user = User(username="user1", email="user1@example.com", password_hash="x", first_name="U", last_name="One")
+    user = User(
+        username="user1",
+        email="user1@example.com",
+        password_hash="x",
+        first_name="U",
+        last_name="One",
+    )
     project = Project(name="P1", description="", time_limit_hours=10, user=user)
     db_session.add_all([user, project])
     db_session.commit()
@@ -27,15 +33,16 @@ def test_create_notification(db_session):
         user_id=user.user_id,
         project_id=project.project_id,
         message="Deadline tomorrow!",
-        type="warning"
+        type="warning",
     )
     db_session.add(note)
     db_session.commit()
 
-    assert note._id is not None
+    assert note.id is not None
     assert note.is_read is False
     assert note.user == user
     assert note.project == project
+
 
 """
 def test_notification_creation():
