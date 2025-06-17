@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, url_for
@@ -159,6 +160,15 @@ def home():
         str: Rendered HTML template for the homepage.
     """
     return render_template("homepage.html")
+
+
+@app.route("/ping", methods=["POST"])
+@login_required
+def ping():
+    now = datetime.now()
+    current_user.last_active = now
+    db.session.commit()
+    return "", 204
 
 
 @app.route("/calendar-due-dates")
@@ -372,6 +382,7 @@ def notifications():
     )
     return render_template("notifications.html", notifications=user_notifications)
 
+
 # Test notification erstellen
 @app.route("/notifications/trigger-test-notification")
 @login_required
@@ -395,6 +406,7 @@ def trigger_test_notification():
         notif_type="info",
     )
     return redirect(url_for("notifications"))
+
 
 @app.route("/time_entries")
 @login_required
@@ -434,6 +446,17 @@ def get_calendar_worked_time():
         Response: JSON response containing worked time data.
     """
     return jsonify(calendar_worked_time())
+
+
+@app.before_request
+def update_last_active():
+    if current_user.is_authenticated:
+        now = datetime.utcnow()
+        if not current_user.last_active or now - current_user.last_active > timedelta(
+            minutes=1
+        ):
+            current_user.last_active = now
+            db.session.commit()
 
 
 if __name__ == "__main__":

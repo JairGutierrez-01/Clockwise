@@ -60,5 +60,8 @@
         >
       </form>
     </div>
+    {% if user_logged_in %}
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    {% endif %}
   </body>
 </html>

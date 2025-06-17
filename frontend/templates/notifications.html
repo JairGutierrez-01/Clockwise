@@ -54,5 +54,8 @@
     </main>
 
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    {% if user_logged_in %}
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    {% endif %}
   </body>
 </html>
