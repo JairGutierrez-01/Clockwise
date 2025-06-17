@@ -165,6 +165,14 @@ def home():
 @app.route("/ping", methods=["POST"])
 @login_required
 def ping():
+    """
+    Update the current user's last active timestamp to the current time.
+
+    This endpoint is intended to be called periodically to mark the user as active.
+
+    Returns:
+        tuple: An empty response with HTTP status code 204 (No Content).
+    """
     now = datetime.now()
     current_user.last_active = now
     db.session.commit()
