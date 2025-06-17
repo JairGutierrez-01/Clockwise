@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let calendarInstance = null;
   let currentWeekOffset = 0;
 
+  //Farbpalette für das Säulendiagramm
   const colorPalette = [
     "#00ff7f",
     "#b700ff",
@@ -24,11 +25,21 @@ document.addEventListener("DOMContentLoaded", () => {
     "#765595",
     "#ffc200",
     "#800000",
-    "#57956a",
+    "#64ac79",
     "#808000",
+    "#0048ba",
+    "#f1136f",
+    "#ff2600",
+    "#00cdfb",
+    "#beff00"
   ];
 
-  function hexToRgb(hex) {
+/**
+ * Konvertiert eine hexadezimale Farbe in ein RGB-Objekt (um veschiedene Helligkeiten einer Farbe für die Tasks eines Projekts zu verwenden).
+ * @param {string} hex - Farbwert in hex-Notation (z.B. "#ff0000")
+ * @returns {{r: number, g: number, b: number}} - Die RGB-Werte.
+ */
+function hexToRgb(hex) {
     // Entferne das "#" falls vorhanden
     hex = hex.replace(/^#/, "");
     if (hex.length === 3) {
@@ -45,7 +56,14 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function rgbToHsl(r, g, b) {
+/**
+ * Wandelt RGB-Werte in HSL um.
+ * @param {number} r - Rotwert (0–255)
+ * @param {number} g - Grünwert (0–255)
+ * @param {number} b - Blauwert (0–255)
+ * @returns {[number, number, number]} - HSL als [Hue, Saturation, Lightness]
+ */
+function rgbToHsl(r, g, b) {
     r /= 255;
     g /= 255;
     b /= 255;
@@ -78,7 +96,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
   }
 
-  function getColorForProject(projectName) {
+/**
+ * Gibt eine zu einem Projektnamen gehörende Farbe zurück.
+ * @param {string} projectName - Name des Projekts.
+ * @returns {string} - Hex-Farbwert.
+ */
+function getColorForProject(projectName) {
     let hash = 0;
     const full = projectName + "_hash";
     for (let i = 0; i < full.length; i++) {
@@ -88,7 +111,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return colorPalette[index];
   }
 
-  function getTaskColor(project, task, indexInStack = 0, total = 1) {
+/**
+ * Gibt eine abgestufte HSL-Farbe für eine Task innerhalb eines Projekts zurück.
+ * @param {string} project - Projektname.
+ * @param {string} task - Taskname.
+ * @param {number} [indexInStack=0] - Position der Task im Stapel.
+ * @param {number} [total=1] - Gesamtanzahl der Tasks.
+ * @returns {string} - Farbwert im HSL-Format.
+ */
+function getTaskColor(project, task, indexInStack = 0, total = 1) {
     const baseColor = getColorForProject(project);
     const rgb = hexToRgb(baseColor);
     let [h, s, l] = rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -100,8 +131,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return `hsl(${h}, ${s}%, ${l}%)`;
   }
 
-  // Funktion zur Helligkeitsanpassung in Prozent
-  function shadeColor(color, percent) {
+/**
+ * Passt die Helligkeit einer Hexfarbe um einen Prozentwert an.
+ * @param {string} color - Ausgangsfarbe in Hex.
+ * @param {number} percent - Prozentuale Veränderung (-100 bis +100).
+ * @returns {string} - Neue Hexfarbe.
+ */
+function shadeColor(color, percent) {
     const f = parseInt(color.slice(1), 16),
       t = percent < 0 ? 0 : 255,
       p = Math.abs(percent) / 100,
@@ -121,6 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return `#${newColor}`;
   }
 
+   /**
+    * Rendert das Wochen-Diagramm mit gestapelten Balken pro Projekt/Task.
+    * @param {string|null} [weekStart=null] - ISO-Datum (YYYY-MM-DD) des Wochenanfangs oder null für aktuelle Woche.
+    * @returns {Promise<void>}
+    */
   async function renderChart(weekStart = null) {
     const ctx = document.getElementById("timeChart").getContext("2d");
     if (chartInstance) chartInstance.destroy();
@@ -214,6 +255,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  /**
+   * Gibt das Datum des Montags einer Woche mit gegebenem Offset zurück.
+   * @param {number} offset - Wochen-Offset relativ zur aktuellen Woche (z. B. -1 für letzte Woche, 0 für diese).
+   * @returns {Date} - Das Datum des Montags der Zielwoche.
+   */
   function getStartOfWeekWithOffset(offset) {
     const now = new Date();
     const day = now.getDay(); // 0=So, 1=Mo
@@ -224,6 +270,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return monday;
   }
 
+  /**
+   * Aktualisiert das Diagramm und die Wochenanzeige basierend auf dem aktuellen Offset.
+   * Nutzt das aktuelle weekOffset, um Start- und Enddatum zu berechnen und das Diagramm zu laden.
+   */
   function updateChartForWeek() {
     const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset);
     const endOfWeek = new Date(startOfWeek);
@@ -241,6 +291,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderChart(isoStart);
   }
 
+  /**
+   * Initialisiert und rendert den FullCalendar mit Due-Dates und Arbeitszeit-Einträgen.
+   * Bindet Event-Listener für Monats- und Jahresansicht.
+   */
   function renderFullCalendar() {
     const calendarEl = document.getElementById("calendar");
 
@@ -316,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         calendarInstance.render();
 
-        // Buttons für Ansicht
+        // Buttons für Monats- und Jahresansicht
         document
           .getElementById("month-view-btn")
           ?.addEventListener("click", () => {
@@ -331,6 +385,10 @@ document.addEventListener("DOMContentLoaded", () => {
             setActiveView("year");
           });
 
+        /**
+         * Setzt die aktive Ansicht im Kalender (z. B. „month“ oder „year“) und aktualisiert die Button-UI.
+         * @param {string} view - Der anzuzeigende Modus: "month" oder "year".
+         */
         function setActiveView(view) {
           document
             .getElementById("month-view-btn")
@@ -343,11 +401,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setActiveView("month");
       })
       .catch((err) => {
-        console.error("❌ Fehler beim Laden von Kalenderdaten:", err);
+        console.error("Error occured while loading calendar data:", err);
       });
   }
 
-  // === View Switching ===
+  // View Switching
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
       document
@@ -382,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateChartForWeek();
   });
 
-  // === Initial Load: prüfe URL-Parameter
+  //Initial Load: prüfe URL-Parameter
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view") || "weekly";
 
