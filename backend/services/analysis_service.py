@@ -129,7 +129,7 @@ def load_tasks():
         result.append(
             {
                 "project": task.project.name if task.project else None,
-                "status": task.status,
+                "status": task.status.value,
                 "title": task.title,
                 "due_date": task.due_date if task.due_date else None,
             }

@@ -25,6 +25,7 @@
           <button data-filter="SoloProject">Solo Projects</button>
           <button data-filter="TeamProject">Team Projects</button>
           <button data-filter="unassigned">Unassigned Tasks</button>
+          <button data-filter="alltasks">All Tasks</button>
         </div>
         <button id="create-project-btn" type="button">＋ New Project</button>
       </header>
@@ -135,6 +136,13 @@
 
         <label for="task-due-date">Due Date</label>
         <input type="date" id="task-due-date" name="due_date" />
+
+        <label for="task-status">Status</label>
+        <select id="task-status" name="status" required>
+          <option value="todo">Not Started</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
 
         <div class="form-actions">
           <button type="submit" id="save-task-btn">Save</button>
