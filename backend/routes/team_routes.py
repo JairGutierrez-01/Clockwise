@@ -463,9 +463,9 @@ def api_assign_project_to_team(team_id):
 
 
 # noch zu implementieren!!
-@team_bp.route("/api/teams/<int:team_id>/tasks", methods=["GET"])
+@team_bp.route("/<int:team_id>/tasks", methods=["GET"])
 @login_required
-def api_get_all_team_tasks(team_id):
+def get_tasks_for_team(team_id):
     """
     Get all tasks for the specified team.
 
@@ -496,7 +496,7 @@ def api_get_all_team_tasks(team_id):
             [
                 {
                     "task_id": t.task_id,
-                    "name": t.name,
+                    "title": t.title,
                     "project_id": t.project_id,
                     "assigned_user_id": t.assigned_user_id,
                     "category_id": t.category_id,
