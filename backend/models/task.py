@@ -89,6 +89,7 @@ class Task(db.Model):
             "due_date": self.due_date.strftime("%Y-%m-%d") if self.due_date else None,
             "status": self.status.value,
             "project_id": self.project_id,
+            "project_name": self.project.name if self.project else None,
             "user_id": self.user_id,
             "category_id": self.category_id,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),

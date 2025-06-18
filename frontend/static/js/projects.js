@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskDueDateInput = document.getElementById("task-due-date");
   const cancelTaskBtn = document.getElementById("cancel-task-btn");
   const projectSelect = document.getElementById("task-project");
+  const taskStatusSelect = document.getElementById("task-status");
   let projects = [];
   let editingProjectId = null;
   let activeFilter = "all";
@@ -106,6 +107,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!res.ok) throw new Error("Failed to delete project");
   }
 
+  /**
+   * Update a task's status.
+   */
+  async function updateTaskStatus(taskId, status) {
+    await fetch(`/api/tasks/${taskId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status })
+    });
+  }
+
   //API Calls Tasks
   async function createTask(data) {
     const res = await fetch("/api/tasks", {
@@ -151,7 +163,16 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function renderProjectList() {
     projectListEl.innerHTML = "";
+    detailSection.classList.add("hidden");
+    projectListEl.style.display = "grid";
 
+   if (activeFilter === "alltasks") {
+
+   projectListEl.style.display = "none";
+   detailSection.classList.remove("hidden");
+   renderAllTasks();
+  return;
+ }
     if (activeFilter === "unassigned") {
       renderUnassignedTasks();
       return;
@@ -226,6 +247,43 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error loading unassigned tasks:", err);
       projectListEl.innerHTML = "<p>Error loading unassigned tasks.</p>";
     }
+  }
+
+  /**
+   * Fetch and display all tasks across all projects and unassigned.
+   */
+  async function renderAllTasks() {
+    projectListEl.innerHTML = "";
+    projectListEl.style.display = "grid";
+    detailSection.classList.add("hidden");
+
+    let allTasks = [];
+    for (const proj of projects) {
+      const projTasks = await fetchTasks(proj.project_id);
+      allTasks = allTasks.concat(projTasks);
+    }
+    const resUn = await fetch("/api/tasks?unassigned=true");
+    if (resUn.ok) {
+      const unTasks = await resUn.json();
+      allTasks = allTasks.concat(unTasks);
+    }
+
+    allTasks.forEach((task) => {
+      const card = document.createElement("div");
+      card.className = "project-card";
+      card.dataset.id = String(task.task_id);
+      card.innerHTML = `
+        <h2 class="project-card__name">${task.title}</h2>
+        <div class="project-card__meta">
+          <p>Project: ${task.project_name || "Unassigned"}</p>
+          <p>Due: ${task.due_date || "–"}</p>
+          <p>Duration: ${task.total_duration || "0h 0min 0s"}</p>
+        </div>
+        <button class="project-card__view">View</button>
+      `;
+      card.addEventListener("click", () => openTaskEditModal(task.task_id));
+      projectListEl.appendChild(card);
+    });
   }
   /**
    * Displays the details of a selected project.
@@ -353,6 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       description: taskDescInput.value.trim(),
       category_id: parseInt(taskCategorySelect.value, 10) || null,
       due_date: taskDueDateInput.value || null,
+      status: taskStatusSelect.value,
       project_id: parseInt(projectSelect.value, 10) || null, // <-- neu!
       created_from_tracking: false,
     };
@@ -398,6 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
       taskDescInput.value = task.description || "";
       taskCategorySelect.value = task.category_id || "";
       taskDueDateInput.value = task.due_date || "";
+      taskStatusSelect.value = task.status;
 
       const projectSelect = document.getElementById("task-project");
       projectSelect.innerHTML =
@@ -451,8 +511,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const [hours, minutes, seconds] = task.total_duration.split(":");
         durationText = `${parseInt(hours)}h ${parseInt(minutes)}min ${parseInt(seconds)}s`;
       }
-      textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
-      textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
+      textSpan.innerHTML = `
+  <span class="task-title">${task.title}</span>
+  <span class="task-duration">${durationText}</span>
+  <span class="task-date">Due: ${formattedDate}</span>
+`;
+textSpan.classList.add("task-meta-row");
+
 
       // Delete-Button
       const deleteBtn = document.createElement("button");
@@ -472,6 +537,8 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Fehler beim Löschen:", err);
         }
       });
+
+
 
       // Zusammenfügen
       li.appendChild(textSpan);

@@ -24,6 +24,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/multimonth@6.1.8/index.global.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
 
   <body class="dark-mode">
@@ -32,13 +33,27 @@
     <!-- Hauptcontainer -->
     <main class="analysis-container">
       <div class="analysis-header">
-        <h1>Analysis</h1>
-        <div id="analysis-controls" class="filter-style">
-          <button data-view="weekly" class="active">Weekly</button>
-          <button data-view="calendar">Calendar</button>
-          <button data-view="progress">Progress</button>
-        </div>
+  <div class="analysis-header-left">
+    <h1>Analysis</h1>
+  </div>
+
+  <div class="analysis-header-right">
+    <div class="controls-wrapper">
+      <div id="analysis-controls" class="filter-style">
+        <button data-view="weekly" class="active">Weekly</button>
+        <button data-view="calendar">Calendar</button>
+        <button data-view="progress">Progress</button>
       </div>
+      <button id="download-button" title="Exportieren">
+          <i data-lucide="download"></i>
+      </button>
+      <div id="download-dropdown" class="hidden">
+          <button data-format="pdf">Download als PDF</button>
+          <button data-format="csv">Download als CSV</button>
+        </div>
+    </div>
+  </div>
+</div>
 
       <!-- Inhalt (Charts / Kalender / Progress) -->
       <div class="dashboard-columns">
@@ -65,10 +80,28 @@
           <div id="calendar"></div>
         </div>
 
-        <!-- Progress Overview (ToDo) -->
+        <!-- Progress Overview -->
         <div id="view-progress" class="card hidden">
           <h3>Progress Overview</h3>
-          <p>Coming soon...</p>
+          <div class="progress-container">
+            <div class="progress-panel project-completion">
+              <h4>Project Completion</h4>
+              <div id="project-completion-list"></div>
+            </div>
+            <div class="progress-panel time-comparison">
+              <h4>Actual vs. Planned Time</h4>
+              <div class="time-charts">
+                <div class="time-chart">
+                  <h5>Actual Time Allocation</h5>
+                  <canvas id="actualChart"></canvas>
+                </div>
+                <div class="time-chart">
+                  <h5>Planned Time Allocation</h5>
+                  <canvas id="plannedChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -77,5 +110,9 @@
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
+
+    <script>
+        lucide.createIcons();
+    </script>
   </body>
 </html>

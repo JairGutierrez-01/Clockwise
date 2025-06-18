@@ -29,6 +29,17 @@ def create_time_entry(
     Returns:
         dict: Success message or error if task already has an entry.
     """
+    # Parse provided date/time strings into datetime objects
+    if isinstance(start_time, str):
+        try:
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
+    if isinstance(end_time, str):
+        try:
+            end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
@@ -305,3 +316,25 @@ def update_durations_for_task_and_project(task_id):
             update_total_duration_for_project(task.project_id)
 
     return task_result
+
+
+# New function from JUDE
+def get_latest_time_entries_for_user(user_id, limit=10):
+    """
+    Retrieve the most recent completed time entries for a given user.
+
+    Args:
+        user_id (int): ID of the user.
+        limit (int): Maximum number of entries to return.
+
+    Returns:
+        list[TimeEntry]: List of TimeEntry objects ordered by start_time descending.
+    """
+    return (
+        TimeEntry.query
+        .filter_by(user_id=user_id)
+        .filter(TimeEntry.end_time.isnot(None))
+        .order_by(TimeEntry.start_time.desc())
+        .limit(limit)
+        .all()
+    )

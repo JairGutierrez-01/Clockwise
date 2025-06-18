@@ -94,12 +94,14 @@ body {
   background-color: var(--color-card-bg);
   color: var(--color-fg);
   border: 1px solid var(--color-accent);
-  padding: var(--space-xs) var(--space-md);
-  border-radius: var(--radius);
+  padding: 8px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: var(--font-base);
-  transition: background 0.2s;
+  font-size: 1.01rem;
+  font-weight: 525;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
+
 #filter-controls button.active,
 #filter-controls button:hover {
   background-color: var(--color-accent);
@@ -110,13 +112,16 @@ body {
 #create-project-btn {
   background-color: var(--color-accent);
   color: var(--color-fg);
-  border: none;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius);
-  font-size: var(--font-base);
+  border: 1px solid var(--color-accent);
+  padding: 8px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  font-size: 1.01rem;
+  font-weight: 525;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
+
 #create-project-btn:hover {
   transform: scale(1.05);
 }
@@ -330,6 +335,36 @@ body {
     transform 0.2s;
 }
 
+.task-meta-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+
+.task-meta-row span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-title {
+  text-align: left;
+  font-weight: bold;
+}
+
+.task-duration {
+  text-align: center;
+  color: var(--color-accent);
+}
+
+.task-date {
+  text-align: right;
+  color: var(--color-accent);
+}
+
+
 .task-item:hover:not(:has(button:hover)) {
   background-color: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
@@ -345,4 +380,36 @@ body {
 
 .project-card.unassigned-task-card:hover {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+#project-download-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 1px solid var(--color-accent);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#project-download-button:hover {
+  background-color: var(--color-accent);
+  transform: scale(1.1);
+}
+
+#project-download-button svg {
+  width: 20px;
+  height: 20px;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.project-controls-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }

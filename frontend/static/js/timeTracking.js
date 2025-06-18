@@ -148,6 +148,23 @@ async function deleteEntryAPI(entryId) {
   return res.json();
 }
 
+/**
+ * Creates a manual time entry via API.
+ * @async
+ * @function createManualEntryAPI
+ * @param {Object} data - {task_id, start_time, end_time, duration_seconds, comment?}
+ * @returns {Promise<Object>}
+ */
+async function createManualEntryAPI(data) {
+  const res = await fetch("/api/time_entries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to create manual entry");
+  return res.json();
+}
+
 // ============================================================================
 //                          UTILITIES
 // Helper functions for formatting and storage operations
@@ -249,17 +266,27 @@ document.addEventListener("DOMContentLoaded", () => {
   /** @type {HTMLTemplateElement} */
   const tpl = document.getElementById("entry-template");
 
+
   (async () => {
     try {
       const latestSessions = await fetchLatestSessions();
       if (latestSessions.length > 0) {
         emptyMessage.style.display = "none";
-        latestSessions.forEach((task) => {
+        latestSessions.forEach((session) => {
+          let formattedDuration = "00:00:00";
+          if (session.start_time && session.end_time) {
+            const startMs = new Date(session.start_time).getTime();
+            const endMs = new Date(session.end_time).getTime();
+            formattedDuration = formatTime(endMs - startMs);
+          } else if (session.duration_seconds != null) {
+            formattedDuration = formatTime(session.duration_seconds * 1000);
+          }
           renderEntry({
-            time_entry_id: task.task_id,
-            task_id: task.task_id,
-            name: task.title,
-            duration: "duration",
+            time_entry_id: session.time_entry_id,
+            task_id: session.task_id,
+            name: session.title,
+            project_name: session.project_name,
+            duration: formattedDuration,
           });
         });
       }
@@ -311,6 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // load tasks for suggestions
   fetchTasks().then((tasks) => (allTasks = tasks));
 
+
   /**
    * Shows or hides the "no sessions" hint based on presence of entries.
    * @function updateEmptyState
@@ -319,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.style.display = list.children.length ? "none" : "block";
   }
 
-  // --- after loadEntries() and updateEmptyState() ---
+
   const container = document.querySelector(".time-tracking");
   requestAnimationFrame(() => {
     container.classList.add("page-loaded");
@@ -343,7 +371,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const clone = tpl.content.cloneNode(true);
     const w = clone.querySelector(".project-wrapper");
     w.dataset.id = e.time_entry_id;
-    clone.querySelector(".project-name").textContent = e.name;
+    clone.querySelector(".project-name").innerHTML = `
+      <span class="task-title">${e.name}</span>
+      <span class="project-title"> – ${e.project_name || ""}</span>
+    `;
     // Removed time-range population
     clone.querySelector(".duration").textContent = e.duration;
     const resumeBtn = clone.querySelector(".resume-btn");
@@ -395,7 +426,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter((t) => t.title.toLowerCase().includes(q))
       .forEach((t) => {
         const li = document.createElement("li");
-        li.textContent = t.title;
+        li.innerHTML = `
+          <span class="suggestion-task">${t.title}</span>
+          <span class="suggestion-project">(${t.project_name})</span>
+        `;
         li.dataset.taskId = t.task_id;
         suggList.appendChild(li);
       });
@@ -407,9 +441,10 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {MouseEvent} e - Click event
    */
   suggList.addEventListener("click", (e) => {
-    if (e.target.tagName !== "LI") return;
-    input.value = e.target.textContent;
-    input.dataset.taskId = e.target.dataset.taskId;
+    const li = e.target.closest("li");
+    if (!li) return;
+    input.value = li.querySelector(".suggestion-task").textContent;
+    input.dataset.taskId = li.dataset.taskId;
     suggList.innerHTML = "";
   });
 
@@ -525,19 +560,15 @@ document.addEventListener("DOMContentLoaded", () => {
       removeEntryId(id);
       updateEmptyState();
     } else if (e.target.classList.contains("resume-btn")) {
-      // NEW: resume an existing session
       const entryId = w.dataset.id;
       const entry = await fetchEntryAPI(entryId);
-      // fetch task title
       const task = await fetch(`/api/tasks/${entry.task_id}`).then((r) =>
         r.json(),
       );
       const title = task.title;
-      // remove from UI and storage
       w.remove();
       removeEntryId(entryId);
       updateEmptyState();
-      // prepare tracker
       input.value = title;
       input.dataset.taskId = entry.task_id;
       input.disabled = true;
@@ -545,7 +576,6 @@ document.addEventListener("DOMContentLoaded", () => {
       pauseBtn.hidden = false;
       resumeBtn.hidden = true;
       stopBtn.hidden = false;
-      // resume timing
       elapsedTime = (entry.duration_minutes || 0) * 60 * 1000;
       display.textContent = formatTime(elapsedTime);
       startTime = Date.now() - elapsedTime;
@@ -564,6 +594,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // done
+
   updateEmptyState();
 });
