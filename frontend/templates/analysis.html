@@ -24,6 +24,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/multimonth@6.1.8/index.global.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
 
   <body class="dark-mode">
@@ -32,13 +33,23 @@
     <!-- Hauptcontainer -->
     <main class="analysis-container">
       <div class="analysis-header">
-        <h1>Analysis</h1>
-        <div id="analysis-controls" class="filter-style">
-          <button data-view="weekly" class="active">Weekly</button>
-          <button data-view="calendar">Calendar</button>
-          <button data-view="progress">Progress</button>
-        </div>
+  <div class="analysis-header-left">
+    <h1>Analysis</h1>
+  </div>
+
+  <div class="analysis-header-right">
+    <div class="controls-wrapper">
+      <div id="analysis-controls" class="filter-style">
+        <button data-view="weekly" class="active">Weekly</button>
+        <button data-view="calendar">Calendar</button>
+        <button data-view="progress">Progress</button>
       </div>
+      <button id="download-button" title="Exportieren">
+          <i data-lucide="download"></i>
+        </button>
+    </div>
+  </div>
+</div>
 
       <!-- Inhalt (Charts / Kalender / Progress) -->
       <div class="dashboard-columns">
@@ -95,5 +106,9 @@
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
+
+    <script>
+        lucide.createIcons();
+    </script>
   </body>
 </html>
