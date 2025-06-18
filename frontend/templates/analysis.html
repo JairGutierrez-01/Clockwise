@@ -65,10 +65,28 @@
           <div id="calendar"></div>
         </div>
 
-        <!-- Progress Overview (ToDo) -->
+        <!-- Progress Overview -->
         <div id="view-progress" class="card hidden">
           <h3>Progress Overview</h3>
-          <p>Coming soon...</p>
+          <div class="progress-container">
+            <div class="progress-panel project-completion">
+              <h4>Project Completion</h4>
+              <div id="project-completion-list"></div>
+            </div>
+            <div class="progress-panel time-comparison">
+              <h4>Actual vs. Planned Time</h4>
+              <div class="time-charts">
+                <div class="time-chart">
+                  <h5>Actual Time Allocation</h5>
+                  <canvas id="actualChart"></canvas>
+                </div>
+                <div class="time-chart">
+                  <h5>Planned Time Allocation</h5>
+                  <canvas id="plannedChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>

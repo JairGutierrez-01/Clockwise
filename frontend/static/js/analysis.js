@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let chartInstance = null;
   let calendarInstance = null;
+  let chartActual = null;
+  let chartPlanned = null;
   let currentWeekOffset = 0;
 
   //Farbpalette für das Säulendiagramm
@@ -405,6 +407,82 @@ function shadeColor(color, percent) {
       });
   }
 
+  /**
+   * Renders the Progress view: project completion bars and actual vs planned charts.
+   */
+  async function renderProgress() {
+    // Destroy existing charts if present
+    if (chartActual) chartActual.destroy();
+    if (chartPlanned) chartPlanned.destroy();
+
+    // Clear and build project completion list
+    const listEl = document.getElementById("project-completion-list");
+    listEl.innerHTML = "";
+
+    try {
+      // Fetch completion ratios
+      const resProg = await fetch("/api/analysis/project-progress");
+      const projData = await resProg.json();
+      Object.entries(projData).forEach(([project, ratio]) => {
+        const percent = Math.round(ratio * 100);
+        const item = document.createElement("div");
+        item.className = "progress-item";
+        item.innerHTML = `
+          <span class="label">${project}</span>
+          <div class="bar"><span class="fill" style="width:${percent}%"></span></div>
+          <span class="percent">${percent}%</span>
+        `;
+        listEl.appendChild(item);
+      });
+
+      // Fetch actual vs planned
+      const resComp = await fetch("/api/analysis/actual-vs-planned");
+      const compData = await resComp.json();
+      const labels = Object.keys(compData);
+      const actuals = labels.map(p => compData[p].actual);
+      const targets = labels.map(p => compData[p].target);
+      const colors = labels.map(p => getColorForProject(p));
+
+      // Actual chart
+      const ctxA = document.getElementById("actualChart").getContext("2d");
+      chartActual = new Chart(ctxA, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{ label: "Actual (h)", data: actuals, backgroundColor: colors }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } },
+            y: { beginAtZero: true, ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } }
+          },
+          plugins: { legend: { labels: { color: "#fff" } } }
+        }
+      });
+
+      // Planned chart
+      const ctxP = document.getElementById("plannedChart").getContext("2d");
+      chartPlanned = new Chart(ctxP, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [{ label: "Planned (h)", data: targets, backgroundColor: colors }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } },
+            y: { beginAtZero: true, ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } }
+          },
+          plugins: { legend: { labels: { color: "#fff" } } }
+        }
+      });
+    } catch (e) {
+      console.error("Error loading progress data:", e);
+    }
+  }
+
   // View Switching
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -422,6 +500,8 @@ function shadeColor(color, percent) {
             renderChart();
           } else if (key === "calendar") {
             renderFullCalendar();
+          } else if (key === "progress") {
+            renderProgress();
           }
         } else {
           el.classList.add("hidden");
