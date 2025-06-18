@@ -758,9 +758,9 @@ body {
     width: 100%;
     padding: 12px 15px;
     margin-bottom: 15px;
-    border: 1px solid var(--border-color); /* Your defined border color */
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    background-color: var(--input-bg); /* Your defined input background */
+    background-color: var(--input-bg);
     color: var(--text-light); /* Your defined light text color */
     font-size: 1rem;
     box-sizing: border-box;
@@ -770,7 +770,7 @@ body {
 
 .modal-team-form input[type="text"]:focus,
 .modal-team-form textarea:focus {
-    border-color: var(--member-color); /* Your defined member color for focus highlight */
+    border-color: var(--member-color);
     box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3); /* Soft glow with member color */
 }
 
@@ -828,21 +828,19 @@ body {
 /* Ensure custom-modal-content itself is flexible for its dynamic content */
 /* Add this if not already present or adjust existing: */
 .custom-modal-content {
-    /* ... existing styles ... */
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center content horizontally */
-    justify-content: center; /* Center content vertically if not too tall */
-    /* Make sure this allows dynamic content to expand */
-    gap: 20px; /* Space between elements within the modal content */
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
 }
 
-/* This class will wrap the dynamically injected content */
+
 .dynamic-content-area {
-    width: 100%; /* Ensure it takes full width of the modal content */
+    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spacing for elements within the dynamic area */
+    gap: 15px;
     box-sizing: border-box;
 }
 
@@ -995,39 +993,37 @@ body {
 }
 
 .assign-popover button:hover {
-  background-color: #93c5fd; /* mismo hover que usas para .add-member-btn */
+  background-color: #93c5fd;
 }
 
-/* Estilo para el nuevo botón "View Tasks" dentro del popover */
-/* Le daremos un color distinto al de "Assign Task" para diferenciarlo */
+
 .assign-popover .view-assigned-tasks-btn {
-  background-color: var(--card-bg); /* Un color de fondo que ya usas para tarjetas */
-  color: var(--text-light); /* Texto claro para este botón */
-  border: 1px solid var(--border-color); /* Borde sutil */
+  background-color: var(--card-bg);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 6px 10px;
   cursor: pointer;
   font-size: 0.85rem;
   transition: background-color 0.2s ease, border-color 0.2s ease;
-  margin-top: 5px; /* Pequeño margen superior para separarlo del botón de asignar */
+  margin-top: 5px;
 }
 
 .assign-popover .view-assigned-tasks-btn:hover {
-  background-color: var(--card-bg-light); /* Un fondo ligeramente más claro al pasar el mouse */
-  border-color: var(--purple); /* Un toque de color de borde al pasar el mouse */
+  background-color: var(--card-bg-light);
+  border-color: var(--purple);
 }
 
-/* Estilos para la lista de tareas asignadas dentro del nuevo modal */
 .modal-assigned-tasks-list {
   list-style: none;
   padding: 0;
   margin: 15px 0;
-  max-height: 300px; /* Limitar altura si hay muchas tareas */
-  overflow-y: auto; /* Scroll si el contenido excede la altura */
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .modal-assigned-tasks-list li {
-  background-color: var(--card-bg); /* Fondo para cada item de la lista */
+  background-color: var(--card-bg);
   border-radius: 6px;
   padding: 10px 15px;
   margin-bottom: 8px;
@@ -1040,7 +1036,7 @@ body {
 .modal-assigned-tasks-list li .task-title {
   font-weight: bold;
   color: var(--text-light);
-  flex-grow: 1; /* Permite que el título ocupe el espacio disponible */
+  flex-grow: 1;
 }
 
 .modal-assigned-tasks-list li .task-status-display {
@@ -1049,37 +1045,37 @@ body {
   margin-left: 15px;
   padding: 4px 8px;
   border-radius: 4px;
-  background-color: var(--input-bg); /* Un color de fondo para el estado */
+  background-color: var(--input-bg);
 }
 
-/* Estilos para el popover en sí y sus elementos internos */
+
 .assign-popover {
   position: absolute;
-  top: 35px; /* Manteniendo tu valor, ajustar si es necesario con position:relative en el padre */
-  right: 5px; /* Manteniendo tu valor, ajustar si es necesario con position:relative en el padre */
-  background-color: var(--card-bg-light); /* Usando tu variable */
-  color: var(--text-light); /* Usando tu variable */
-  border: 1px solid var(--border-color); /* Usando tu variable */
+  top: 35px;
+  right: 5px;
+  background-color: var(--card-bg-light);
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 0.9rem;
   z-index: 1000;
-  box-shadow: var(--shadow-md); /* Usando tu variable */
+  box-shadow: var(--shadow-md);
   min-width: 180px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* Separación entre los elementos del popover */
+  gap: 0.5rem;
 }
 
-.assign-popover p.task-status { /* Específico para el párrafo de estado */
+.assign-popover p.task-status {
   margin: 0;
   font-size: 0.95rem;
-  color: var(--text-muted); /* Usando tu variable */
+  color: var(--text-muted);
 }
 
-.assign-popover .open-assign-modal-btn { /* El botón original de "Assign Task" */
-  background-color: var(--member-color); /* Usando tu variable */
-  color: white; /* Asumiendo que quieres texto blanco */
+.assign-popover .open-assign-modal-btn {
+  background-color: var(--member-color);
+  color: white;
   border: none;
   border-radius: 6px;
   padding: 6px 10px;
@@ -1090,35 +1086,34 @@ body {
 }
 
 .assign-popover .open-assign-modal-btn:hover {
-  background-color: #93c5fd; /* Tu color de hover existente */
+  background-color: #93c5fd;
 }
 
-/* Nuevos estilos para el header del popover y el botón de cerrar (la X) */
 .popover-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px; /* Espacio entre el header y el primer botón */
+    margin-bottom: 5px;
 }
 
-.popover-header p { /* Asegúrate de que este p no herede el color text-muted del popover */
+.popover-header p {
     margin: 0;
     font-size: 0.95rem;
-    color: var(--text-light); /* El color del texto principal del estado */
+    color: var(--text-light);
 }
 
 .popover-close-btn {
     background: none;
     border: none;
-    color: var(--text-muted); /* Color suave para la X */
+    color: var(--text-muted);
     font-size: 1.1rem;
     cursor: pointer;
     padding: 0 5px;
     transition: color 0.2s ease;
-    line-height: 1; /* Asegura que la X no desplace el texto */
+    line-height: 1;
 }
 
 .popover-close-btn:hover {
-    color: var(--text-light); /* Cambio de color al pasar el mouse */
+    color: var(--text-light);
 }
 
