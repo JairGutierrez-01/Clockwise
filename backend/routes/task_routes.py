@@ -88,7 +88,10 @@ def create_task_api():
 
     project_id = data.get("project_id")
     created_from_tracking = data.get("created_from_tracking", False)
-    user_id = current_user.user_id if current_user.is_authenticated else None
+    user_id = data.get("user_id", None)
+
+    if user_id is not None and not isinstance(user_id, int):
+        return jsonify({"error": "Invalid user_id provided in creation. Must be integer or null."}), 400
 
     result = create_task(
         title=title,
@@ -206,3 +209,29 @@ def get_tasks_by_user(user_id):
     """
     tasks = get_tasks_assigned_to_user(user_id)
     return jsonify([task.to_dict() for task in tasks])
+
+
+@task_bp.route("/tasks/<int:task_id>/assign", methods=["PATCH"])
+def assign_task_to_user_api(task_id):
+    """
+    Assigns or unassigns a task to a user.
+    Expected JSON: {"user_id": int or null}
+    """
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    data = request.get_json()
+
+    user_id = data.get("user_id")
+
+
+    if user_id is not None and not isinstance(user_id, int):
+        return jsonify({"error": "Invalid user_id provided. Must be integer or null."}), 400
+
+    result = update_task(task_id, user_id=user_id)
+
+    if result.get("success"):
+        message = "Task assigned successfully." if user_id is not None else "Task unassigned successfully."
+        return jsonify({"message": message, "task_id": task_id, "user_id": user_id}), 200
+
+    return jsonify({"error": result.get("error", "Task assignment failed.")}), 400
