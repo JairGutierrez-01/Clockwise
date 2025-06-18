@@ -403,7 +403,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter((t) => t.title.toLowerCase().includes(q))
       .forEach((t) => {
         const li = document.createElement("li");
-        li.textContent = t.title;
+        li.innerHTML = `
+          <span class="suggestion-task">${t.title}</span>
+          <span class="suggestion-project">(${t.project_name})</span>
+        `;
         li.dataset.taskId = t.task_id;
         suggList.appendChild(li);
       });
@@ -415,9 +418,10 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {MouseEvent} e - Click event
    */
   suggList.addEventListener("click", (e) => {
-    if (e.target.tagName !== "LI") return;
-    input.value = e.target.textContent;
-    input.dataset.taskId = e.target.dataset.taskId;
+    const li = e.target.closest("li");
+    if (!li) return;
+    input.value = li.querySelector(".suggestion-task").textContent;
+    input.dataset.taskId = li.dataset.taskId;
     suggList.innerHTML = "";
   });
 
