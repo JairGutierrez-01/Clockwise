@@ -180,7 +180,8 @@ def get_unassigned_tasks():
         duration_seconds = sum(
             (
                 entry.duration_seconds
-                if entry.duration_seconds is not None
+                if entry.duration_seconds
+                   is not None
                 else int((entry.duration_minutes or 0) * 60)
             )
             for entry in task.time_entries
