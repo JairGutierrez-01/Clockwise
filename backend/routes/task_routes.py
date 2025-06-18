@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import Blueprint, request
 from flask import jsonify
 from flask_login import current_user, login_required
+from backend.models.task import TaskStatus
 
 from backend.services.task_service import (
     create_task,
@@ -236,3 +237,44 @@ def assign_task_to_user_api(task_id):
         return jsonify({"message": message, "task_id": task_id, "user_id": user_id}), 200
 
     return jsonify({"error": result.get("error", "Task assignment failed.")}), 400
+
+
+@task_bp.route("/tasks/<int:task_id>/status", methods=["PATCH"])
+@login_required
+def update_task_status(task_id):
+    """
+    Update the status of a task.
+    Only allows values defined in TaskStatus enum.
+
+    JSON Input:
+        {
+            "status": "todo" | "in_progress" | "done"
+        }
+
+    Returns:
+        JSON: Success message or error.
+    """
+    if not current_user.is_authenticated:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    data = request.get_json()
+    new_status = data.get("status", "").lower()
+
+    # Validate status
+    if new_status not in TaskStatus.__members__:
+        return jsonify({
+            "error": f"Invalid status: '{new_status}'",
+            "allowed_statuses": list(TaskStatus.__members__.keys())
+        }), 400
+
+    # Update task
+    result = update_task(task_id, status=new_status)
+
+    if result.get("success"):
+        return jsonify({
+            "message": "Task status updated successfully.",
+            "task_id": task_id,
+            "status": new_status
+        }), 200
+
+    return jsonify({"error": result.get("error", "Status update failed.")}), 400
