@@ -13,22 +13,30 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='projects.css') }}"
     />
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
     <div class="project-page">
       <!-- Header with Filter & Create Button -->
       <header class="project-header">
-        <h1>Projects</h1>
-        <div id="filter-controls">
-          <button data-filter="all" class="active">All</button>
-          <button data-filter="SoloProject">Solo Projects</button>
-          <button data-filter="TeamProject">Team Projects</button>
-          <button data-filter="unassigned">Unassigned Tasks</button>
-          <button data-filter="alltasks">All Tasks</button>
-        </div>
-        <button id="create-project-btn" type="button">＋ New Project</button>
-      </header>
+          <h1>Projects</h1>
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <div id="filter-controls">
+              <button data-filter="all" class="active">All</button>
+              <button data-filter="SoloProject">Solo Projects</button>
+              <button data-filter="TeamProject">Team Projects</button>
+              <button data-filter="unassigned">Unassigned Tasks</button>
+              <button data-filter="alltasks">All Tasks</button>
+            </div>
+            <div class="project-controls-wrapper">
+              <button id="create-project-btn" type="button">＋ New Project</button>
+              <button id="project-download-button" title="Export Projects">
+                <i data-lucide="download"></i>
+              </button>
+            </div>
+          </div>
+        </header>
 
       <!-- List of Existing Projects -->
       <section id="project-list" class="project-list">
@@ -157,5 +165,9 @@
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
+
+    <script>
+      lucide.createIcons();
+    </script>
   </body>
 </html>
