@@ -8,6 +8,7 @@ from backend.models.user import User
 
 @pytest.fixture()
 def test_user(db_session):
+    """Fixture für einen einmalig erstellten Test-User."""
     user = User(
         username="timetracker",
         email="t@example.com",
@@ -22,6 +23,7 @@ def test_user(db_session):
 
 @pytest.fixture()
 def test_task(db_session, test_user):
+    """Fixture für eine einmalig erstellte Test-Task, die dem Test-User gehört."""
     task = Task(title="Timed Task", user_id=test_user.user_id)
     db_session.add(task)
     db_session.commit()
@@ -29,6 +31,7 @@ def test_task(db_session, test_user):
 
 
 def test_create_time_entry(db_session, test_user, test_task):
+    """Testet das Erstellen eines TimeEntry und die Verknüpfung zu User und Task."""
     entry = TimeEntry(
         user_id=test_user.user_id,
         task_id=test_task.task_id,
@@ -42,11 +45,14 @@ def test_create_time_entry(db_session, test_user, test_task):
 
     fetched = db_session.query(TimeEntry).first()
     assert fetched is not None
+    assert fetched.user_id == test_user.user_id
+    assert fetched.task_id == test_task.task_id
     assert fetched.duration_seconds == 3600
     assert fetched.comment == "Worked on task"
 
 
 def test_time_entry_repr(db_session, test_user, test_task):
+    """Testet die __repr__-Ausgabe eines TimeEntry."""
     entry = TimeEntry(user_id=test_user.user_id, task_id=test_task.task_id)
     db_session.add(entry)
     db_session.commit()
@@ -57,6 +63,7 @@ def test_time_entry_repr(db_session, test_user, test_task):
 
 
 def test_time_entry_to_dict(db_session, test_user, test_task):
+    """Testet die to_dict()-Konvertierung eines TimeEntry."""
     entry = TimeEntry(
         user_id=test_user.user_id,
         task_id=test_task.task_id,
@@ -74,3 +81,4 @@ def test_time_entry_to_dict(db_session, test_user, test_task):
     assert result["duration_seconds"] == 5400
     assert "duration" in result
     assert result["comment"] == "Session"
+    assert result["title"] == test_task.title
