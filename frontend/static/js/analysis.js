@@ -531,4 +531,42 @@ function shadeColor(color, percent) {
   } else {
     updateChartForWeek();
   }
+
+  const downloadBtn = document.getElementById("download-button");
+const dropdown = document.getElementById("download-dropdown");
+
+downloadBtn.addEventListener("click", () => {
+  dropdown.classList.toggle("hidden");
+});
+
+// Wenn außerhalb geklickt wird, Dropdown schließen
+document.addEventListener("click", (e) => {
+  if (!downloadBtn.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.add("hidden");
+  }
+});
+
+// Export-Logik
+dropdown.addEventListener("click", (e) => {
+  if (e.target.tagName !== "BUTTON") return;
+  const format = e.target.dataset.format;
+  if (!format) return;
+
+  // Aktuelle Woche ermitteln
+  const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset);
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+  const isoStart = startOfWeek.toISOString().split("T")[0];
+  const isoEnd = endOfWeek.toISOString().split("T")[0];
+
+  const url =
+    format === "pdf"
+      ? `/api/analysis/export/pdf?start=${isoStart}&end=${isoEnd}`
+      : `/api/analysis/export/csv?start=${isoStart}&end=${isoEnd}`;
+
+  // Startet Download
+  window.open(url, "_blank");
+});
+
 });
