@@ -29,6 +29,17 @@ def create_time_entry(
     Returns:
         dict: Success message or error if task already has an entry.
     """
+    # Parse provided date/time strings into datetime objects
+    if isinstance(start_time, str):
+        try:
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
+    if isinstance(end_time, str):
+        try:
+            end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}

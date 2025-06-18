@@ -148,6 +148,23 @@ async function deleteEntryAPI(entryId) {
   return res.json();
 }
 
+/**
+ * Creates a manual time entry via API.
+ * @async
+ * @function createManualEntryAPI
+ * @param {Object} data - {task_id, start_time, end_time, duration_seconds, comment?}
+ * @returns {Promise<Object>}
+ */
+async function createManualEntryAPI(data) {
+  const res = await fetch("/api/time_entries", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to create manual entry");
+  return res.json();
+}
+
 // ============================================================================
 //                          UTILITIES
 // Helper functions for formatting and storage operations
@@ -249,6 +266,18 @@ document.addEventListener("DOMContentLoaded", () => {
   /** @type {HTMLTemplateElement} */
   const tpl = document.getElementById("entry-template");
 
+  // Manual entry modal elements
+  const manualEntryBtn = document.getElementById("manual-entry-btn");
+  const manualModal = document.getElementById("manual-entry-modal");
+  const manualForm = document.getElementById("manual-entry-form");
+  const manualTaskInput = document.getElementById("manual-task-name");
+  const manualTaskSuggestions = document.getElementById("manual-task-suggestions");
+  const manualDateInput = document.getElementById("manual-date");
+  const manualStartInput = document.getElementById("manual-start-time");
+  const manualEndInput = document.getElementById("manual-end-time");
+  const manualDurationDiv = document.getElementById("manual-duration");
+  const cancelManualBtn = document.getElementById("cancel-manual-btn");
+
   (async () => {
     try {
       const latestSessions = await fetchLatestSessions();
@@ -319,6 +348,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // load tasks for suggestions
   fetchTasks().then((tasks) => (allTasks = tasks));
 
+  // Task suggestions for manual entry
+  manualTaskInput.addEventListener("input", () => {
+    const q = manualTaskInput.value.trim().toLowerCase();
+    manualTaskSuggestions.innerHTML = "";
+    if (!q) return;
+    allTasks
+      .filter((t) => t.title.toLowerCase().includes(q))
+      .forEach((t) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="suggestion-task">${t.title}</span>
+          <span class="suggestion-project">(${t.project_name})</span>
+        `;
+        li.dataset.taskId = t.task_id;
+        manualTaskSuggestions.appendChild(li);
+      });
+  });
+
+  manualTaskSuggestions.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    if (!li) return;
+    manualTaskInput.value = li.querySelector(".suggestion-task").textContent;
+    manualTaskInput.dataset.taskId = li.dataset.taskId;
+    manualTaskSuggestions.innerHTML = "";
+  });
+
   /**
    * Shows or hides the "no sessions" hint based on presence of entries.
    * @function updateEmptyState
@@ -327,7 +382,19 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.style.display = list.children.length ? "none" : "block";
   }
 
-  // --- after loadEntries() and updateEmptyState() ---
+  // Functions to open/close manual entry modal
+  function openManualModal() {
+    manualModal.classList.remove("hidden");
+  }
+
+  function closeManualModal() {
+    manualModal.classList.add("hidden");
+    manualForm.reset();
+    manualTaskSuggestions.innerHTML = "";
+    manualDurationDiv.textContent = "00:00:00";
+    delete manualTaskInput.dataset.taskId;
+  }
+
   const container = document.querySelector(".time-tracking");
   requestAnimationFrame(() => {
     container.classList.add("page-loaded");
@@ -537,19 +604,15 @@ document.addEventListener("DOMContentLoaded", () => {
       removeEntryId(id);
       updateEmptyState();
     } else if (e.target.classList.contains("resume-btn")) {
-      // NEW: resume an existing session
       const entryId = w.dataset.id;
       const entry = await fetchEntryAPI(entryId);
-      // fetch task title
       const task = await fetch(`/api/tasks/${entry.task_id}`).then((r) =>
         r.json(),
       );
       const title = task.title;
-      // remove from UI and storage
       w.remove();
       removeEntryId(entryId);
       updateEmptyState();
-      // prepare tracker
       input.value = title;
       input.dataset.taskId = entry.task_id;
       input.disabled = true;
@@ -557,7 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
       pauseBtn.hidden = false;
       resumeBtn.hidden = true;
       stopBtn.hidden = false;
-      // resume timing
       elapsedTime = (entry.duration_minutes || 0) * 60 * 1000;
       display.textContent = formatTime(elapsedTime);
       startTime = Date.now() - elapsedTime;
@@ -576,6 +638,52 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // done
+  manualEntryBtn.addEventListener("click", openManualModal);
+  cancelManualBtn.addEventListener("click", closeManualModal);
+
+  function recalcManualDuration() {
+    if (!manualDateInput.value || !manualStartInput.value || !manualEndInput.value) {
+      manualDurationDiv.textContent = "00:00:00";
+      return;
+    }
+    const start = new Date(`${manualDateInput.value}T${manualStartInput.value}`);
+    const end = new Date(`${manualDateInput.value}T${manualEndInput.value}`);
+    const diffMs = end - start;
+    const diffSec = diffMs > 0 ? Math.floor(diffMs / 1000) : 0;
+    manualDurationDiv.textContent = formatTime(diffSec * 1000);
+  }
+  manualDateInput.addEventListener("change", recalcManualDuration);
+  manualStartInput.addEventListener("input", recalcManualDuration);
+  manualEndInput.addEventListener("input", recalcManualDuration);
+
+  manualForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    let taskId = manualTaskInput.dataset.taskId;
+    const title = manualTaskInput.value.trim();
+    if (!taskId && title) {
+      const { task_id } = await createTaskAPI(title);
+      taskId = task_id;
+    }
+    if (!taskId) return;
+    const date = manualDateInput.value;
+    const startTime = manualStartInput.value;
+    const endTime = manualEndInput.value;
+    const startStr = `${date} ${startTime}`;
+    const endStr = `${date} ${endTime}`;
+    const diffSec = Math.floor((new Date(`${date}T${endTime}`) - new Date(`${date}T${startTime}`)) / 1000);
+    const payload = {
+      task_id: parseInt(taskId),
+      start_time: startStr,
+      end_time: endStr,
+      duration_seconds: diffSec,
+    };
+    const result = await createManualEntryAPI(payload);
+    const entryId = result.time_entry_id;
+    const formattedDuration = formatTime(diffSec * 1000);
+    renderEntry({ time_entry_id: entryId, task_id: taskId, name: title, duration: formattedDuration });
+    addEntryId(entryId);
+    closeManualModal();
+  });
+
   updateEmptyState();
 });

@@ -68,6 +68,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-sm);
   color: var(--color-fg);
 }
 
@@ -302,12 +303,12 @@ h2 {
     transform: translateY(0);
   }
 }
-/* Initial hidden state of time tracking container */
+
 .time-tracking {
   opacity: 0;
   transform: translateY(-20px);
 }
-/* Animate time tracking container on page load */
+
 .time-tracking.page-loaded {
   animation: fadeInDown 0.6s ease-out forwards;
 }
@@ -320,4 +321,93 @@ h2 {
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
+}
+
+
+.btn-manual {
+  background-color: var(--color-accent);
+  color: var(--color-fg);
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  font-size: var(--font-base);
+  cursor: pointer;
+  margin-left: var(--space-sm);
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+}
+.btn-manual:hover {
+  transform: translateY(-2px);
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.hidden {
+  display: none;
+}
+
+.edit-form {
+  background-color: var(--color-project-bg);
+  border-radius: var(--radius);
+  padding: var(--space-lg);
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+.edit-form h2 {
+  margin: 0 0 var(--space-md) 0;
+  color: var(--color-fg);
+  font-size: var(--font-xl);
+}
+.edit-form label {
+  margin-top: var(--space-md);
+  font-weight: bold;
+  color: var(--color-fg);
+}
+.edit-form input {
+  margin-top: var(--space-xs);
+  padding: var(--space-sm);
+  font-size: var(--font-base);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-accent);
+  width: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+}
+
+#manual-duration {
+  margin-top: var(--space-sm);
+  font-size: var(--font-base);
+  color: var(--color-fg);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+.form-actions button {
+  background-color: var(--color-accent);
+  color: var(--color-fg);
+  border: none;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.form-actions button:hover {
+  transform: scale(1.05);
 }
