@@ -224,3 +224,28 @@ def update_total_duration_for_task(task_id):
 def get_tasks_assigned_to_user(user_id):
     """Retrieve all tasks assigned to a specific user."""
     return Task.query.filter_by(user_id=user_id).all()
+
+
+def unassign_tasks_for_user_in_team(user_id, team_id):
+    """
+    Unassigns all tasks in the team project that are currently assigned to the specified user.
+
+    Args:
+        user_id (int): ID of the user being removed.
+        team_id (int): ID of the team whose team project is affected.
+    """
+    from backend.models.project import Project
+
+    # Each team has exactly one team project
+    team_project = Project.query.filter_by(team_id=team_id).first()
+    if not team_project:
+        return
+
+    # Find all tasks in the team project assigned to this user
+    tasks = Task.query.filter_by(project_id=team_project.project_id, user_id=user_id).all()
+
+    # Unassign the user from those tasks
+    for task in tasks:
+        task.user_id = None
+
+    db.session.commit()

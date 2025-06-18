@@ -6,6 +6,7 @@ from backend.models.user import User
 from backend.models.project import Project
 from backend.models.task import Task
 from backend.services.notifications import notify_user_added_to_team
+from backend.services.task_service import unassign_tasks_for_user_in_team
 
 
 def get_user_teams(user_id):
@@ -153,9 +154,9 @@ def add_member_to_team(user_id, team_id, role):
     notify_user_added_to_team(user_id, team_name)
     return True
 
-# unnötig?
+
 def remove_member_from_team(user_id, team_id):
-    """Removes a user from a team.
+    """Removes a user from a team and unassigns their tasks.
 
     Args:
         user_id (int): ID of the user to remove.
@@ -165,12 +166,24 @@ def remove_member_from_team(user_id, team_id):
         bool: True if removed, False otherwise.
     """
     relation = UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
-    if relation:
-        db.session.delete(relation)
-        db.session.commit()
-        return True
-    return False
+    if not relation:
+        return False  # User is not a member
 
+    # Unassign tasks in this team's project
+    team_project = Project.query.filter_by(team_id=team_id).first()
+    if team_project:
+        tasks = Task.query.filter_by(
+            project_id=team_project.project_id,
+            user_id=user_id
+        ).all()
+
+        for task in tasks:
+            task.user_id = None
+
+    # Remove membership
+    db.session.delete(relation)
+    db.session.commit()
+    return True
 
 def get_team_members(team_id):
     """Retrieves all members of a team.

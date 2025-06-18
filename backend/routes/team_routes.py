@@ -8,6 +8,7 @@ from backend.services.team_service import (
     delete_team_and_members,
     is_team_member,
     check_admin,
+    remove_member_from_team,
 )
 
 from backend.services.team_service import get_team_members as get_team_members_service
@@ -258,6 +259,7 @@ def add_team_member(team_id):
 def remove_team_member(team_id):
     """
     Remove a user from the specified team.
+    Also unassigns the user from any tasks in the team's project.
 
     Args:
         team_id (int): ID of the team.
@@ -269,13 +271,13 @@ def remove_team_member(team_id):
         return jsonify({"error": "Not authenticated"}), 401
 
     try:
-        user_id = current_user.user_id
         data = request.get_json()
-
         raw_user_input = data.get("user_id")
+
         if not raw_user_input:
             return jsonify({"error": "No user_id or username provided"}), 400
 
+        # Get target user ID (from username or ID)
         if str(raw_user_input).isdigit():
             member_id = int(raw_user_input)
         else:
@@ -284,25 +286,17 @@ def remove_team_member(team_id):
                 return jsonify({"error": f"User '{raw_user_input}' not found"}), 404
             member_id = user.user_id
 
+        # Admin check
         admin_relation = UserTeam.query.filter_by(
-            user_id=user_id, team_id=team_id, role="admin"
+            user_id=current_user.user_id, team_id=team_id, role="admin"
         ).first()
         if not admin_relation:
-            return (
-                jsonify(
-                    {
-                        "error": "You do not have permission to remove members from this team"
-                    }
-                ),
-                403,
-            )
+            return jsonify({"error": "You do not have permission to remove members from this team"}), 403
 
-        relation = UserTeam.query.filter_by(user_id=member_id, team_id=team_id).first()
-        if not relation:
+        # Call service
+        success = remove_member_from_team(member_id, team_id)
+        if not success:
             return jsonify({"error": "User is not a member of this team"}), 404
-
-        db.session.delete(relation)
-        db.session.commit()
 
         return jsonify({"message": "Member removed successfully"}), 200
 
