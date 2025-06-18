@@ -24,6 +24,7 @@
     {% include 'navbar.html' %}
     <main class="notification-container">
       <h1>Time entries from the task "{{ task_title }}"</h1>
+      <button id="manual-entry-btn" class="btn-manual">Add Manual Entry</button>
       {% if time_entries %}
       <table id="entries-table">
         <thead>
@@ -94,6 +95,32 @@
       </form>
     </div>
 
+    <div id="manual-entry-modal" class="modal hidden">
+      <form id="manual-entry-form" class="edit-form">
+        <h2>New Manual Entry</h2>
+
+        <label for="manual-date">Date</label>
+        <input type="date" id="manual-date" required />
+
+        <label for="manual-start-time">Start Time</label>
+        <input type="time" id="manual-start-time" step="1" required />
+
+        <label for="manual-end-time">End Time</label>
+        <input type="time" id="manual-end-time" step="1" required />
+
+        <label>Duration</label>
+        <div id="manual-duration">00:00:00</div>
+
+        <div class="form-actions">
+          <button type="submit" id="save-manual-btn">Save</button>
+          <button type="button" id="cancel-manual-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      window.taskId = {{ task_id }};
+    </script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="{{ url_for('static', filename='js/time_entries.js') }}"></script>
     {% if user_logged_in %}

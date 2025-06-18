@@ -41,7 +41,6 @@
           <button id="tracker-stop" class="btn-stop" type="button" hidden>
             Stop
           </button>
-          <button id="manual-entry-btn" class="btn-manual" type="button">Manual Entry</button>
         </div>
       </div>
 
@@ -52,7 +51,10 @@
       <template id="entry-template">
         <div class="project-wrapper">
           <div class="project">
-            <div class="project-name">Task Name</div>
+            <div class="project-name">
+              <span class="task-title">Task Name</span>
+              <span class="project-title"> – Project Name</span>
+            </div>
             <div class="duration">00:00:00</div>
             <button class="resume-btn">Resume</button>
             <button class="edit-btn" data-task-id="">Edit</button>
@@ -60,38 +62,6 @@
           </div>
         </div>
       </template>
-
-      <div id="manual-entry-modal" class="modal hidden">
-        <form id="manual-entry-form" class="edit-form">
-          <h2>New Manual Entry</h2>
-
-          <label for="manual-task-name">Task Name</label>
-          <input
-            type="text"
-            id="manual-task-name"
-            placeholder="Task Name ..."
-            autocomplete="off"
-          />
-          <ul id="manual-task-suggestions" class="suggestions"></ul>
-
-          <label for="manual-date">Date</label>
-          <input type="date" id="manual-date" required />
-
-          <label for="manual-start-time">Start Time</label>
-          <input type="time" id="manual-start-time" step="1" required />
-
-          <label for="manual-end-time">End Time</label>
-          <input type="time" id="manual-end-time" step="1" required />
-
-          <label>Duration</label>
-          <div id="manual-duration">00:00:00</div>
-
-          <div class="form-actions">
-            <button type="submit" id="save-manual-btn">Save</button>
-            <button type="button" id="cancel-manual-btn">Cancel</button>
-          </div>
-        </form>
-      </div>
 
       <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
       <script src="{{ url_for('static', filename='js/timeTracking.js') }}"></script>
