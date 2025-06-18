@@ -48,6 +48,7 @@ class TimeEntry(db.Model):
             "time_entry_id": self.time_entry_id,
             "user_id": self.user_id,
             "task_id": self.task_id,
+            "title": self.task.title,
             "start_time": (
                 self.start_time.strftime("%Y-%m-%d %H:%M:%S")
                 if self.start_time
