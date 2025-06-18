@@ -49,7 +49,7 @@ class TimeEntry(db.Model):
             "user_id": self.user_id,
             "task_id": self.task_id,
             "title": self.task.title,
-            "start_time": (
+            "project_name": self.task.project.name if self.task and self.task.project else None,            "start_time": (
                 self.start_time.strftime("%Y-%m-%d %H:%M:%S")
                 if self.start_time
                 else None

@@ -95,6 +95,8 @@ function parseInputDateTime(inputVal) {
 
 //                          MAIN LOGIC
 document.addEventListener("DOMContentLoaded", () => {
+  // Expose taskId from window for manual entry modal logic
+  const taskId = window.taskId;
   // DOM references
   const table = document.getElementById("entries-table");
   const editModal = document.getElementById("edit-modal");
@@ -437,12 +439,78 @@ document.addEventListener("DOMContentLoaded", () => {
         row.querySelector(".entry-duration").textContent =
           `${hours}h ${minutes}m ${seconds}s`;
       }
-
       closeEditModal();
     } catch (err) {
       console.error("Error updating entry:", err);
     }
   });
+
+  // --- Begin Manual Entry Modal Logic ---
+  const manualBtn = document.getElementById("manual-entry-btn");
+  const manualModal = document.getElementById("manual-entry-modal");
+  const manualForm = document.getElementById("manual-entry-form");
+  const manualDate = document.getElementById("manual-date");
+  const manualStart = document.getElementById("manual-start-time");
+  const manualEnd = document.getElementById("manual-end-time");
+  const manualDuration = document.getElementById("manual-duration");
+  const cancelManualBtn = document.getElementById("cancel-manual-btn");
+
+  if (manualBtn && manualModal && manualForm && manualDate && manualStart && manualEnd && manualDuration && cancelManualBtn) {
+    manualBtn.addEventListener("click", () => {
+      manualModal.classList.remove("hidden");
+    });
+
+    cancelManualBtn.addEventListener("click", () => {
+      manualModal.classList.add("hidden");
+      manualForm.reset();
+      manualDuration.textContent = "00:00:00";
+    });
+
+    function recalcManualDuration() {
+      if (!manualDate.value || !manualStart.value || !manualEnd.value) {
+        manualDuration.textContent = "00:00:00";
+        return;
+      }
+      const start = new Date(`${manualDate.value}T${manualStart.value}`);
+      const end = new Date(`${manualDate.value}T${manualEnd.value}`);
+      const diffSec = end > start ? Math.floor((end - start) / 1000) : 0;
+      manualDuration.textContent = formatDuration(diffSec);
+    }
+
+    manualDate.addEventListener("input", recalcManualDuration);
+    manualStart.addEventListener("input", recalcManualDuration);
+    manualEnd.addEventListener("input", recalcManualDuration);
+
+    manualForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const startTime = `${manualDate.value} ${manualStart.value}`;
+      const endTime = `${manualDate.value} ${manualEnd.value}`;
+      const diffSec = Math.floor((new Date(`${manualDate.value}T${manualEnd.value}`) - new Date(`${manualDate.value}T${manualStart.value}`)) / 1000);
+
+      const payload = {
+        task_id: taskId,
+        start_time: startTime,
+        end_time: endTime,
+        duration_seconds: diffSec,
+      };
+
+      try {
+        const res = await fetch("/api/time_entries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) throw new Error("Failed to create manual entry");
+
+        location.reload(); // refresh to show new entry
+      } catch (err) {
+        console.error("Error creating manual entry:", err);
+      }
+    });
+  }
+  // --- End Manual Entry Modal Logic ---
+
 
   closeEditModal();
 });

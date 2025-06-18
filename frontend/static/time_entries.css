@@ -38,6 +38,24 @@ p {
   color: #ccc;
 }
 
+.btn-manual {
+  background-color: #0c355e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+.btn-manual:hover {
+  background-color: #9b1a33;
+  transform: scale(1.05);
+}
+
 .delete-btn {
   background-color: #be1e3c;
   color: white;

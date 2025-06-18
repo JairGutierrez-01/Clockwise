@@ -511,8 +511,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const [hours, minutes, seconds] = task.total_duration.split(":");
         durationText = `${parseInt(hours)}h ${parseInt(minutes)}min ${parseInt(seconds)}s`;
       }
-      textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
-      textSpan.textContent = `${task.title} – ${durationText} – Due Date: ${formattedDate}`;
+      textSpan.innerHTML = `
+  <span class="task-title">${task.title}</span>
+  <span class="task-duration">${durationText}</span>
+  <span class="task-date">Due: ${formattedDate}</span>
+`;
+textSpan.classList.add("task-meta-row");
+
 
       // Delete-Button
       const deleteBtn = document.createElement("button");
@@ -533,31 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Status toggle buttons
-      if (task.status !== "in_progress") {
-        const inProgBtn = document.createElement("button");
-        inProgBtn.textContent = "In Progress";
-        inProgBtn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          await updateTaskStatus(task.task_id, "in_progress");
-          // Refresh view
-          if (activeFilter === "alltasks") renderAllTasks();
-          else if (editingProjectId) showProjectDetail(editingProjectId);
-        });
-        li.appendChild(inProgBtn);
-      }
-      if (task.status !== "done") {
-        const doneBtn = document.createElement("button");
-        doneBtn.textContent = "Done";
-        doneBtn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          await updateTaskStatus(task.task_id, "done");
-          // Refresh view
-          if (activeFilter === "alltasks") renderAllTasks();
-          else if (editingProjectId) showProjectDetail(editingProjectId);
-        });
-        li.appendChild(doneBtn);
-      }
+
 
       // Zusammenfügen
       li.appendChild(textSpan);

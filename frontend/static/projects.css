@@ -330,6 +330,36 @@ body {
     transform 0.2s;
 }
 
+.task-meta-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 1rem;
+}
+
+.task-meta-row span {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.task-title {
+  text-align: left;
+  font-weight: bold;
+}
+
+.task-duration {
+  text-align: center;
+  color: var(--color-accent);
+}
+
+.task-date {
+  text-align: right;
+  color: var(--color-accent);
+}
+
+
 .task-item:hover:not(:has(button:hover)) {
   background-color: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);

@@ -324,22 +324,6 @@ h2 {
 }
 
 
-.btn-manual {
-  background-color: var(--color-accent);
-  color: var(--color-fg);
-  border: none;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius);
-  font-size: var(--font-base);
-  cursor: pointer;
-  margin-left: var(--space-sm);
-  transition:
-    background-color 0.2s ease,
-    transform 0.1s ease;
-}
-.btn-manual:hover {
-  transform: translateY(-2px);
-}
 
 .modal {
   position: fixed;
