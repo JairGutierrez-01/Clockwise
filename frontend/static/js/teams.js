@@ -8,6 +8,8 @@ let gap = 0;
 let cardWidthWithGap = 0;
 let currentCardIndex = 0; // Keep track of current card index
 let currentDisplayedTeamId = null; // To store the ID of the currently displayed team
+let allTeamsData = []; // Global storage of all team data, needed for task assignment lookup
+let allProjectsData = []; // Store all projects to map team -> project_id
 
 // Global variables to store the logged-in user's ID and username
 let currentLoggedInUserId = null;
@@ -203,6 +205,7 @@ function showCustomConfirm(title, message) {
 document.addEventListener("DOMContentLoaded", () => {
   initializeModalElements(); // Initialize modal elements after DOM is loaded
   fetchUserTeams(); // Initial team load and then carousel setup
+  fetchAllProjects();  // 👈 Asegura que los proyectos se cargan desde el principio
 
   //Team Management Buttons
   const createTeamBtn = document.querySelector(".create-team-btn");
@@ -249,6 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
           try {
               const response = await fetch("/api/projects");
               const result = await response.json();
+              allProjectsData = result.projects || [];
 
               if (!result.projects || !Array.isArray(result.projects)) {
                   // Update content area with error message
@@ -831,6 +835,7 @@ async function fetchUserTeams() {
 
       const teamsWithMembers = await Promise.all(teamsWithMembersPromises);
       console.log("Final teamsWithMembers data:", teamsWithMembers);
+      allTeamsData = teamsWithMembers; // Store globally for task lookup later
       renderTeams(teamsData); // Render teams in the table
       renderMembersForTeams(teamsWithMembers); // Render members into carousel
       setupCarousel(); // Setup carousel *after* members are rendered
@@ -885,13 +890,16 @@ function renderMembersForTeams(teams) {
     const members = team.members || [];
 
     const membersHtml = members.map(member => `
-      <div class="member-item" data-user-id="${member.user_id}">
-        <div class="member-avatar" style="background-color:${member.role === 'admin' ? '#b18aff' : '#6ec5ff'}"></div>
-        <div class="member-info">
-          <span class="member-name">${member.username}</span> <span class="member-role ${member.role === 'admin' ? 'admin' : ''}">${member.role}</span>
-        </div>
-        <span class="delete-icon">✖</span> </div>
-    `).join("");
+  <div class="member-item" data-user-id="${member.user_id}">
+    <div class="member-avatar" style="background-color:${member.role === 'admin' ? '#b18aff' : '#6ec5ff'}"></div>
+    <div class="member-info">
+      <span class="member-name">${member.username}</span> 
+      <span class="member-role ${member.role === 'admin' ? 'admin' : ''}">${member.role}</span>
+    </div>
+    <button class="assign-options-btn" title="Assign Task" data-user-id="${member.user_id}">⋮</button>
+    <span class="delete-icon">✖</span>
+  </div>
+`).join("");
 
     // Display current user's role in this team
     const currentUserRoleInThisTeam = team.role;
@@ -907,6 +915,234 @@ function renderMembersForTeams(teams) {
 
     trackElement.appendChild(card);
   });
+
+document.addEventListener("click", async function (event) {
+  const assignOptionsBtn = event.target.closest(".assign-options-btn");
+  if (assignOptionsBtn) {
+    const userId = assignOptionsBtn.dataset.userId;
+    const teamId = currentDisplayedTeamId;
+
+    try {
+        const assignedTasks = await fetchAssignedTaskForUser(userId, teamId); // Get the array of assigned tasks
+        showAssignPopover(assignOptionsBtn, assignedTasks, userId);
+    } catch (err) {
+        console.error("Error fetching assigned task for popover:", err);
+        showAssignPopover(assignOptionsBtn, null, userId);
+    }
+  }
+
+  // The actual action button is inside the popover
+  if (event.target.classList.contains("open-assign-modal-btn")) {
+    const userId = event.target.dataset.userId;
+    const teamId = currentDisplayedTeamId;
+
+    const project = allProjectsData.find(p => p.team_id === Number(teamId));
+    if (!project) {
+      showCustomAlert("Error", "No project assigned to this team.", "error");
+      return;
+    }
+
+    const projectId = project.project_id;
+
+    try {
+      const response = await fetch(`/api/tasks?project_id=${projectId}`);
+      if (!response.ok) throw new Error("Error fetching tasks.");
+      const tasks = await response.json(); //array de las tareas
+
+      if (!tasks || tasks.length === 0) {
+        showCustomAlert("Info", "No tasks found for this project.", "alert");
+        return;
+      }
+
+      const availableTasks = tasks.filter(task => {
+          return task.user_id === null || task.user_id === undefined;
+      });
+
+      if (availableTasks.length === 0) {
+          showCustomAlert("Info", "No available tasks to assign for this user.", "alert");
+          return;
+      }
+
+      const taskListHtml = availableTasks.map(task => `
+        <li>
+          <button class="assign-task-btn" data-task-id="${task.task_id}" data-user-id="${userId}">
+            ${task.title}
+          </button>
+        </li>`).join("");
+
+      const modalHtml = `
+        <div class="modal-header">
+          <h3 id="modalDynamicTitle">Assign Task</h3>
+          <button class="modal-close-btn">X</button>
+        </div>
+        <div class="modal-content-area">
+          <p>Select a task to assign:</p>
+          <ul class="modal-assign-members-list">${taskListHtml}</ul>
+        </div>
+      `;
+
+      showCustomModal({
+        title: "Assign Task",
+        customContentHtml: modalHtml,
+        type: "custom"
+      });
+
+      const closeBtn = customModal.querySelector(".modal-close-btn");
+      if (closeBtn) closeBtn.onclick = hideCustomModal;
+
+      dynamicContentArea.querySelectorAll(".assign-task-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const selectedTaskId = btn.dataset.taskId;
+        let targetUserId = btn.dataset.userId;
+
+        targetUserId = Number(targetUserId);
+
+        try {
+          const assignResponse = await fetch(`/api/tasks/${selectedTaskId}/assign`, {
+            method: "PATCH",
+            headers,
+            body: JSON.stringify({ user_id: targetUserId }),
+            credentials: "include"
+          });
+
+          const result = await assignResponse.json();
+
+          if (assignResponse.ok) {
+            showCustomAlert("Success", "Task assigned successfully!", "success");
+            hideCustomModal();
+            const memberOptionsButton = document.querySelector(`.assign-options-btn[data-user-id="${targetUserId}"]`);
+            if (memberOptionsButton) {
+                const updatedTaskInfo = await fetchAssignedTaskForUser(targetUserId, teamId);
+                document.querySelectorAll(".assign-popover").forEach(el => el.remove());
+                showAssignPopover(memberOptionsButton, updatedTaskInfo, targetUserId);
+            }
+          } else {
+            showCustomAlert("Error", result.error || "Failed to assign task.", "error");
+          }
+        } catch (err) {
+          console.error("Assignment error:", err);
+          showCustomAlert("Error", "Network error. Could not assign task.", "error");
+        }
+      });
+    });
+
+    } catch (err) {
+      console.error("Error fetching tasks for assignment:", err);
+      showCustomAlert("Error", "Could not fetch tasks.", "error");
+    }
+  }
+
+  // Handle click on "View Tasks" button in the popover
+  if (event.target.classList.contains("view-assigned-tasks-btn")) {
+    const userId = event.target.dataset.userId;
+    const teamId = currentDisplayedTeamId;
+
+    try {
+      const assignedTasks = await fetchAssignedTaskForUser(userId, teamId);
+
+      if (!assignedTasks || assignedTasks.length === 0) {
+        showCustomAlert("Info", "No tasks currently assigned to this user in this project.", "alert");
+        return;
+      }
+
+      const taskListHtml = assignedTasks.map(task => `
+        <li>
+          <div class="assigned-task-item">
+            <span class="task-title">${task.title}</span>
+            <span class="task-status-display">Status: ${task.status || 'Not Set'}</span>
+            </div>
+        </li>`).join("");
+
+      const modalHtml = `
+        <div class="modal-header">
+          <h3 id="modalDynamicTitle">Assigned Tasks</h3>
+          <button class="modal-close-btn">X</button>
+        </div>
+        <div class="modal-content-area">
+          <p>Tasks assigned to this member:</p>
+          <ul class="modal-assigned-tasks-list">${taskListHtml}</ul>
+        </div>
+      `;
+
+      showCustomModal({
+        title: "Assigned Tasks",
+        customContentHtml: modalHtml,
+        type: "custom"
+      });
+
+      const closeBtn = customModal.querySelector(".modal-close-btn");
+      if (closeBtn) closeBtn.onclick = hideCustomModal;
+
+    } catch (err) {
+      console.error("Error fetching assigned tasks for view modal:", err);
+      showCustomAlert("Error", "Could not fetch assigned tasks.", "error");
+    }
+    document.querySelectorAll(".assign-popover").forEach(el => el.remove());
+  }
+});
+
+async function fetchAssignedTaskForUser(userId, teamId) {
+    // Find the current team in the global list
+    const team = allTeamsData.find(t => t.team_id === Number(teamId));
+    if (!team) {
+      console.warn("Team not found for teamId:", teamId);
+      return []; // Return an empty array if team is not found
+    }
+
+    let projectId = team.project_id;
+
+    if (!projectId) {
+      const project = allProjectsData.find(p => p.team_id === Number(teamId));
+      if (!project) {
+        console.warn("No project assigned to team for teamId:", teamId);
+        return []; // Return an empty array if no project is assigned
+      }
+      projectId = project.project_id;
+    }
+
+    // Get ALL tasks for the user
+    const response = await fetch(`/api/users/${userId}/tasks`);
+    if (!response.ok) {
+        console.error("Error fetching user's tasks for userId:", userId, "Status:", response.status);
+        return []; // Return an empty array if API fetch fails
+    }
+
+    const allUserTasks = await response.json();
+
+    // Filter tasks that belong to the currently displayed project
+    // Return the array of task objects (empty if none)
+    return allUserTasks.filter(t => t.project_id === projectId);
+}
+
+function showAssignPopover(buttonElement, assignedTasks, userId) {
+  document.querySelectorAll(".assign-popover").forEach(el => el.remove());
+
+  // let statusText = "";
+  let showViewTasksButton = false;
+
+  if (assignedTasks && assignedTasks.length > 0) { // Check if there are assigned tasks
+      showViewTasksButton = true; // Only show the view tasks button if there are assigned tasks
+  }
+
+  const popover = document.createElement("div");
+  popover.className = "assign-popover";
+  popover.innerHTML = `
+    <div class="popover-header">
+      <button class="popover-close-btn">X</button>
+    </div>
+    <button class="open-assign-modal-btn" data-user-id="${userId}">Assign Task</button>
+    ${showViewTasksButton ? `<button class="view-assigned-tasks-btn" data-user-id="${userId}">View Tasks</button>` : ''}
+  `;
+
+  buttonElement.parentNode.appendChild(popover);
+
+  const closeBtn = popover.querySelector(".popover-close-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      popover.remove();
+    });
+  }
+}
 
   // Re-apply shake animation if delete mode is active after re-rendering
   if (isDeleteMode) {
@@ -988,5 +1224,16 @@ function updateCarouselArrows() {
     rightArrow.classList.add("visible");
   } else {
     rightArrow.classList.remove("visible");
+  }
+}
+// Fetch all projects and store globally
+async function fetchAllProjects() {
+  try {
+    const response = await fetch("/api/projects");
+    const result = await response.json();
+    allProjectsData = result.projects || [];
+    console.log("Projects loaded:", allProjectsData);
+  } catch (err) {
+    console.error("Error fetching projects:", err);
   }
 }

@@ -16,10 +16,6 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='teams.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='team_popover_style.css') }}"
-    />
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
@@ -56,7 +52,7 @@
 
         <div class="carousel-wrapper">
           <div class="carousel-track" id="carouselTrack">
-
+            <!-- Member cards are injected here dynamically. Each member-item can include a ⋮ button (assign-options-btn) for task assignment. -->
           </div>
           <div class="carousel-arrow left"></div>
           <div class="carousel-arrow right"></div>
