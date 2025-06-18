@@ -130,8 +130,8 @@
 }
 
 .progress-item .bar {
-  flex: 3;
-  background-color: var(--color-bg-alt);
+  flex: 10;
+  background-color: var(--color-accent);
   border-radius: var(--radius);
   position: relative;
   height: 1rem;
@@ -139,11 +139,11 @@
 }
 
 .progress-item .bar .fill {
-  background-color: var(--color-accent);
+  background-color: orange;
   height: 100%;
-  width: 0%;
   border-radius: var(--radius);
   transition: width 0.5s ease;
+  display: block;
 }
 
 .progress-item .percent {
