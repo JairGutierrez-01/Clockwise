@@ -244,12 +244,15 @@ def update_entry(entry_id):
 
     return jsonify(result)
 
+"""
+I MADE A CHANGE IN HERE, CHECK IF IT'S ALRIGHT(JUDE)>>>>>>
 
+"""
 @time_entry_bp.route("/latest_sessions", methods=["GET"])
 @login_required
 def get_latest_sessions():
     """
-    Get all tasks that have at least one time entry (Latest Sessions).
+    Get the user's most recent time entries (Latest Sessions).
     """
-    tasks = time_entry_service.get_tasks_with_time_entries()
-    return jsonify([task.to_dict() for task in tasks])
+    entries = time_entry_service.get_latest_time_entries_for_user(current_user.user_id)
+    return jsonify([entry.to_dict() for entry in entries])

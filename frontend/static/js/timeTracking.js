@@ -254,12 +254,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const latestSessions = await fetchLatestSessions();
       if (latestSessions.length > 0) {
         emptyMessage.style.display = "none";
-        latestSessions.forEach((task) => {
+        latestSessions.forEach((session) => {
+          let formattedDuration = "00:00:00";
+          if (session.start_time && session.end_time) {
+            const startMs = new Date(session.start_time).getTime();
+            const endMs = new Date(session.end_time).getTime();
+            formattedDuration = formatTime(endMs - startMs);
+          } else if (session.duration_seconds != null) {
+            formattedDuration = formatTime(session.duration_seconds * 1000);
+          }
           renderEntry({
-            time_entry_id: task.task_id,
-            task_id: task.task_id,
-            name: task.title,
-            duration: "duration",
+            time_entry_id: session.time_entry_id,
+            task_id: session.task_id,
+            name: session.title,
+            duration: formattedDuration,
           });
         });
       }
