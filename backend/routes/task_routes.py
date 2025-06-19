@@ -3,6 +3,8 @@ from datetime import datetime
 from flask import Blueprint, request
 from flask import jsonify
 from flask_login import current_user, login_required
+
+from backend.models import Project, UserTeam, Task
 from backend.models.task import TaskStatus
 
 from backend.services.task_service import (
@@ -71,6 +73,7 @@ def create_task_api():
         JSON: Success message with created task ID.
     """
     data = request.get_json()
+    print("POST /create_task_api -> data:", data)
 
     title = data.get("title", "").strip()
     if not title:
@@ -129,6 +132,7 @@ def update_task_api(task_id):
         JSON: Success message with updated task ID or error.
     """
     data = request.get_json()
+    print("POST /create_task_api -> data:", data)
 
     if "due_date" in data and data["due_date"]:
         try:
@@ -217,18 +221,36 @@ def get_tasks_by_user(user_id):
 def assign_task_to_user_api(task_id):
     """
     Assigns or unassigns a task to a user.
-    Expected JSON: {"user_id": int or null}
+    Only allowed for team admins.
+    Expected JSON: { "user_id": int or null }
     """
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
 
     data = request.get_json()
-
     user_id = data.get("user_id")
-
-
+    print("PATCH /assign_task_to_user_api -> data:", data)
     if user_id is not None and not isinstance(user_id, int):
         return jsonify({"error": "Invalid user_id provided. Must be integer or null."}), 400
+
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+
+    project = Project.query.get(task.project_id)
+    if not project:
+        return jsonify({"error": "Project not found"}), 404
+
+    team_id = project.team_id
+
+    is_admin = UserTeam.query.filter_by(
+        user_id=current_user.user_id,
+        team_id=team_id,
+        role="admin"
+    ).first()
+
+    if not is_admin:
+        return jsonify({"error": "Only team admins can assign tasks"}), 403
 
     result = update_task(task_id, user_id=user_id)
 

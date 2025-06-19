@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from backend.database import db
 from io import BytesIO
 from datetime import datetime
-import csv
+import json
 from flask import (
     Blueprint,
     request,
@@ -25,7 +25,6 @@ from backend.services.project_service import (
 )
 
 project_bp = Blueprint("project", __name__)
-
 
 @project_bp.route("/project/create", methods=["GET", "POST"])
 @login_required
@@ -256,6 +255,27 @@ def api_projects():
     else:
         all_projects = own_projects.all()
 
+    activity_status_raw = request.args.get("activity_status")
+    show_active_filter = request.args.get("show_active")
+
+    activity_status = {}
+    if activity_status_raw:
+        try:
+            activity_status = json.loads(activity_status_raw)
+        except json.JSONDecodeError:
+            return {"error": "Invalid activity_status JSON format."}, 400
+
+    show_active = None
+    if show_active_filter in ["true", "false"]:
+        show_active = show_active_filter == "true"
+
+    filtered_projects = []
+    for p in all_projects:
+        is_active = activity_status.get(str(p.project_id), True)
+        if show_active is None or is_active == show_active:
+            p._manual_active = is_active
+            filtered_projects.append(p)
+
     return {
         "projects": [
             {
@@ -268,12 +288,13 @@ def api_projects():
                 "duration_readable": p.duration_readable,
                 "due_date": p.due_date.isoformat() if p.due_date else None,
                 "team_id": p.team_id,
+                "is_active": p._manual_active,
                 # Diese 3 Felder extra für FullCalendar:
                 "title": p.name,
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
                 "color": "#f44336",  # oder projektabhängig
             }
-            for p in all_projects
+            for p in filtered_projects
         ]
     }
 
@@ -335,37 +356,6 @@ def api_project_detail(project_id):
         db.session.commit()
         return {"success": True}
 
-# unnötig?
-@project_bp.route("/api/available-teams", methods=["GET"])
-@login_required
-def get_available_teams():
-    """
-    Get all teams the current user is part of.
-
-    Args:
-        None
-
-    Returns:
-        dict: List of team objects.
-    """
-    teams = (
-        db.session.query(Team)
-        .join(UserTeam, Team.team_id == UserTeam.team_id)
-        .filter(UserTeam.user_id == current_user.user_id)
-        .all()
-    )
-
-    return {
-        "teams": [
-            {
-                "team_id": team.team_id,
-                "name": team.name,
-                "description": team.description,
-            }
-            for team in teams
-        ]
-    }
-
 
 @project_bp.route("/team-projects", methods=["GET"])
 @login_required
@@ -394,7 +384,7 @@ def view_team_projects_with_user_tasks():
     for project in team_projects:
         tasks = Task.query.filter_by(
             project_id=project.project_id,
-            assigned_user_id=user_id
+            user_id=user_id
         ).all()
 
         if tasks:
@@ -414,7 +404,7 @@ def export_projects_pdf():
         BytesIO(pdf_bytes),
         mimetype="application/pdf",
         as_attachment=True,
-        download_name="projects_with_time_entries.pdf",
+        download_name="projects.pdf",
     )
 
 
@@ -427,6 +417,7 @@ def export_projects_csv():
     csv_text = export_time_entries_csv(project_data)
 
     response = make_response(csv_text)
-    response.headers["Content-Disposition"] = "attachment; filename=projects_time_entries.csv"
+    response.headers["Content-Disposition"] = "attachment; filename=projects.csv"
     response.headers["Content-Type"] = "text/csv"
     return response
+
