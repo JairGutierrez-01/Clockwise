@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "/projects";
     }
   });
-});
 
 /**
  * Initialisiert den Mini-Kalender auf der Dashboard-Seite.
@@ -125,6 +124,181 @@ document.addEventListener("DOMContentLoaded", function () {
     // Weiterleitung zur Kalenderansicht auf der Analysis-Seite
     calendarCard.addEventListener("click", function () {
       window.location.href = "/analysis?view=calendar";
+    });
+  }
+});
+
+function ensureTeamBoxExists() {
+  let teamBox = document.getElementById("team-activity-box");
+
+  if (!teamBox) {
+    const targetParent = document.querySelector(".dashboard-grid") || document.querySelector("#dashboard");
+    if (!targetParent) return null;
+
+    teamBox = document.createElement("div");
+    teamBox.className = "card project-details";
+    teamBox.id = "team-activity-box";
+    teamBox.innerHTML = `
+      <h3 id="team-project-name">...</h3>
+      <p>Total Time: <span id="total-time">--:--:--</span></p>
+      <p>Team Members:</p>
+      <div id="team-member-list" class="team-members"></div>
+      <div id="team-progress" class="progress-chart"></div>
+    `;
+    targetParent.appendChild(teamBox);
+
+    teamBox.style.cursor = 'pointer';
+    teamBox.addEventListener('click', function (event) {
+      const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
+      if (ignoredElements.includes(event.target.tagName)) return;
+
+      window.location.href = '/teams';
+    });
+  }
+
+  return teamBox;
+}
+
+function findMostAdvancedProject(teamsData) {
+    let mostAdvancedProject = null;
+    let maxProgress = -1;
+    let maxHours = -1;
+
+    if (!teamsData || !Array.isArray(teamsData) || teamsData.length === 0) {
+        return null;
+    }
+
+    teamsData.forEach(team => {
+        if (team.projects && Array.isArray(team.projects)) {
+            team.projects.forEach(project => {
+                let currentProgress = 0;
+                let projectHours = project.current_hours || 0;
+
+
+                if (typeof project.time_limit_hours === 'number' && project.time_limit_hours > 0) {
+
+                    const safeCurrentHours = typeof project.current_hours === 'number' ? project.current_hours : 0;
+                    currentProgress = (safeCurrentHours / project.time_limit_hours) * 100;
+                }
+                if (currentProgress > maxProgress) {
+                    maxProgress = currentProgress;
+                    maxHours = projectHours;
+                    mostAdvancedProject = project;
+                }
+                else if (currentProgress === maxProgress) {
+                    if (projectHours > maxHours) {
+                        maxHours = projectHours;
+                        mostAdvancedProject = project;
+                    }
+                }
+            });
+        }
+    });
+
+    return mostAdvancedProject;
+}
+
+async function loadTeamActivityBox() {
+    const teamBox = ensureTeamBoxExists();
+    if (!teamBox) return;
+
+    try {
+        const res = await fetch("/api/teams/full");
+        const data = await res.json();
+
+        const project = findMostAdvancedProject(data);
+
+        if (!project) {
+            teamBox.innerHTML = "<p>No active or progressed projects to display.</p>";
+            return;
+        }
+
+        let targetTeam = null;
+        for (const t of data) {
+            if (t.projects && t.projects.some(p => p.id === project.id)) {
+                targetTeam = t;
+                break;
+            }
+        }
+
+        if (!targetTeam) {
+             console.error("Error: Project found, but its team could not be located.");
+             teamBox.innerHTML = "<p>Error displaying project details.</p>";
+             return;
+        }
+
+        document.getElementById("team-project-name").textContent = project.name;
+
+        document.getElementById("total-time").textContent = project.duration_readable;
+
+        const memberList = document.getElementById("team-member-list");
+        memberList.innerHTML = "";
+        targetTeam.members.forEach((member) => {
+            const span = document.createElement("span");
+            span.className = "member";
+            span.textContent = member.initials || member.username.substring(0, 2).toUpperCase();
+            span.style.backgroundColor = "#888"; // por ahora, luego CSS
+            memberList.appendChild(span);
+        });
+
+        const progress = (project.time_limit_hours > 0) ?
+                         Math.round((project.current_hours / project.time_limit_hours) * 100) :
+                         0;
+        drawProgressCircle("team-progress", progress);
+
+    } catch (error) {
+        console.error("Error loading Team activities:", error);
+        teamBox.innerHTML = "<p>Error loading team data.</p>";
+    }
+}
+
+function drawProgressCircle(containerId, percent) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const size = 120;
+    const radius = size / 2 - 10;
+    const circumference = 2 * Math.PI * radius;
+    const initialOffset = circumference;
+
+    container.innerHTML = `
+        <svg width="${size}" height="${size}">
+            <circle cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#444" stroke-width="10" fill="none"/>
+            <circle class="progress-circle-fill" cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#00bfa5" stroke-width="10"
+                    fill="none" stroke-dasharray="${circumference}"
+                    stroke-dashoffset="${initialOffset}" transform="rotate(-90 ${size/2} ${size/2})"/>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#fff">${percent}%</text>
+        </svg>
+    `;
+
+    setTimeout(() => {
+        const fillCircle = container.querySelector('.progress-circle-fill');
+        if (fillCircle) {
+            fillCircle.style.transition = 'stroke-dashoffset 1s ease-out';
+            const targetOffset = circumference * (1 - percent / 100);
+            fillCircle.style.strokeDashoffset = targetOffset;
+        }
+    }, 50);
+}
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    loadTeamActivityBox();
+  }, 100);
+});
+
+
+  const teamCard = document.querySelector("#team-activity-box");
+  if (teamCard) {
+    teamCard.style.cursor = "pointer";
+    teamCard.addEventListener("click", function (e) {
+      const bounding = this.getBoundingClientRect();
+      const scrollbarThreshold = 20;
+
+      // Solo redirige si el clic no fue sobre una scrollbar
+      if (e.clientX < bounding.right - scrollbarThreshold) {
+        window.location.href = "/teams";
+      }
     });
   }
 });
