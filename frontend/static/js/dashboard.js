@@ -1,4 +1,39 @@
 /**
+ * Initialisiert die Projektübersicht in der Dashboard-Tabelle.
+ * Lädt alle Projekte des aktuellen Nutzers asynchron über die API (/api/projects)
+ * und rendert sie als einfache Liste mit Name und bereits investierter Zeit.
+ */
+document.addEventListener("DOMContentLoaded", async () => {
+  const tableBody = document.getElementById("dashboard-project-list");
+
+  if (!tableBody) return;
+
+  try {
+    const res = await fetch("/api/projects");
+    const json = await res.json();
+    const projects = json.projects || [];
+
+    projects.forEach((proj) => {
+      const row = document.createElement("tr");
+
+      const nameCell = document.createElement("td");
+      nameCell.textContent = proj.name;
+
+      const timeCell = document.createElement("td");
+      timeCell.textContent = proj.duration_readable || "0h 0min 0s";
+      timeCell.style.textAlign = "right";
+
+      row.appendChild(nameCell);
+      row.appendChild(timeCell);
+      tableBody.appendChild(row);
+    });
+  } catch (err) {
+    console.error("Error occured while loading projects:", err);
+    tableBody.innerHTML = "<tr><td colspan='2'>Fehler beim Laden.</td></tr>";
+  }
+});
+
+/**
  * Initialisiert den Mini-Kalender auf der Dashboard-Seite.
  * Lädt Due Dates (rote Balken) und Time Entries (blaue Balken) (max. 1 pro Tag für Übersichtlichkeit) asynchron
  * und rendert diese im eingebetteten Monatskalender.
