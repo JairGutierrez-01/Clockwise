@@ -300,6 +300,7 @@ body.dark-mode .calendar {
 /* Project card: Begrenzte Höhe & Scrollbar für Projektliste */
 .projects-table {
   background-color: var(--projects-table-bg);
+  cursor: pointer;
 }
 
 .project-list-scrollable {

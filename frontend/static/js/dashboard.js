@@ -30,6 +30,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /**
+ * Aktiviert die Klick-Weiterleitung auf die Projektübersicht innerhalb der Dashboard-Kachel.
+ * Leitet zur Seite /projects weiter, wenn der Benutzer innerhalb der Projects-Kachel (außerhalb der Scrollbar) klickt.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const projectsCard = document.querySelector(".projects-table");
+
+  if (!projectsCard) return;
+
+  projectsCard.addEventListener("click", function (e) {
+    // Verhindert Weiterleitung, wenn in die Scrollbar geklickt wurde
+    const bounding = this.getBoundingClientRect();
+    const scrollbarThreshold = 20; // Reservebereich für Scrollbar
+
+    // Prüfe, ob der Klick weit genug links von der Scrollbar war
+    if (e.clientX < bounding.right - scrollbarThreshold) {
+      window.location.href = "/projects";
+    }
+  });
+});
+
+/**
  * Initialisiert den Mini-Kalender auf der Dashboard-Seite.
  * Lädt Due Dates (rote Balken) und Time Entries (blaue Balken) (max. 1 pro Tag für Übersichtlichkeit) asynchron
  * und rendert diese im eingebetteten Monatskalender.
