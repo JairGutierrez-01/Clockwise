@@ -418,8 +418,17 @@ document.addEventListener("DOMContentLoaded", () => {
       status: taskStatusSelect.value,
       project_id: parseInt(projectSelect.value, 10) || null, // <-- neu!
       created_from_tracking: false,
-      user_id: window.CURRENT_USER_ID,
     };
+
+    // only assign a user for solo projects
+    const projectEntryId = taskPayload.project_id;
+    if (projectEntryId) {
+      const proj = projects.find(p => p.project_id === projectEntryId);
+      if (proj && proj.type === 'SoloProject') {
+        taskPayload.user_id = window.CURRENT_USER_ID;
+      }
+    }
+
 
     const editingTaskId = taskForm.dataset.editingTaskId;
     try {
