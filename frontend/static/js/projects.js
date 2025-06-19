@@ -399,7 +399,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const li = event.target.closest(".task-item");
     if (!li) return;
 
-    const taskId = parseInt(li.dataset.id, 10);
+    const taskId = parseInt(li.dataset.taskId, 10);
+    if (isNaN(taskId)) {
+      console.error("Invalid task ID (NaN)", li.dataset);
+      return;
+    }
     openTaskEditModal(taskId);
   });
 
