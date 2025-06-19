@@ -154,7 +154,7 @@ def add_member_to_team(user_id, team_id, role):
     notify_user_added_to_team(user_id, team_name)
     return True
 
-
+# unnötig?
 def remove_member_from_team(user_id, team_id):
     """Removes a user from a team and unassigns their tasks.
 
@@ -198,8 +198,8 @@ def get_team_members(team_id):
     return [{"user_id": m.user_id, "role": m.role} for m in members]
 
 
-def delete_team_and_members(team_id):
-    """Deletes a team and all its members.
+def delete_team_and_related(team_id):
+    """Deletes a team, its members, projects, and related tasks.
 
     Args:
         team_id (int): ID of the team.
@@ -207,6 +207,12 @@ def delete_team_and_members(team_id):
     Returns:
         bool: True if deleted, False if not found.
     """
+    projects = Project.query.filter_by(team_id=team_id).all()
+    for project in projects:
+        Task.query.filter_by(project_id=project.project_id).delete()
+
+    Project.query.filter_by(team_id=team_id).delete()
+
     UserTeam.query.filter_by(team_id=team_id).delete()
     team = Team.query.get(team_id)
     if team:

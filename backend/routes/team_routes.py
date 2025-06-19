@@ -5,7 +5,7 @@ from backend.database import db
 from backend.models import Project, Team, UserTeam, Task, Notification, User
 from backend.services.team_service import (
     create_new_team,
-    delete_team_and_members,
+    delete_team_and_related,
     is_team_member,
     check_admin,
     remove_member_from_team,
@@ -380,7 +380,7 @@ def delete_team(team_id):
     if not check_admin(current_user.user_id, team_id):
         return jsonify({"error": "Only admins can delete the team"}), 403
 
-    success = delete_team_and_members(team_id)
+    success = delete_team_and_related(team_id)
     if success:
         return jsonify({"success": True}), 200
     return jsonify({"error": "Team not found"}), 404
