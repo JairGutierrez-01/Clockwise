@@ -4,32 +4,28 @@
  * und rendert sie als einfache Liste mit Name und bereits investierter Zeit.
  */
 document.addEventListener("DOMContentLoaded", async () => {
-  const tableBody = document.getElementById("dashboard-project-list");
-
-  if (!tableBody) return;
+  const container = document.getElementById("dashboard-project-list");
+  if (!container) return;
 
   try {
     const res = await fetch("/api/projects");
     const json = await res.json();
     const projects = json.projects || [];
 
+    container.innerHTML = "";
+
     projects.forEach((proj) => {
-      const row = document.createElement("tr");
-
-      const nameCell = document.createElement("td");
-      nameCell.textContent = proj.name;
-
-      const timeCell = document.createElement("td");
-      timeCell.textContent = proj.duration_readable || "0h 0min 0s";
-      timeCell.style.textAlign = "right";
-
-      row.appendChild(nameCell);
-      row.appendChild(timeCell);
-      tableBody.appendChild(row);
+      const card = document.createElement("div");
+      card.className = "project-dashboard-card";
+      card.innerHTML = `
+        <div class="project-name">${proj.name}</div>
+        <div class="project-time">${proj.duration_readable || "0h 0min 0s"}</div>
+      `;
+      container.appendChild(card);
     });
   } catch (err) {
     console.error("Error occured while loading projects:", err);
-    tableBody.innerHTML = "<tr><td colspan='2'>Fehler beim Laden.</td></tr>";
+    container.innerHTML = "<p>Error loading projects.</p>";
   }
 });
 

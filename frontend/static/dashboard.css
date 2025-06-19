@@ -300,7 +300,36 @@ body.dark-mode .calendar {
 /* Project card: Begrenzte Höhe & Scrollbar für Projektliste */
 .projects-table {
   background-color: var(--projects-table-bg);
-  max-height: 340px; /* an Höhe der Calendar-Card anpassen */
+}
+
+.project-list-scrollable {
+  max-height: 300px;
   overflow-y: auto;
-  padding-right: 0.5rem; /* Platz für Scrollbar */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
+}
+
+.project-dashboard-card {
+  background-color: #173044;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.project-name {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.project-time {
+  font-family: monospace;
+  font-size: 0.95rem;
+  color: #b0c4de;
 }
