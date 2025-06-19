@@ -569,7 +569,7 @@ def api_assign_tasks_to_members(team_id):
 
 
 # brauch nicht
-@team_bp.route("/api/teams/full", methods=["GET"])
+@team_bp.route("/full", methods=["GET"])
 @login_required
 def api_get_user_teams_with_members_and_projects():
     """
