@@ -418,6 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
       status: taskStatusSelect.value,
       project_id: parseInt(projectSelect.value, 10) || null, // <-- neu!
       created_from_tracking: false,
+      user_id: window.CURRENT_USER_ID,
     };
 
     const editingTaskId = taskForm.dataset.editingTaskId;
