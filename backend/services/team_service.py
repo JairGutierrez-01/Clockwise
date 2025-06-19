@@ -154,7 +154,7 @@ def add_member_to_team(user_id, team_id, role):
     notify_user_added_to_team(user_id, team_name)
     return True
 
-# unnötig?
+# nötig!
 def remove_member_from_team(user_id, team_id):
     """Removes a user from a team and unassigns their tasks.
 

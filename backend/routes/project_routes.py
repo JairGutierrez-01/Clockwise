@@ -1,22 +1,26 @@
-from backend.models import UserTeam, Team, Notification
+from backend.models import UserTeam, Team, Notification, TimeEntry
 from backend.models.project import Project, ProjectType
 from backend.models.task import Task
 from flask_login import current_user, login_required
-from sqlalchemy import and_
 from backend.database import db
+from io import BytesIO
 from datetime import datetime
+import csv
 from flask import (
     Blueprint,
     request,
     redirect,
     url_for,
     render_template,
+    send_file, make_response,
 )
+from backend.services.analysis_service import export_time_entries_pdf, export_time_entries_csv
 from backend.services.project_service import (
     create_project,
     get_project,
     delete_project,
     update_project,
+    get_info,
     update_total_duration_for_project,
 )
 
@@ -397,3 +401,32 @@ def view_team_projects_with_user_tasks():
             results.append({"project": project, "tasks": tasks})
 
     return render_template("projects.html", project_tasks=results)
+
+
+@project_bp.route("/export/projects/pdf")
+@login_required
+def export_projects_pdf():
+    project_data = get_info()
+
+    pdf_bytes = export_time_entries_pdf(project_data)
+
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="projects_with_time_entries.pdf",
+    )
+
+
+@project_bp.route("/export/projects/csv")
+@login_required
+def export_projects_csv():
+    """Exports all project-related time entries as CSV."""
+    project_data = get_info()
+
+    csv_text = export_time_entries_csv(project_data)
+
+    response = make_response(csv_text)
+    response.headers["Content-Disposition"] = "attachment; filename=projects_time_entries.csv"
+    response.headers["Content-Type"] = "text/csv"
+    return response

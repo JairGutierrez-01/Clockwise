@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from backend.database import db
-from backend.models import Project, Task, Notification
+from backend.models import Project, Task, Notification, TimeEntry
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -166,3 +166,19 @@ def update_total_duration_for_project(project_id):
         "project_id": project_id,
         "current_hours": project.current_hours,
     }
+
+def get_info():
+    projects = Project.query.all()
+    time_entries_data = []
+    for project in projects:
+        tasks = Task.query.filter_by(project_id=project.project_id).all()
+        for task in tasks:
+            entries = TimeEntry.query.filter_by(task_id=task.task_id).all()
+            for entry in entries:
+                time_entries_data.append({
+                    "start": entry.start,
+                    "end": entry.end,
+                    "task": f"{task.title} | {task.description or ''} | Status: {task.status.name} | Due: {task.due_date.strftime('%Y-%m-%d') if task.due_date else '-'} | Duration: {task.total_duration_seconds}s",
+                    "project": f"{project.name} | {project.description or ''} | Created: {project.created_at.strftime('%Y-%m-%d')} | Due: {project.due_date.strftime('%Y-%m-%d') if project.due_date else '-'} | Type: {project.type.name} | Credits: {project.credit_points or 0} | Hours: {project.current_hours or 0}/{project.time_limit_hours}"
+                })
+    return time_entries_data
