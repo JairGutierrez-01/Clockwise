@@ -304,6 +304,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+/**
+ * Initialisiert das gestapelte Balkendiagramm in der Reports-Kachel des Dashboards.
+ * Lädt wöchentliche Zeitdaten je Task asynchron über die API (/api/analysis/weekly-time-stacked),
+ * gruppiert diese nach Projekt und Task, und rendert ein farblich sortiertes, gestapeltes Chart.
+ * Die Farben pro Projekt stimmen mit denen aus der Analysis-Seite überein,
+ * und innerhalb eines Projekts werden Tasks per Helligkeit differenziert dargestellt.
+ */
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.getElementById("dashboardReportsChart");
   if (!canvas) return;
@@ -436,6 +443,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
   } catch (err) {
-    console.error("Fehler beim Laden der Report-Daten:", err);
+    console.error("Error occured while loading data for the weekly report:", err);
   }
+});
+
+/**
+ * Aktiviert die Klick-Weiterleitung auf die Reports-Kachel im Dashboard.
+ * Leitet zur Analysis-Seite weiter, wenn innerhalb der Reports-Kachel (außerhalb der Scrollbar) geklickt wird.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const reportsCard = document.querySelector(".reports");
+  if (!reportsCard) return;
+
+  reportsCard.style.cursor = "pointer";
+
+  reportsCard.addEventListener("click", function (e) {
+    const bounding = this.getBoundingClientRect();
+    const scrollbarThreshold = 20;
+
+    // Nur wenn Klick nicht auf Scrollbar war (sicher ist sicher)
+    if (e.clientX < bounding.right - scrollbarThreshold) {
+      window.location.href = "/analysis";
+    }
+  });
 });
