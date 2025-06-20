@@ -4,7 +4,7 @@
   --projects-table-bg: #0f2c44;
   --calendar-bg: #0f2c44;
   --project-details-bg: #fbedeb;
-  --reports-bg: #173044;
+  --reports-bg: #0f2c44;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
   --dashboard-max-width: 1200px;
 }
@@ -25,7 +25,7 @@ body.dark-mode {
   --projects-table-bg: #0f2c44;
   --calendar-bg: #0f2c44;
   --project-details-bg: #242424;
-  --reports-bg: #2e2e2e;
+  --reports-bg: #0f2c44;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 

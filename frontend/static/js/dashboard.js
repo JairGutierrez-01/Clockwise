@@ -303,3 +303,89 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const canvas = document.getElementById("dashboardReportsChart");
+  if (!canvas) return;
+
+  try {
+    const ctx = canvas.getContext("2d");
+
+    const res = await fetch("/api/analysis/weekly-time-stacked");
+    const { labels, datasets } = await res.json();
+
+    // Farbgebung wie auf der Analysis-Seite
+    const colorPalette = [
+      "#00ff7f", "#b700ff", "#00f8dc", "#ff6b00", "#5a4132", "#0bd800",
+      "#f032e6", "#f8ff00", "#c59595", "#008080", "#765595", "#ffc200",
+      "#800000", "#64ac79", "#808000", "#0048ba", "#f1136f", "#ff2600", "#00cdfb", "#beff00"
+    ];
+
+    function getColorForProject(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return colorPalette[Math.abs(hash) % colorPalette.length];
+    }
+
+    // Gruppiere nach Projekt und weise Farben zu
+    const grouped = {};
+    datasets.forEach((d) => {
+      const [project, task] = d.label.split(":").map((s) => s.trim());
+      if (!grouped[project]) grouped[project] = [];
+      grouped[project].push({ ...d, project, task });
+    });
+
+    const finalDatasets = Object.values(grouped).flatMap((group) => {
+      group.sort((a, b) => a.task.localeCompare(b.task));
+      return group.map((entry, i) => {
+        return {
+          ...entry,
+          backgroundColor: getColorForProject(entry.project),
+        };
+      });
+    });
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: finalDatasets,
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const sec = context.raw * 3600;
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                return `${context.dataset.label}: ${h}h ${m}min`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: "#fff" },
+            grid: { color: "rgba(255,255,255,0.1)" },
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            ticks: { color: "#fff" },
+            grid: { color: "rgba(255,255,255,0.1)" },
+          },
+        },
+      },
+    });
+  } catch (err) {
+    console.error("Fehler beim Laden der Report-Daten:", err);
+  }
+});
