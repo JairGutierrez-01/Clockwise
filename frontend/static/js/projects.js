@@ -253,38 +253,36 @@ document.addEventListener("DOMContentLoaded", () => {
    * Fetch and display all tasks across all projects and unassigned.
    */
   async function renderAllTasks() {
-    projectListEl.innerHTML = "";
-    projectListEl.style.display = "grid";
-    detailSection.classList.add("hidden");
+  projectListEl.innerHTML = "";
+  projectListEl.style.display = "grid";
+  detailSection.classList.add("hidden");
 
-    let allTasks = [];
-    for (const proj of projects) {
-      const projTasks = await fetchTasks(proj.project_id);
-      allTasks = allTasks.concat(projTasks);
-    }
-    const resUn = await fetch("/api/tasks?unassigned=true");
-    if (resUn.ok) {
-      const unTasks = await resUn.json();
-      allTasks = allTasks.concat(unTasks);
-    }
-
-    allTasks.forEach((task) => {
-      const card = document.createElement("div");
-      card.className = "project-card";
-      card.dataset.id = String(task.task_id);
-      card.innerHTML = `
-        <h2 class="project-card__name">${task.title}</h2>
-        <div class="project-card__meta">
-          <p>Project: ${task.project_name || "Unassigned"}</p>
-          <p>Due: ${task.due_date || "–"}</p>
-          <p>Duration: ${task.total_duration || "0h 0min 0s"}</p>
-        </div>
-        <button class="project-card__view">View</button>
-      `;
-      card.addEventListener("click", () => openTaskEditModal(task.task_id));
-      projectListEl.appendChild(card);
-    });
+  //Fetch only tasks assigned to current user
+  const res = await fetch(`/api/users/${window.CURRENT_USER_ID}/tasks`);
+  if (!res.ok) {
+    console.error("Failed to fetch user-specific tasks");
+    return;
   }
+
+  const allTasks = await res.json();
+
+  allTasks.forEach((task) => {
+    const card = document.createElement("div");
+    card.className = "project-card";
+    card.dataset.id = String(task.task_id);
+    card.innerHTML = `
+      <h2 class="project-card__name">${task.title}</h2>
+      <div class="project-card__meta">
+        <p>Project: ${task.project_name || "Unassigned"}</p>
+        <p>Due: ${task.due_date || "–"}</p>
+        <p>Duration: ${task.total_duration || "0h 0min 0s"}</p>
+      </div>
+      <button class="project-card__view">View</button>
+    `;
+    card.addEventListener("click", () => openTaskEditModal(task.task_id));
+    projectListEl.appendChild(card);
+  });
+}
   /**
    * Displays the details of a selected project.
    *
