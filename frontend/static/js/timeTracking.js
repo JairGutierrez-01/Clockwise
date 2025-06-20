@@ -38,7 +38,10 @@ async function createTaskAPI(title) {
   const res = await fetch("/api/tasks", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, created_from_tracking: true }),
+    body: JSON.stringify({
+      title,
+      created_from_tracking: true,
+      user_id: window.CURRENT_USER_ID,}),
   });
   if (!res.ok) throw new Error("Failed to create task");
   return res.json(); // { success, message, task_id }
@@ -266,6 +269,48 @@ document.addEventListener("DOMContentLoaded", () => {
   /** @type {HTMLTemplateElement} */
   const tpl = document.getElementById("entry-template");
 
+  // Restore active entry if found in localStorage
+  const active = JSON.parse(localStorage.getItem("clockwise_active_entry"));
+    // state
+  /** @type {Array<Object>} */
+  let allTasks = [];
+  /** @type {number|null} */
+  let timerInterval = null;
+  /** @type {number|null} */
+  let startTime = null;
+  /** @type {number} */
+  let elapsedTime = 0;
+  /** @type {number|null} */
+  let currentEntryId = null;
+  /** @type {string} */
+  let startDisplay = "";
+  if (active && active.startTime && !isNaN(active.startTime)) {
+    const now = Date.now();
+    startTime = active.startTime;
+    elapsedTime = now - startTime;
+    currentEntryId = active.entryId;
+
+    // Set input field again
+  if (active.taskTitle) {
+    input.value = active.taskTitle;
+  }
+  if (active.taskId) {
+    input.dataset.taskId = active.taskId;
+    input.disabled = true;
+  }
+
+    display.textContent = formatTime(elapsedTime);
+    timerInterval = setInterval(() => {
+      elapsedTime = Date.now() - startTime;
+      display.textContent = formatTime(elapsedTime);
+    }, 1000);
+
+    startBtn.hidden = true;
+    pauseBtn.hidden = false;
+    stopBtn.hidden = false;
+    resumeBtn.hidden = true;
+    trackerEl.classList.add("animate-controls");
+  }
 
   (async () => {
     try {
@@ -295,19 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })();
 
-  // state
-  /** @type {Array<Object>} */
-  let allTasks = [];
-  /** @type {number|null} */
-  let timerInterval = null;
-  /** @type {number|null} */
-  let startTime = null;
-  /** @type {number} */
-  let elapsedTime = 0;
-  /** @type {number|null} */
-  let currentEntryId = null;
-  /** @type {string} */
-  let startDisplay = "";
+
 
   async function startTrackingForTask(taskId, title) {
     // UI vorbereiten
@@ -333,6 +366,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const { time_entry_id } = await startEntryAPI(parseInt(taskId));
     currentEntryId = time_entry_id;
     startDisplay = new Date().toLocaleTimeString();
+
+   // Save active entry to localStorage, including task title and id
+    localStorage.setItem("clockwise_active_entry", JSON.stringify({
+      entryId: time_entry_id,
+     startTime: startTime,
+     taskId: taskId,
+      taskTitle: title
+    }));
   }
 
   // load tasks for suggestions
@@ -541,6 +582,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEntryId = null;
     elapsedTime = 0;
     display.textContent = "00:00:00";
+    // Clear the active entry from localStorage
+    localStorage.removeItem("clockwise_active_entry");
   });
 
   /**

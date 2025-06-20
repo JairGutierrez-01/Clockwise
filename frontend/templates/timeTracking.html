@@ -13,6 +13,7 @@
       href="{{ url_for('static', filename='timeTracking.css') }}"
     />
   </head>
+  <script>window.CURRENT_USER_ID = {{ current_user.user_id }};</script>
   <body class="dark-mode">
     {% include 'navbar.html' %}
     <div class="time-tracking container">
