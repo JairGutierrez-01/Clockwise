@@ -626,4 +626,30 @@ textSpan.classList.add("task-meta-row");
   }
 
   loadProjects();
+
+  // EXPORT Dropdown-Logik
+  const projectExportBtn = document.getElementById("project-download-button");
+  const projectDropdown = document.getElementById("project-download-dropdown");
+
+  projectExportBtn.addEventListener("click", () => {
+    projectDropdown.classList.toggle("hidden");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!projectExportBtn.contains(e.target) && !projectDropdown.contains(e.target)) {
+      projectDropdown.classList.add("hidden");
+    }
+  });
+
+  projectDropdown.addEventListener("click", (e) => {
+    if (e.target.tagName !== "BUTTON") return;
+    const format = e.target.dataset.format;
+    if (!format) return;
+
+    const url = format === "pdf"
+      ? "/api/projects/export/projects/pdf"
+      : "/api/projects/export/projects/csv";
+
+    window.open(url, "_blank");
+  });
 });
