@@ -525,7 +525,6 @@ def api_assign_tasks_to_members(team_id):
         return jsonify({"error": "Only admins can assign tasks"}), 403
 
     data = request.get_json()
-    print("POST /api_assign_tasks_to_members -> data:", data)
     if not data or "project_id" not in data or "assignments" not in data:
         return jsonify({"error": "Missing project_id or assignments"}), 400
 

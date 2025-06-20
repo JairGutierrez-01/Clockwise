@@ -39,7 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!projectsCard) return;
 
   projectsCard.addEventListener("click", function (e) {
-    // Verhindert Weiterleitung, wenn in die Scrollbar geklickt wurde
     const bounding = this.getBoundingClientRect();
     const scrollbarThreshold = 20; // Reservebereich für Scrollbar
 
@@ -48,6 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
       window.location.href = "/projects";
     }
   });
+});
+
 
 /**
  * Initialisiert den Mini-Kalender auf der Dashboard-Seite.
@@ -287,7 +288,7 @@ window.addEventListener("load", () => {
   }, 100);
 });
 
-
+document.addEventListener("DOMContentLoaded", () => {
   const teamCard = document.querySelector("#team-activity-box");
   if (teamCard) {
     teamCard.style.cursor = "pointer";

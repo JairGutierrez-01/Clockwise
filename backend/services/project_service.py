@@ -1,7 +1,15 @@
 from datetime import datetime
+from io import BytesIO, StringIO
 
+from flask_login import current_user
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import csv
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from io import BytesIO
 from backend.database import db
-from backend.models import Project, Task, Notification, TimeEntry
+from backend.models import Project, Task, Notification, TimeEntry, UserTeam
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -168,17 +176,90 @@ def update_total_duration_for_project(project_id):
     }
 
 def get_info():
-    projects = Project.query.all()
-    time_entries_data = []
-    for project in projects:
-        tasks = Task.query.filter_by(project_id=project.project_id).all()
-        for task in tasks:
-            entries = TimeEntry.query.filter_by(task_id=task.task_id).all()
-            for entry in entries:
-                time_entries_data.append({
-                    "start": entry.start,
-                    "end": entry.end,
-                    "task": f"{task.title} | {task.description or ''} | Status: {task.status.name} | Due: {task.due_date.strftime('%Y-%m-%d') if task.due_date else '-'} | Duration: {task.total_duration_seconds}s",
-                    "project": f"{project.name} | {project.description or ''} | Created: {project.created_at.strftime('%Y-%m-%d')} | Due: {project.due_date.strftime('%Y-%m-%d') if project.due_date else '-'} | Type: {project.type.name} | Credits: {project.credit_points or 0} | Hours: {project.current_hours or 0}/{project.time_limit_hours}"
-                })
-    return time_entries_data
+    own_projects = Project.query.filter_by(user_id=current_user.user_id).all()
+
+    team_ids = [
+        ut.team_id for ut in UserTeam.query.filter_by(user_id=current_user.user_id).all()
+    ]
+
+    team_projects = (
+        Project.query
+        .filter(Project.team_id.in_(team_ids), Project.user_id != current_user.user_id)
+        .all()
+    )
+    def serialize(projects):
+        return [
+            {
+                "project_id": p.project_id,
+                "name": p.name,
+                "description": p.description,
+                "type": p.type.name if hasattr(p.type, "name") else str(p.type),
+                "due_date": p.due_date.isoformat() if p.due_date else None,
+                "team_id": p.team_id,
+            }
+            for p in projects
+        ]
+
+    return {
+        "own_projects": serialize(own_projects),
+        "team_projects": serialize(team_projects),
+    }
+
+def export_project_info_pdf(data):
+    """
+    Export detailed project time entry info as PDF Bytes.
+
+    Args:
+        data (list of dict): Entries with 'start', 'end', 'task', 'project'
+
+    Returns:
+        bytes: PDF data
+    """
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+
+    y = 750
+    c.drawString(30, y, "Eigene Projekte:")
+    y -= 20
+    for entry in data["own_projects"]:
+        c.drawString(30, y, f"{entry['name']} ({entry['due_date'] or 'kein Datum'})")
+        y -= 15
+
+    y -= 30
+    c.drawString(30, y, "Teamprojekte:")
+    y -= 20
+    for entry in data["team_projects"]:
+        c.drawString(30, y, f"{entry['name']} ({entry['due_date'] or 'kein Datum'})")
+        y -= 15
+
+    c.showPage()
+    c.save()
+    buffer.seek(0)
+    return buffer.read()
+
+def export_project_info_csv(data):
+    """
+    Export detailed project time entry info as CSV.
+
+    Args:
+        data (list of dict): Entries with 'start', 'end', 'task', 'project'
+
+    Returns:
+        str: CSV formatted text
+    """
+    output = BytesIO()
+    writer = csv.writer(output)
+
+    writer.writerow(["Eigene Projekte"])
+    writer.writerow(["ID", "Name", "Beschreibung", "Typ", "Fälligkeitsdatum", "Team ID"])
+    for p in data["own_projects"]:
+        writer.writerow([p["project_id"], p["name"], p["description"], p["type"], p["due_date"], p["team_id"]])
+
+    writer.writerow([])
+    writer.writerow(["Teamprojekte"])
+    writer.writerow(["ID", "Name", "Beschreibung", "Typ", "Fälligkeitsdatum", "Team ID"])
+    for p in data["team_projects"]:
+        writer.writerow([p["project_id"], p["name"], p["description"], p["type"], p["due_date"], p["team_id"]])
+
+    output.seek(0)
+    return output.getvalue().decode("utf-8")
