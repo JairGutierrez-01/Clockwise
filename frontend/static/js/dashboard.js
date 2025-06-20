@@ -308,28 +308,77 @@ document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.getElementById("dashboardReportsChart");
   if (!canvas) return;
 
-  try {
-    const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
+  // Farbpalette wie in Analysis
+  const colorPalette = [
+    "#00ff7f", "#b700ff", "#00f8dc", "#ff6b00", "#5a4132", "#0bd800",
+    "#f032e6", "#f8ff00", "#c59595", "#008080", "#765595", "#ffc200",
+    "#800000", "#64ac79", "#808000", "#0048ba", "#f1136f", "#ff2600", "#00cdfb", "#beff00"
+  ];
+
+  function getColorForProject(projectName) {
+    let hash = 0;
+    const full = projectName + "_hash";
+    for (let i = 0; i < full.length; i++) {
+      hash = full.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colorPalette.length;
+    return colorPalette[index];
+  }
+
+  function hexToRgb(hex) {
+    hex = hex.replace(/^#/, "");
+    if (hex.length === 3) {
+      hex = hex.split("").map((c) => c + c).join("");
+    }
+    const bigint = parseInt(hex, 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255,
+    };
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+
+    const max = Math.max(r, g, b),
+          min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+      h = s = 0;
+    } else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+  }
+
+  function getTaskColor(project, task, indexInStack = 0, total = 1) {
+    const baseColor = getColorForProject(project);
+    const rgb = hexToRgb(baseColor);
+    let [h, s, l] = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const step = 40 / Math.max(total - 1, 1);
+    l = Math.min(90, Math.max(10, l - 20 + step * indexInStack));
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  }
+
+  try {
     const res = await fetch("/api/analysis/weekly-time-stacked");
     const { labels, datasets } = await res.json();
 
-    // Farbgebung wie auf der Analysis-Seite
-    const colorPalette = [
-      "#00ff7f", "#b700ff", "#00f8dc", "#ff6b00", "#5a4132", "#0bd800",
-      "#f032e6", "#f8ff00", "#c59595", "#008080", "#765595", "#ffc200",
-      "#800000", "#64ac79", "#808000", "#0048ba", "#f1136f", "#ff2600", "#00cdfb", "#beff00"
-    ];
-
-    function getColorForProject(name) {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      return colorPalette[Math.abs(hash) % colorPalette.length];
-    }
-
-    // Gruppiere nach Projekt und weise Farben zu
+    // Gruppiere nach Projektname
     const grouped = {};
     datasets.forEach((d) => {
       const [project, task] = d.label.split(":").map((s) => s.trim());
@@ -337,14 +386,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       grouped[project].push({ ...d, project, task });
     });
 
-    const finalDatasets = Object.values(grouped).flatMap((group) => {
-      group.sort((a, b) => a.task.localeCompare(b.task));
-      return group.map((entry, i) => {
-        return {
-          ...entry,
-          backgroundColor: getColorForProject(entry.project),
-        };
-      });
+    // Sortiere Tasks pro Projekt und weise abgestufte Farben zu
+    const finalDatasets = Object.values(grouped).flatMap((entries) => {
+      entries.sort((a, b) => a.task.localeCompare(b.task));
+      const total = entries.length;
+      return entries.map((entry, i) => ({
+        ...entry,
+        backgroundColor: getTaskColor(entry.project, entry.task, i, total),
+      }));
     });
 
     new Chart(ctx, {
@@ -365,7 +414,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const sec = context.raw * 3600;
                 const h = Math.floor(sec / 3600);
                 const m = Math.floor((sec % 3600) / 60);
-                return `${context.dataset.label}: ${h}h ${m}min`;
+                const s = Math.floor(sec % 60);
+                return `${context.dataset.label}: ${h}h ${m}min ${s}s`;
               },
             },
           },
