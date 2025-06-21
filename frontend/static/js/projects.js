@@ -216,6 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function renderUnassignedTasks() {
+    projectListEl.innerHTML = "";
     try {
       const res = await fetch("/api/tasks?unassigned=true");
       if (!res.ok) throw new Error("Failed to fetch unassigned tasks");
@@ -555,31 +556,6 @@ textSpan.classList.add("task-meta-row");
       // Zusammenfügen
       li.appendChild(textSpan);
       li.appendChild(deleteBtn);
-      li.addEventListener("click", async (event) => {
-        // Wenn auf den Delete-Button geklickt wurde, nichts tun:
-        if (event.target.tagName.toLowerCase() === "button") return;
-
-        const taskId = li.dataset.taskId;
-        try {
-          const res = await fetch(`/api/tasks/${taskId}`);
-          if (!res.ok) throw new Error("Task nicht gefunden");
-
-          const taskData = await res.json();
-
-          // Formular mit Task-Daten befüllen
-          taskForm.reset();
-          document.getElementById("task-form-title").textContent = "Edit Task";
-          taskNameInput.value = taskData.title;
-          taskDescInput.value = taskData.description || "";
-          taskCategorySelect.value = taskData.category_id || "";
-          taskDueDateInput.value = taskData.due_date || "";
-
-          taskModal.classList.remove("hidden");
-          taskForm.dataset.editingTaskId = taskId;
-        } catch (err) {
-          console.error("Fehler beim Laden des Tasks:", err);
-        }
-      });
       taskListEl.appendChild(li);
     });
   }
