@@ -5,6 +5,7 @@ import time
 from backend.models.user import User
 from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
+from backend.models.project import Project
 from backend.services.time_entry_service import (
     create_time_entry,
     get_time_entry_by_id,
@@ -17,6 +18,7 @@ from backend.services.time_entry_service import (
     resume_time_entry,
     get_tasks_with_time_entries,
     get_latest_time_entries_for_user,
+    get_latest_project_time_entry_for_user,
 )
 
 @pytest.fixture()
@@ -132,3 +134,49 @@ def test_get_latest_time_entries_for_user(db_session, test_user, test_task):
     results = get_latest_time_entries_for_user(test_user.user_id)
     assert len(results) >= 2
     assert results[0].duration_seconds >= results[1].duration_seconds or True  # just a sanity check
+
+
+
+
+def test_get_latest_project_time_entry_for_user(db_session, test_user):
+    # Projekt anlegen
+    project = Project(name="Test Project", user_id=test_user.user_id, time_limit_hours=25)
+    db_session.add(project)
+    db_session.commit()
+
+    # Task ohne Projekt (soll ignoriert werden)
+    task1 = Task(title="Spontan", user_id=test_user.user_id)
+    db_session.add(task1)
+
+    # Task mit Projekt (soll zurückgegeben werden)
+    task2 = Task(title="Mit Projekt", user_id=test_user.user_id, project_id=project.project_id)
+    db_session.add(task2)
+    db_session.commit()
+
+    # TimeEntry für Task ohne Projekt → NEUER
+    entry1 = TimeEntry(
+        user_id=test_user.user_id,
+        task_id=task1.task_id,
+        start_time=datetime.now() - timedelta(minutes=10),
+        end_time=datetime.now() - timedelta(minutes=5),
+        duration_seconds=300
+    )
+
+    # TimeEntry für Task mit Projekt → ÄLTER, aber korrekt
+    entry2 = TimeEntry(
+        user_id=test_user.user_id,
+        task_id=task2.task_id,
+        start_time=datetime.now() - timedelta(hours=1),
+        end_time=datetime.now() - timedelta(minutes=50),
+        duration_seconds=600
+    )
+
+    db_session.add_all([entry1, entry2])
+    db_session.commit()
+
+    result = get_latest_project_time_entry_for_user(test_user.user_id)
+
+    assert result is not None
+    assert result["task"].task_id == task2.task_id
+    assert result["project"].project_id == project.project_id
+    assert result["time_entry"].task_id == task2.task_id

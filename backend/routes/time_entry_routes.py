@@ -7,6 +7,7 @@ import backend.models.task as task_model
 import backend.services.task_service as task_service
 from backend.services.task_service import is_user_authorized_for_task
 from backend.services.time_entry_service import update_durations_for_task_and_project
+from backend.services.time_entry_service import get_latest_project_time_entry_for_user
 from backend.services.time_entry_service import (
     create_time_entry,
     get_time_entry_by_id,
@@ -302,3 +303,24 @@ def get_latest_sessions():
     """
     entries = time_entry_service.get_latest_time_entries_for_user(current_user.user_id)
     return jsonify([entry.to_dict() for entry in entries])
+
+
+@time_entry_bp.route("/latest_project_entry", methods=["GET"])
+@login_required
+def latest_project_entry():
+    """
+    Returns the latest time entry linked to a task that belongs to a project.
+
+    Returns:
+        JSON: Includes time_entry, task and project information.
+    """
+    result = get_latest_project_time_entry_for_user(current_user.user_id)
+
+    if not result:
+        return jsonify({"error": "No suitable time entry found"}), 404
+
+    return jsonify({
+        "time_entry": result["time_entry"].to_dict(),
+        "task": result["task"].to_dict(),
+        "project": result["project"].to_dict()
+    }), 200
