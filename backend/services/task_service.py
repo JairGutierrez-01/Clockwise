@@ -1,7 +1,9 @@
 from datetime import timedelta
+from flask_login import current_user
 
 from backend.database import db
 from backend.models.task import Task, TaskStatus
+from backend.models.project import Project
 from backend.services.project_service import update_total_duration_for_project
 
 
@@ -11,11 +13,15 @@ def create_task(
     due_date=None,
     status="todo",
     project_id=None,
-    user_id=None,
+    member_id=None,
     category_id=None,
     created_from_tracking=False,
 ):
-    """Create a new task with optional project, user, and category assignment.
+    """Create a new task for either a solo project, team project, or as a default task.
+
+    - In solo projects, the task is assigned to the current user (`user_id`).
+    - In team projects, only the project admin (creator) may create tasks,
+      and they are automatically set as `admin_id`. Optionally, a team member can be assigned (`member_id`).
 
     Args:
         title (str): The title of the task.
@@ -23,20 +29,44 @@ def create_task(
         due_date (datetime, optional): The deadline of the task.
         status (str, optional): Status of the task (default is 'todo').
         project_id (int, optional): ID of the project the task belongs to.
-        user_id (int, optional): ID of the user assigned to the task.
+        member_id (int, optional): The ID of the assigned team member (only in team projects).
         category_id (int, optional): ID of the category assigned to the task.
         created_from_tracking (bool, optional): Whether the task was created from time tracking.
 
     Returns:
         dict: Success message with ID of the created task.
     """
+
+    user_id = None  # Assigned to solo or default tasks
+    admin_id = None  # Used only for team projects
+
+    if project_id:
+        project = Project.query.get(project_id)
+        if not project:
+            return {"error": "Project not found."}
+
+        if project.team_id:
+            if project.user_id != current_user.user_id:
+                return {"error": "Only the project admin can create tasks in this team project."}
+            # Teamprojekt
+            admin_id = current_user.user_id
+        else:
+            # Solo-projekt
+            user_id = current_user.user_id
+    else:
+        # Kein Projekt angegeben → Default-Task
+        user_id = current_user.user_id
+
+    title = title.strip() if title and title.strip() else "Untitled Task"
     new_task = Task(
-        title=title or "Untitled Task",
+        title=title,
         description=description,
         due_date=due_date,
         status=TaskStatus[status],
         project_id=project_id,
         user_id=user_id,
+        admin_id=admin_id,
+        member_id=member_id,
         category_id=category_id,
         created_from_tracking=created_from_tracking,
     )
@@ -76,6 +106,9 @@ def get_tasks_by_project(project_id):
 def update_task(task_id, **kwargs):
     """Update task attributes selectively.
 
+    - Team projects: Only the admin or assigned member can update.
+    - Solo/default tasks: Only the owner (user_id) can update.
+
     Args:
         task_id (int): The ID of the task to update.
         **kwargs: Key-value pairs of fields to update.
@@ -87,12 +120,20 @@ def update_task(task_id, **kwargs):
     if not task:
         return {"error": "Task not found"}
 
+    if task.project and task.project.team_id:
+        if current_user.user_id not in [task.project.user_id, task.member_id]:
+            return {"error": "Only the project admin or assigned member can update this task."}
+    else:
+        if task.user_id != current_user.user_id:
+            return {"error": "You are not authorized to update this task."}
+
     ALLOWED_TASK_FIELDS = [
         "title",
         "description",
         "due_date",
         "status",
         "user_id",
+        "member_id",
         "project_id",
         "category_id",
     ]
@@ -120,15 +161,25 @@ def update_task(task_id, **kwargs):
 def delete_task(task_id):
     """Delete a task by its ID.
 
+    - Team projects: Only the admin or assigned member can delete.
+    - Solo/default tasks: Only the owner (user_id) can delete.
+
     Args:
         task_id (int): ID of the task to delete.
 
     Returns:
-        dict: Success message or error if not found.
+        dict: Success message or error if not found or not authorized.
     """
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
+
+    if task.project and task.project.team_id:
+        if current_user.user_id not in [task.project.user_id, task.member_id]:
+            return {"error": "Only the project admin or assigned member can delete this task."}
+    else:
+        if task.user_id != current_user.user_id:
+            return {"error": "You are not authorized to delete this solo task."}
 
     project_id = task.project_id
 
@@ -148,10 +199,8 @@ def delete_task(task_id):
 def get_tasks_without_time_entries():
     """Retrieve all tasks that do not have any associated time entries.
 
-    This is useful for displaying tasks that are available for new time tracking.
-
     Returns:
-        list: A list of Task objects without any time entries.
+        list: A list of Task objects without time entries.
     """
     return (
         Task.query.outerjoin(Task.time_entries).filter(Task.time_entries == None).all()
@@ -217,13 +266,21 @@ def update_total_duration_for_task(task_id):
         "total_duration_formatted": str(timedelta(seconds=total_seconds)),
     }
 
-
 """This function also for the new route users/user_id..."""
 
 
 def get_tasks_assigned_to_user(user_id):
-    """Retrieve all tasks assigned to a specific user."""
-    return Task.query.filter_by(user_id=user_id).all()
+    """Retrieve all tasks assigned to a specific user.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        list: A list of Task objects where the user is either owner or assigned member.
+    """
+    return Task.query.filter(
+        (Task.user_id == user_id) | (Task.member_id == user_id)
+    ).all()
 
 
 def unassign_tasks_for_user_in_team(user_id, team_id):
@@ -234,18 +291,42 @@ def unassign_tasks_for_user_in_team(user_id, team_id):
         user_id (int): ID of the user being removed.
         team_id (int): ID of the team whose team project is affected.
     """
-    from backend.models.project import Project
-
-    # Each team has exactly one team project
     team_project = Project.query.filter_by(team_id=team_id).first()
     if not team_project:
         return
 
-    # Find all tasks in the team project assigned to this user
-    tasks = Task.query.filter_by(project_id=team_project.project_id, user_id=user_id).all()
+    # Unassign tasks where user is assigned as team member
+    tasks_as_member = Task.query.filter_by(
+        project_id=team_project.project_id,
+        member_id=user_id
+    ).all()
+    for task in tasks_as_member:
+        task.member_id = None
 
-    # Unassign the user from those tasks
-    for task in tasks:
+    # Also unassign tasks where user is mistakenly stored as owner (user_id)
+    tasks_as_owner = Task.query.filter_by(
+        project_id=team_project.project_id,
+        user_id=user_id
+    ).all()
+    for task in tasks_as_owner:
         task.user_id = None
 
     db.session.commit()
+
+
+def is_user_authorized_for_task(task, user_id):
+    """
+    Helper function to check whether the given user is allowed to track time for the task.
+
+    Args:
+        task (Task): The task object to check.
+        user_id (int): The ID of the current user.
+
+    Returns:
+        bool: True if the user is authorized to track this task, False otherwise.
+    """
+    if not task:
+        return False
+    if task.member_id:
+        return task.member_id == user_id
+    return task.user_id == user_id

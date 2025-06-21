@@ -492,7 +492,7 @@ def get_tasks_for_team(team_id):
                     "task_id": t.task_id,
                     "title": t.title,
                     "project_id": t.project_id,
-                    "assigned_user_id": t.assigned_user_id,
+                    "member_id": t.member_id,
                     "category_id": t.category_id,
                     "status": t.status,
                 }
@@ -555,7 +555,7 @@ def api_assign_tasks_to_members(team_id):
         if not task:
             continue
 
-        task.assigned_user_id = user_id
+        task.member_id = user_id
         updated_tasks.append(task_id)
 
     db.session.commit()

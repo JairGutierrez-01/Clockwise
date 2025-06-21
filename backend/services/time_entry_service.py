@@ -41,6 +41,10 @@ def create_time_entry(
         except ValueError:
             end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
     task = Task.query.get(task_id)
+
+    if task.member_id is not None and task.member_id != user_id:
+        return {"error": "You are not assigned to this task"}
+
     if not task:
         return {"error": "Task not found"}
 

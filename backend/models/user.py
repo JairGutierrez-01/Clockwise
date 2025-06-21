@@ -1,5 +1,4 @@
 from datetime import datetime
-from datetime import datetime
 
 from flask_login import UserMixin
 
@@ -23,6 +22,8 @@ class User(db.Model, UserMixin):
         teams (relationship): The teams the user is a member of.
         project (relationship): The projects the user is associated with.
         assigned_task (relationship): The tasks assigned to the user.
+        admin_tasks (relationship): Tasks where the user is the admin (creator) in a team project.
+        member_tasks (relationship): Tasks assigned to the user as a team member.
         time_entries (relationship): The time entries related to the user.
         notifications (relationship): The notifications related to the user.
     """
@@ -41,7 +42,9 @@ class User(db.Model, UserMixin):
 
     teams = db.relationship("UserTeam", back_populates="user")
     project = db.relationship("Project", back_populates="user")
-    assigned_task = db.relationship("Task", back_populates="assigned_user")
+    assigned_task = db.relationship("Task", foreign_keys="Task.user_id", back_populates="assigned_user")
+    admin_tasks = db.relationship("Task", foreign_keys = "Task.admin_id", back_populates="admin")
+    member_tasks = db.relationship("Task", foreign_keys="Task.member_id", back_populates="member")
     time_entries = db.relationship("TimeEntry", back_populates="user")
     notifications = db.relationship("Notification", back_populates="user")
 

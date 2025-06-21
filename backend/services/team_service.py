@@ -169,18 +169,10 @@ def remove_member_from_team(user_id, team_id):
     if not relation:
         return False  # User is not a member
 
-    # Unassign tasks in this team's project
-    team_project = Project.query.filter_by(team_id=team_id).first()
-    if team_project:
-        tasks = Task.query.filter_by(
-            project_id=team_project.project_id,
-            user_id=user_id
-        ).all()
+    # Unassign all tasks assigned to this user in the team's project
+    unassign_tasks_for_user_in_team(user_id, team_id)
 
-        for task in tasks:
-            task.user_id = None
-
-    # Remove membership
+    # Remove membership from the UserTeam table
     db.session.delete(relation)
     db.session.commit()
     return True
