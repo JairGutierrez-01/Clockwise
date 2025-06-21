@@ -54,6 +54,15 @@ def create_project(
     if is_course and credit_points:
         time_limit_hours = calculate_time_limit_from_credits(int(credit_points))
 
+    # avoid circular import: import when needed
+    from backend.services.team_service import create_new_team
+    from backend.models.project import ProjectType
+
+    # Automatically create a Team when creating a TeamProject without a team_id
+    if type == ProjectType.TeamProject and not team_id:
+        team_payload = create_new_team(name=f"{name}", user_id=user_id)
+        team_id = team_payload["team_id"]
+
     new_project = Project(
         name=name,
         description=description,
