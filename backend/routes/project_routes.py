@@ -24,6 +24,8 @@ from backend.services.project_service import (
     export_project_info_csv,
     export_project_info_pdf,
 )
+# Add this import for the service function with a new name
+from backend.services.project_service import create_project as service_create_project
 
 project_bp = Blueprint("project", __name__)
 
@@ -297,30 +299,20 @@ def api_projects():
         else:
             team_id = None
 
-        project = Project(
+        result = service_create_project(
             name=name,
             description=description,
-            type=type_,
-            time_limit_hours=time_limit_hours,
-            due_date=due_date,
             user_id=current_user.user_id,
             team_id=team_id,
+            time_limit_hours=time_limit_hours,
+            due_date=due_date,
+            type=type_,
+            is_course=False,
+            credit_points=None
         )
-
-        db.session.add(project)
-        db.session.commit()
-        db.session.refresh(project)
-
-        notification = Notification(
-            user_id=current_user.user_id,
-            project_id=project.project_id,
-            message=f"Project created '{project.name}'.",
-            type="project",
-        )
-        db.session.add(notification)
-        db.session.commit()
-
-        return {"project_id": project.project_id}, 200
+        if result.get("success"):
+            return {"project_id": result["project_id"]}, 200
+        return {"error": result.get("error", "Project creation failed")}, 400
 
     team_ids = [
         row.team_id
