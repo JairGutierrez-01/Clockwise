@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartInstance = null;
   let calendarInstance = null;
   let chartActual = null;
-  let chartPlanned = null;
+  let chartCompletion = [];
   let currentWeekOffset = 0;
 
   //Farbpalette für das Säulendiagramm
@@ -413,25 +413,41 @@ function shadeColor(color, percent) {
   async function renderProgress() {
     // Destroy existing charts if present
     if (chartActual) chartActual.destroy();
-    if (chartPlanned) chartPlanned.destroy();
-
     // Clear and build project completion list
     const listEl = document.getElementById("project-completion-list");
     listEl.innerHTML = "";
+    chartCompletion = [];
 
     try {
-      // Fetch completion ratios
+      // Fetch completion
       const resProg = await fetch("/api/analysis/project-progress");
       const projData = await resProg.json();
       Object.entries(projData).forEach(([project, ratio]) => {
         const percent = Math.round(ratio * 100);
         const item = document.createElement("div");
         item.className = "progress-item";
-        item.innerHTML = `
-          <span class="label">${project}</span>
-          <div class="bar"><span class="fill" style="width:${percent}%"></span></div>
-          <span class="percent">${percent}%</span>
-        `;
+
+        // Project label
+        const labelEl = document.createElement("span");
+        labelEl.className = "label";
+        labelEl.textContent = project;
+        item.appendChild(labelEl);
+
+        // Progress Circle (copied from Jair)
+        const size = 100;
+        const radius = size / 2 - 8;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference * (1 - percent / 100);
+        const frag = document.createRange().createContextualFragment(`
+          <svg width="${size}" height="${size}">
+            <circle cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#444" stroke-width="8" fill="none"/>
+            <circle cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#00bfa5" stroke-width="8" fill="none"
+                    stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+                    transform="rotate(-90 ${size/2} ${size/2})" class="progress-circle-fill"/>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="16" fill="#fff">${percent}%</text>
+          </svg>
+        `);
+        item.appendChild(frag);
         listEl.appendChild(item);
       });
 
@@ -441,41 +457,47 @@ function shadeColor(color, percent) {
       const labels = Object.keys(compData);
       const actuals = labels.map(p => compData[p].actual);
       const targets = labels.map(p => compData[p].target);
-      const colors = labels.map(p => getColorForProject(p));
+      const barColorActual  = "#376cae";
+      const barColorPlanned = "#13406c";
 
-      // Actual chart
-      const ctxA = document.getElementById("actualChart").getContext("2d");
-      chartActual = new Chart(ctxA, {
+      // actual vs planned chart
+      const ctx = document.getElementById("actualChart").getContext("2d");
+      chartActual = new Chart(ctx, {
         type: "bar",
         data: {
           labels: labels,
-          datasets: [{ label: "Actual (h)", data: actuals, backgroundColor: colors }]
+          datasets: [
+            {
+              label: "Actual (h)",
+              data: actuals,
+              backgroundColor: barColorActual
+            },
+            {
+              label: "Planned (h)",
+              data: targets,
+              backgroundColor: barColorPlanned
+            }
+          ]
         },
         options: {
           responsive: true,
           scales: {
-            x: { ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } },
-            y: { beginAtZero: true, ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } }
+            x: {
+              stacked: false,
+              ticks: { color: "#fff" },
+              grid: { color: "rgba(255,255,255,0.1)" }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: "#fff" },
+              grid: { color: "rgba(255,255,255,0.1)" }
+            }
           },
-          plugins: { legend: { labels: { color: "#fff" } } }
-        }
-      });
-
-      // Planned chart
-      const ctxP = document.getElementById("plannedChart").getContext("2d");
-      chartPlanned = new Chart(ctxP, {
-        type: "bar",
-        data: {
-          labels: labels,
-          datasets: [{ label: "Planned (h)", data: targets, backgroundColor: colors }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: { ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } },
-            y: { beginAtZero: true, ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } }
-          },
-          plugins: { legend: { labels: { color: "#fff" } } }
+          plugins: {
+            legend: {
+              labels: { color: "#fff" }
+            }
+          }
         }
       });
     } catch (e) {
