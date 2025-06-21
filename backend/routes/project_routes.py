@@ -24,7 +24,8 @@ from backend.services.project_service import (
     export_project_info_csv,
     export_project_info_pdf,
 )
-# Add this import for the service function with a new name
+
+#import for the service function with a new name
 from backend.services.project_service import create_project as service_create_project
 
 project_bp = Blueprint("project", __name__)

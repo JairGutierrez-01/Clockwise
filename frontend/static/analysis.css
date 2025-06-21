@@ -93,10 +93,10 @@
   font-weight: 500;
 }
 
-/* Progress View */
 .progress-container {
   display: flex;
   gap: var(--space-md);
+  align-items: flex-start;
 }
 
 .progress-panel {
@@ -121,35 +121,21 @@
 .progress-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
 }
 
 .progress-item .label {
-  flex: 1;
+  flex: 0 0 50%;
+  max-width: 50%;
   color: var(--color-fg);
 }
 
-.progress-item .bar {
-  flex: 10;
-  background-color: var(--color-accent);
-  border-radius: var(--radius);
-  position: relative;
-  height: 1rem;
-  overflow: hidden;
-}
-
-.progress-item .bar .fill {
-  background-color: orange;
-  height: 100%;
-  border-radius: var(--radius);
-  transition: width 0.5s ease;
-  display: block;
-}
-
-.progress-item .percent {
-  width: 3rem;
-  text-align: right;
-  color: var(--color-fg);
+.progress-item canvas {
+  flex: 0 0 50%;
+  max-width: 50%;
+  height: auto !important;
 }
 
 .time-charts {
@@ -157,17 +143,6 @@
   flex-direction: column;
   gap: var(--space-md);
   margin-top: var(--space-md);
-}
-
-.time-chart {
-  background-color: var(--color-card-bg);
-  padding: var(--space-sm);
-  border-radius: var(--radius);
-}
-
-.time-chart canvas {
-  width: 100% !important;
-  height: 200px;
 }
 
 #download-button {
