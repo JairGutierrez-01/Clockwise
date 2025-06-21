@@ -5,6 +5,7 @@ from backend.models.time_entry import TimeEntry
 from backend.services import time_entry_service
 import backend.models.task as task_model
 import backend.services.task_service as task_service
+from backend.services.task_service import is_user_authorized_for_task
 from backend.services.time_entry_service import update_durations_for_task_and_project
 from backend.services.time_entry_service import (
     create_time_entry,
@@ -42,6 +43,12 @@ def create_time_entry_api():
     """
     data = request.get_json()
     user_id = current_user.user_id
+
+    task_id = data.get("task_id")
+    if task_id:
+        task = task_model.Task.query.get(task_id)
+        if not is_user_authorized_for_task(task, user_id):
+            return jsonify({"error": "You are not authorized to create time entries for this task"}), 403
 
     result = create_time_entry(
         user_id=user_id,
@@ -127,9 +134,18 @@ def start_entry():
 
         title = f"Untitled Task #{count + 1}"
         task_result = task_service.create_task(
-            title=title, user_id=user_id, created_from_tracking=True
+            title=title,
+            created_from_tracking=True
         )
         task_id = task_result["task_id"]
+
+    if task_id:
+        task = task_model.Task.query.get(task_id)
+        if not task:
+            return jsonify({"error": "Task not found"}), 404
+
+        if not is_user_authorized_for_task(task, user_id):
+            return jsonify({"error": "You are not authorized to track this task"}), 403
 
     return jsonify(start_time_entry(user_id=user_id, task_id=task_id, comment=comment))
 
@@ -146,13 +162,19 @@ def stop_entry(entry_id):
     Returns:
         JSON: Success message or error.
     """
+    time_entry = TimeEntry.query.get(entry_id)
+
+    if time_entry:
+        task = time_entry.task
+        if not is_user_authorized_for_task(task, current_user.user_id):
+            return jsonify({"error": "You are not authorized to stop this time entry"}), 403
+
     result = stop_time_entry(entry_id)
 
     # if an error occurs, stop the process
     if not result.get("success"):
         return jsonify(result), 400
 
-    time_entry = TimeEntry.query.get(entry_id)
     if time_entry and time_entry.task_id:
         update_durations_for_task_and_project(time_entry.task_id)
 
@@ -182,6 +204,13 @@ def pause_entry(entry_id):
     Returns:
         JSON: Success message or error.
     """
+    time_entry = TimeEntry.query.get(entry_id)
+
+    if time_entry:
+        task = time_entry.task
+        if not is_user_authorized_for_task(task, current_user.user_id):
+            return jsonify({"error": "You are not authorized to pause this time entry"}), 403
+
     return jsonify(pause_time_entry(entry_id))
 
 
@@ -197,6 +226,13 @@ def resume_entry(entry_id):
     Returns:
         JSON: Success message or error.
     """
+    time_entry = TimeEntry.query.get(entry_id)
+
+    if time_entry:
+        task = time_entry.task
+        if not is_user_authorized_for_task(task, current_user.user_id):
+            return jsonify({"error": "You are not authorized to resume this time entry"}), 403
+
     return jsonify(resume_time_entry(entry_id))
 
 
@@ -210,7 +246,12 @@ def delete_entry(entry_id):
         JSON: Success or error message.
     """
     time_entry = TimeEntry.query.get(entry_id)
-    if time_entry and time_entry.task_id:
+
+    if time_entry:
+        task = time_entry.task
+        if not is_user_authorized_for_task(task, current_user.user_id):
+            return jsonify({"error": "You are not authorized to delete this time entry"}), 403
+
         task_id = time_entry.task_id
         result = delete_time_entry(entry_id)
         update_durations_for_task_and_project(task_id)
@@ -235,10 +276,15 @@ def update_entry(entry_id):
     Returns:
         JSON: Success message or error.
     """
+    time_entry = TimeEntry.query.get(entry_id)
+    if time_entry:
+        task = time_entry.task
+        if not is_user_authorized_for_task(task, current_user.user_id):
+            return jsonify({"error": "You are not authorized to update this time entry"}), 403
+
     data = request.get_json()
     result = update_time_entry(entry_id, **data)
 
-    time_entry = TimeEntry.query.get(entry_id)
     if time_entry and time_entry.task_id:
         update_durations_for_task_and_project(time_entry.task_id)
 

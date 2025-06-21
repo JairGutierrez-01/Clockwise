@@ -2,7 +2,6 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Enum
-
 from backend.database import db
 
 
@@ -21,7 +20,9 @@ class Task(db.Model):
     Attributes:
         task_id (int): Primary key of the task.
         project_id (int): Foreign key linking the task to a project.
-        user_id (int): Foreign key linking the task to the assigned user.
+        user_id (int): Assigned user for solo projects.
+        admin_id (int): Admin user who created the task (team projects).
+        member_id (int): Team member to whom the task is assigned.
         category_id (int): Foreign key linking the task to a category.
         title (str, optional): Short title of the task.
         description (str, optional): Detailed description of the task.
@@ -31,7 +32,9 @@ class Task(db.Model):
         created_from_tracking (bool): Indicates if the task was created via the time tracking interface.
         category_id (int): Foreign key identifying the category of the tasks.
         time_entries (relationship):  All time entries associated with this task.
-        assigned_user (relationship): The user currently assigned to this task.
+        assigned_user (relationship): The user assigned to the task in solo projects.
+        admin (relationship): The user who created the task in a team project.
+        member (relationship): The team member responsible for the task in a team project.
         project (relationship): The project this task belongs to.
         category (relationship): The category this task belongs to.
     """
@@ -43,6 +46,8 @@ class Task(db.Model):
         db.Integer, db.ForeignKey("projects.project_id"), nullable=True
     )
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
+    member_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=True)
     category_id = db.Column(
         db.Integer, db.ForeignKey("categories.category_id"), nullable=True
     )
@@ -57,7 +62,9 @@ class Task(db.Model):
     time_entries = db.relationship(
         "TimeEntry", back_populates="task", cascade="all, delete-orphan"
     )
-    assigned_user = db.relationship("User", back_populates="assigned_task")
+    assigned_user = db.relationship("User", foreign_keys=[user_id], back_populates="assigned_task")
+    admin = db.relationship("User", foreign_keys=[admin_id], back_populates="admin_tasks")
+    member = db.relationship("User", foreign_keys=[member_id], back_populates="member_tasks")
     project = db.relationship("Project", back_populates="tasks")
     category = db.relationship("Category", back_populates="task")
 
@@ -91,6 +98,8 @@ class Task(db.Model):
             "project_id": self.project_id,
             "project_name": self.project.name if self.project else None,
             "user_id": self.user_id,
+            "admin_id": self.admin_id,
+            "member_id": self.member_id,
             "category_id": self.category_id,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "created_from_tracking": self.created_from_tracking,
