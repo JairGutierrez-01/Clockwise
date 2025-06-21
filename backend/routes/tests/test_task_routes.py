@@ -4,6 +4,9 @@ import pytest
 
 from backend.models.user import User
 from backend.models.task import Task
+from backend.models.project import Project
+from backend.models.user_team import UserTeam
+from backend.models.team import Team
 
 
 @pytest.fixture()
@@ -103,3 +106,84 @@ def test_get_unassigned_tasks_api(client, db_session, test_user):
     data = response.get_json()
     assert isinstance(data, list)
     assert any(t["title"] == "Unassigned" for t in data)
+
+def test_get_tasks_by_project_api(client, db_session, test_user):
+    login_test_user(client, test_user)
+    project = Project(name="P1", user_id=test_user.user_id, time_limit_hours=25)
+    db_session.add(project)
+    db_session.commit()
+    task = Task(title="ProjectTask", user_id=test_user.user_id, project_id=project.project_id)
+    db_session.add(task)
+    db_session.commit()
+
+    response = client.get(f"/api/tasks?project_id={project.project_id}")
+    assert response.status_code == 200
+    assert any(t["title"] == "ProjectTask" for t in response.get_json())
+
+
+def test_update_task_status_api(client, db_session, test_user):
+    login_test_user(client, test_user)
+    task = Task(title="StatusTask", user_id=test_user.user_id)
+    db_session.add(task)
+    db_session.commit()
+
+    payload = {"status": "done"}
+    response = client.patch(f"/api/tasks/{task.task_id}/status", data=json.dumps(payload), content_type="application/json")
+    assert response.status_code == 200
+    assert response.get_json()["status"] == "done"
+
+
+def test_assign_task_to_user_api(client, db_session, test_user):
+    login_test_user(client, test_user)
+
+    # Team erstellen
+    team = Team(name="Test Team")
+    db_session.add(team)
+    db_session.flush()  # team_id verfügbar machen
+
+    # Admin-Mitgliedschaft im Team
+    membership = UserTeam(user_id=test_user.user_id, team_id=team.team_id, role="admin")
+    db_session.add(membership)
+
+    # Projekt im Team anlegen
+    project = Project(name="Assign Project", team_id=team.team_id, user_id=test_user.user_id, time_limit_hours=5)
+    db_session.add(project)
+    db_session.flush()
+
+    # Task im Projekt erstellen
+    task = Task(title="To Assign", user_id=test_user.user_id, project_id=project.project_id)
+    db_session.add(task)
+
+    # Zweiten Nutzer anlegen, dem die Aufgabe zugewiesen wird
+    assignee = User(
+        username="member",
+        email="member@example.com",
+        password_hash="pw",
+        first_name="Member",
+        last_name="User"
+    )
+    db_session.add(assignee)
+
+    db_session.commit()
+
+    # Zuweisung testen
+    assign_payload = {"user_id": assignee.user_id}
+    assign_res = client.patch(
+        f"/api/tasks/{task.task_id}/assign",
+        data=json.dumps(assign_payload),
+        content_type="application/json"
+    )
+    assert assign_res.status_code == 200
+    assign_data = assign_res.get_json()
+    assert assign_data["member_id"] == assignee.user_id
+
+    # Unassign testen
+    unassign_payload = {"user_id": None}
+    unassign_res = client.patch(
+        f"/api/tasks/{task.task_id}/assign",
+        data=json.dumps(unassign_payload),
+        content_type="application/json"
+    )
+    assert unassign_res.status_code == 200
+    unassign_data = unassign_res.get_json()
+    assert unassign_data["member_id"] is None
