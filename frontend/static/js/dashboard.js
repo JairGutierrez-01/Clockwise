@@ -160,41 +160,39 @@ function ensureTeamBoxExists() {
   return teamBox;
 }
 
-function findMostAdvancedProject(teamsData) {
+async function calculateProjectProgress(projectId) {
+    try {
+        const tasks = await fetchTasksByProjectId(projectId);
+        const totalTasks = tasks.length;
+        const doneTasks = tasks.filter(t => t.status === "done").length;
+        return totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
+    } catch (error) {
+        console.error(`Error calculating progress for project ${projectId}:`, error);
+        return 0; // Default to 0% on error
+    }
+}
+
+async function findMostAdvancedProject(teamsData) {
     let mostAdvancedProject = null;
     let maxProgress = -1;
-    let maxHours = -1;
 
     if (!teamsData || !Array.isArray(teamsData) || teamsData.length === 0) {
         return null;
     }
 
-    teamsData.forEach(team => {
+    for (const team of teamsData) {
         if (team.projects && Array.isArray(team.projects)) {
-            team.projects.forEach(project => {
-                let currentProgress = 0;
-                let projectHours = project.current_hours || 0;
+            for (const project of team.projects) {
+                const currentProgress = await calculateProjectProgress(project.project_id);
 
-
-                if (typeof project.time_limit_hours === 'number' && project.time_limit_hours > 0) {
-
-                    const safeCurrentHours = typeof project.current_hours === 'number' ? project.current_hours : 0;
-                    currentProgress = (safeCurrentHours / project.time_limit_hours) * 100;
-                }
                 if (currentProgress > maxProgress) {
                     maxProgress = currentProgress;
-                    maxHours = projectHours;
-                    mostAdvancedProject = project;
+
+                    mostAdvancedProject = { ...project, calculatedProgress: currentProgress };
                 }
-                else if (currentProgress === maxProgress) {
-                    if (projectHours > maxHours) {
-                        maxHours = projectHours;
-                        mostAdvancedProject = project;
-                    }
-                }
-            });
+            }
         }
-    });
+    }
 
     return mostAdvancedProject;
 }
@@ -207,25 +205,27 @@ async function loadTeamActivityBox() {
         const res = await fetch("/api/teams/full");
         const data = await res.json();
 
-        const project = findMostAdvancedProject(data);
+        const project = await findMostAdvancedProject(data);
 
         if (!project) {
             teamBox.innerHTML = "<p>No active or progressed projects to display.</p>";
             return;
         }
 
+        const finalProgress = Math.round(project.calculatedProgress);
+
         let targetTeam = null;
         for (const t of data) {
-            if (t.projects && t.projects.some(p => p.id === project.id)) {
+            if (t.projects && t.projects.some(p => p.project_id === project.project_id)) {
                 targetTeam = t;
                 break;
             }
         }
 
         if (!targetTeam) {
-             console.error("Error: Project found, but its team could not be located.");
-             teamBox.innerHTML = "<p>Error displaying project details.</p>";
-             return;
+            console.error("Error: Project found, but its team could not be located.");
+            teamBox.innerHTML = "<p>Error displaying project details.</p>";
+            return;
         }
 
         document.getElementById("team-project-name").textContent = project.name;
@@ -237,15 +237,13 @@ async function loadTeamActivityBox() {
         targetTeam.members.forEach((member) => {
             const span = document.createElement("span");
             span.className = "member";
+
             span.textContent = member.initials || member.username.substring(0, 2).toUpperCase();
-            span.style.backgroundColor = "#888"; // por ahora, luego CSS
+            span.style.backgroundColor = "#888";
             memberList.appendChild(span);
         });
 
-        const progress = (project.time_limit_hours > 0) ?
-                         Math.round((project.current_hours / project.time_limit_hours) * 100) :
-                         0;
-        drawProgressCircle("team-progress", progress);
+        drawProgressCircle("team-progress", finalProgress);
 
     } catch (error) {
         console.error("Error loading Team activities:", error);
@@ -296,13 +294,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const bounding = this.getBoundingClientRect();
       const scrollbarThreshold = 20;
 
-      // Solo redirige si el clic no fue sobre una scrollbar
       if (e.clientX < bounding.right - scrollbarThreshold) {
         window.location.href = "/teams";
       }
     });
   }
 });
+
+async function fetchTasksByProjectId(projectId) {
+  try {
+    const res = await fetch(`/api/tasks?project_id=${projectId}`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      console.error("Error fetching tasks for project", projectId);
+      return [];
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Network error while fetching tasks:", err);
+    return [];
+  }
+}
 
 /**
  * Initialisiert das gestapelte Balkendiagramm in der Reports-Kachel des Dashboards.
