@@ -41,6 +41,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const projectSelect = document.getElementById("task-project");
   const taskStatusSelect = document.getElementById("task-status");
   let projects = [];
+  let allTeamsData = [];
+  // Check if user has admin rights for a project
+  function userHasProjectAdminRights(project) {
+    if (project.type === "SoloProject") return true;
+    if (project.type === "TeamProject" && project.team_id) {
+      const team = allTeamsData.find(t => t.team_id === project.team_id);
+      return team && team.role === "admin";
+    }
+    return false;
+  }
+
+  // Load user's teams and roles
+  async function loadUserTeams() {
+    const res = await fetch("/api/teams");
+    if (!res.ok) throw new Error("Failed to fetch teams");
+    const data = await res.json();
+    allTeamsData = data.teams;
+  }
   let editingProjectId = null;
   let activeFilter = "all";
   const projectListEl = document.getElementById("project-list");
@@ -311,6 +329,12 @@ document.addEventListener("DOMContentLoaded", () => {
       // 3. Detailbereich anzeigen
       detailSection.classList.remove("hidden");
       editingProjectId = id;
+
+      // 3.1. Show/hide admin controls based on user rights
+      const isAdmin = userHasProjectAdminRights(proj);
+      editProjBtn.style.display = isAdmin ? "inline-block" : "none";
+      deleteProjBtn.style.display = isAdmin ? "inline-block" : "none";
+      createTaskBtn.style.display = isAdmin ? "inline-block" : "none";
 
       // 4. Tasks vom Backend laden
       const tasks = await fetchTasks(id);
@@ -601,7 +625,10 @@ textSpan.classList.add("task-meta-row");
     taskModal.classList.remove("hidden");
   }
 
-  loadProjects();
+  (async () => {
+    await loadUserTeams();
+    await loadProjects();
+  })();
 
   // EXPORT Dropdown-Logik
   const projectExportBtn = document.getElementById("project-download-button");
