@@ -239,9 +239,13 @@ def progress_per_project(tasks):
     """
     progress = defaultdict(lambda: {"done": 0, "total": 0})
     for t in tasks:
-        progress[t["project"]]["total"] += 1
+        project_name = t.get("project")
+        if not project_name:
+            continue  # Skip tasks with no project name
+        progress[project_name]["total"] += 1
         if t["status"] == "done":
-            progress[t["project"]]["done"] += 1
+            progress[project_name]["done"] += 1
+
     result = {}
     for proj, val in progress.items():
         result[proj] = val["done"] / val["total"] if val["total"] > 0 else 0
