@@ -205,7 +205,7 @@ function showCustomConfirm(title, message) {
 document.addEventListener("DOMContentLoaded", () => {
   initializeModalElements(); // Initialize modal elements after DOM is loaded
   fetchUserTeams(); // Initial team load and then carousel setup
-  fetchAllProjects();  // 👈 Asegura que los proyectos se cargan desde el principio
+  fetchAllProjects();
 
   //Team Management Buttons
   const createTeamBtn = document.querySelector(".create-team-btn");
@@ -499,9 +499,9 @@ document.addEventListener("DOMContentLoaded", () => {
               <button class="modal-close-btn">X</button>
           </div>
           <div class="popover-content">
-              <p style="color: var(--text-muted); text-align: center;">Enter new member's User ID or Username and Role:</p>
-              <input type="text" id="memberIdentifierInput" placeholder="User ID or Username">
-              <input type="text" id="memberRoleInput" placeholder="Role (e.g., member, admin - default: member)">
+              <p style="color: var(--text-muted); text-align: center;">Enter new member's Username and Role:</p>
+              <input type="text" id="memberIdentifierInput" placeholder="Username">
+              <input type="text" id="memberRoleInput" placeholder="Role (member, admin, default: member)">
               <div class="action-buttons">
                   <button id="addMemberConfirm" class="custom-modal-btn confirm-btn">Add Member</button>
                   <button id="addMemberCancel" class="custom-modal-btn cancel-btn">Cancel</button>
@@ -531,7 +531,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const role = memberRoleInput.value.trim() || 'member'; // Default to 'member' if not specified
 
           if (!newMemberIdentifier) {
-              showCustomAlert("Error", "User ID or Username is required.", "error");
+              showCustomAlert("Error", "Username is required.", "error");
+              return;
+          }
+
+          if (!isNaN(newMemberIdentifier)) {
+              showCustomAlert("Error", "Only usernames are allowed.", "error");
               return;
           }
 
