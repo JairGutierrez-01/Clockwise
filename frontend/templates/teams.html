@@ -21,41 +21,51 @@
     {% include 'navbar.html' %}
 
     <main class="teams-container">
-      <section class="team-card">
-        <div class="team-card-header">
-          <h2>Teams</h2>
-          <button class="create-team-btn">Create Team</button>
-          <button class="delete-team-btn">Delete Team</button>
-        </div>
+      <div class="top-section">
+        <section class="team-card">
+          <div class="team-card-header">
+            <h2>Teams</h2>
+            <button class="create-team-btn">Create Team</button>
+            <button class="delete-team-btn">Delete Team</button>
+          </div>
 
-        <table class="team-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Created</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody id="teamsBody">
-            </tbody>
-        </table>
+          <table class="team-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody id="teamsBody">
+              </tbody>
+          </table>
+          </section>
+
+        <section class="members-card">
+          <div class="members-card-header">
+            <h2>Members</h2>
+            <div class="member-buttons">
+              <button class="add-member-btn">Add member</button>
+              <button class="delete-member-btn">Delete Member</button>
+            </div>
+          </div>
+
+          <div class="carousel-wrapper">
+            <div class="carousel-track" id="carouselTrack">
+              <!-- Member cards are injected here dynamically. Each member-item can include a ⋮ button (assign-options-btn) for task assignment. -->
+            </div>
+            <div class="carousel-arrow left"></div>
+            <div class="carousel-arrow right"></div>
+          </div>
         </section>
-
-      <section class="members-card">
-        <div class="members-card-header">
-          <h2>Members</h2>
-          <div class="member-buttons">
-            <button class="add-member-btn">Add member</button>
-            <button class="delete-member-btn">Delete Member</button>
-          </div>
+      </div>
+      <section class="tasks-card">
+        <div class="tasks-card-header">
+          <h2>Tasks Overview</h2>
         </div>
-
-        <div class="carousel-wrapper">
-          <div class="carousel-track" id="carouselTrack">
-            <!-- Member cards are injected here dynamically. Each member-item can include a ⋮ button (assign-options-btn) for task assignment. -->
-          </div>
-          <div class="carousel-arrow left"></div>
-          <div class="carousel-arrow right"></div>
+        <div id="tasksOverviewContainer">
+          <!-- Task overviews by team and project will be dynamically inserted here -->
         </div>
       </section>
     </main>

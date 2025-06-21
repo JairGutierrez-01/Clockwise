@@ -844,6 +844,7 @@ async function fetchUserTeams() {
       renderTeams(teamsData); // Render teams in the table
       renderMembersForTeams(teamsWithMembers); // Render members into carousel
       setupCarousel(); // Setup carousel *after* members are rendered
+      renderTeamTasksOverview(); // Render the Tasks Overview card
     } else {
       showCustomAlert("Error", "Error fetching teams: " + (responseData.error || "Unknown error"), "error");
       console.error("Error fetching teams:", responseData.error);
@@ -1240,5 +1241,59 @@ async function fetchAllProjects() {
     console.log("Projects loaded:", allProjectsData);
   } catch (err) {
     console.error("Error fetching projects:", err);
+  }
+}
+
+//tasks container!!
+async function renderTeamTasksOverview() {
+  const container = document.getElementById("tasksOverviewContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  for (const team of allTeamsData) {
+    const teamProjects = allProjectsData.filter(p => p.team_id === team.team_id);
+    if (teamProjects.length === 0) continue;
+
+    let teamHtml = `<div class="team-task-block"><h3>Team: ${team.team_name}</h3>`;
+
+    for (const project of teamProjects) {
+      const tasks = await fetchTasksForProject(project.project_id);
+      teamHtml += `<div class="project-block"><h4>Project: ${project.name}</h4>`;
+
+      if (tasks.length === 0) {
+        teamHtml += `<p style="color: var(--text-muted);">No tasks found.</p>`;
+      } else {
+        teamHtml += `<ul>`;
+        for (const task of tasks) {
+          teamHtml += `<li>${task.title} <span style="color: var(--text-muted); font-size: 0.9em;">(Status: ${task.status})</span></li>`;
+        }
+        teamHtml += `</ul>`;
+      }
+
+      teamHtml += `</div>`; // Close project-block
+    }
+
+    teamHtml += `</div>`; // Close team-task-block
+    container.innerHTML += teamHtml;
+  }
+}
+
+async function fetchTasksForProject(projectId) {
+  try {
+    const res = await fetch(`/api/tasks?project_id=${projectId}`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to fetch tasks for project ${projectId}`);
+      return [];
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error fetching tasks:", err);
+    return [];
   }
 }
