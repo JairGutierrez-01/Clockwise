@@ -3,6 +3,7 @@ from datetime import datetime
 from backend.database import db
 from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
+from backend.models.project import Project
 from backend.services.project_service import update_total_duration_for_project
 from backend.services.task_service import update_total_duration_for_task
 
@@ -342,3 +343,38 @@ def get_latest_time_entries_for_user(user_id, limit=10):
         .limit(limit)
         .all()
     )
+
+
+def get_latest_project_time_entry_for_user(user_id):
+    """
+    Get the latest time entry for the user where the associated task is linked to a project.
+
+    Args:
+        user_id (int): The user's ID.
+
+    Returns:
+        dict | None: Dictionary with time_entry, task and project, or None if not found.
+    """
+
+    # Find latest time entry where its task has a project_id
+    entry = (
+        TimeEntry.query
+        .join(TimeEntry.task)
+        .filter(TimeEntry.user_id == user_id)
+        .filter(TimeEntry.end_time.isnot(None))
+        .filter(Task.project_id.isnot(None))
+        .order_by(TimeEntry.start_time.desc())
+        .first()
+    )
+
+    if not entry:
+        return None
+
+    task = entry.task
+    project = task.project if task else None
+
+    return {
+        "time_entry": entry,
+        "task": task,
+        "project": project
+    }

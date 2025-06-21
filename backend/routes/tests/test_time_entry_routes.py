@@ -1,10 +1,13 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytest
 
 from backend.models.user import User
 from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
+from backend.models.project import Project
+from backend.services.time_entry_service import get_latest_project_time_entry_for_user
+
 
 
 @pytest.fixture()
@@ -113,3 +116,43 @@ def test_start_and_stop_entry_api(client, db_session, test_user, test_task):
     stop_response = client.post(f"/api/time_entries/stop/{entry_id}")
     assert stop_response.status_code == 200
     assert stop_response.get_json()["success"]
+
+
+def test_get_latest_project_time_entry_for_user(db_session, test_user):
+    # Projekt und zwei Tasks
+    project = Project(name="Testprojekt", user_id=test_user.user_id, time_limit_hours=25)
+    db_session.add(project)
+    db_session.commit()
+
+    task1 = Task(title="Mit Projekt", user_id=test_user.user_id, project_id=project.project_id)
+    task2 = Task(title="Ohne Projekt", user_id=test_user.user_id)
+    db_session.add_all([task1, task2])
+    db_session.commit()
+
+    # Neuerer Entry ohne Projekt
+    entry1 = TimeEntry(
+        user_id=test_user.user_id,
+        task_id=task2.task_id,
+        start_time=datetime.now() - timedelta(minutes=20),
+        end_time=datetime.now() - timedelta(minutes=10),
+        duration_seconds=600
+    )
+
+    # Älterer Entry mit Projekt
+    entry2 = TimeEntry(
+        user_id=test_user.user_id,
+        task_id=task1.task_id,
+        start_time=datetime.now() - timedelta(hours=2),
+        end_time=datetime.now() - timedelta(hours=1, minutes=30),
+        duration_seconds=1800
+    )
+
+    db_session.add_all([entry1, entry2])
+    db_session.commit()
+
+    result = get_latest_project_time_entry_for_user(test_user.user_id)
+
+    assert result is not None
+    assert result["time_entry"].time_entry_id == entry2.time_entry_id
+    assert result["task"].task_id == task1.task_id
+    assert result["project"].project_id == project.project_id
