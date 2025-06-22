@@ -167,6 +167,7 @@ body {
   overflow-y: auto;
   display: block;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .team-table tr {
@@ -1183,4 +1184,9 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 2rem;
+}
+
+.team-table tr.active-team-row {
+  background-color: #3b4150 !important;
+  transform: scale(1.01);
 }
