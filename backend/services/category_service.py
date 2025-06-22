@@ -4,24 +4,27 @@ import re
 
 
 def create_category(name, user_id):
-    """Create a new category for a specific user."""
-    # Nur Buchstaben, Umlaute und Leerzeichen erlauben
-    print("DEBUG: user_id received:", user_id)
+    """Create a new category for a specific user.
+
+    Args:
+        name (str): The raw category name input.
+        user_id (int): The ID of the user creating the category.
+
+    Returns:
+        dict: A dictionary indicating success or containing an error message.
+    """
     name = name.replace("ß", "ss")
     name = re.sub(r"[^a-zA-ZäöüÄÖÜ\s]", "", name).strip()
 
-    # Wenn leer nach Bereinigung → Fehler
     if not name:
         return {"error": "Category name is invalid or empty."}
 
     name = " ".join(word.capitalize() for word in name.split())
 
-    # Existenz prüfen
     existing = Category.query.filter_by(name=name, user_id=user_id).first()
     if existing:
         return {"error": "Category already exists."}
 
-    # Anlegen
     category = Category(name=name, user_id=user_id)
     db.session.add(category)
     db.session.commit()
