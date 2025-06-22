@@ -152,7 +152,6 @@ def update_task(task_id, **kwargs):
         if task.project_id:
             update_total_duration_for_project(task.project_id)
 
-
     return {
         "success": True,
         "message": "Task updated successfully",
