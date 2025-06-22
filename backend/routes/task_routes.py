@@ -248,9 +248,9 @@ def assign_task_to_user_api(task_id):
         return jsonify({"error": "Not authenticated"}), 401
 
     data = request.get_json()
-    member_id = data.get("member_id")
+    user_id = data.get("user_id")
     print("PATCH /assign_task_to_user_api -> data:", data)
-    if member_id is not None and not isinstance(member_id, int):
+    if user_id is not None and not isinstance(user_id, int):
         return jsonify({"error": "Invalid user_id provided. Must be integer or null."}), 400
 
     task = Task.query.get(task_id)
@@ -271,14 +271,14 @@ def assign_task_to_user_api(task_id):
 
     if not is_admin:
         return jsonify({"error": "Only team admins can assign tasks"}), 403
-    result = update_task(task_id, member_id=member_id)
+    result = update_task(task_id, member_id=user_id)
 
     if result.get("success"):
-        message = "Task assigned successfully." if member_id is not None else "Task unassigned successfully."
+        message = "Task assigned successfully." if user_id is not None else "Task unassigned successfully."
         return jsonify({
             "message": message,
             "task_id": task_id,
-            "member_id": task.member_id}), 200
+            "member_id": user_id}), 200
 
     return jsonify({"error": result.get("error", "Task assignment failed.")}), 400
 
