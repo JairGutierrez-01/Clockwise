@@ -68,13 +68,17 @@
             <option value="SoloProject">SoloProject</option>
             <option value="TeamProject">TeamProject</option>
           </select>
-
           <label for="project-team" id="team-select-label" class="hidden"
             >Team</label
           >
           <select id="project-team" name="team_id" class="hidden">
             <option value="">Select Team</option>
           </select>
+          <label for="project-status">Status *</label>
+            <select name="status" id="project-status" required>
+              <option value="active" selected>Aktiv</option>
+              <option value="inactive">Inaktiv</option>
+            </select>
 
           <label for="project-time-limit">Time Limit (hours) *</label>
           <input
@@ -110,6 +114,8 @@
           <dd id="detail-description">…</dd>
           <dt>Type:</dt>
           <dd id="detail-type">SoloProject</dd>
+          <dt>Status:</dt>
+          <dd id="detail-status">Active</dd>
           <dt>Time Limit:</dt>
           <dd id="detail-time-limit">10 h</dd>
           <p>

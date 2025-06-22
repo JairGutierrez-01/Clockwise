@@ -1,5 +1,5 @@
 from backend.models import UserTeam, Team, Notification, TimeEntry
-from backend.models.project import Project, ProjectType
+from backend.models.project import Project, ProjectType, ProjectStatus
 from backend.models.task import Task
 from flask_login import current_user, login_required
 from io import BytesIO
@@ -63,6 +63,7 @@ def create_project_route():
         name = form.get("name")
         description = form.get("description")
         type_str = form.get("type")
+        status_str = form.get("status")
         due_date_str = form.get("due_date")
         time_limit_hours = form.get("time_limit_hours")
         is_course = bool(form.get("is_course"))
@@ -93,6 +94,11 @@ def create_project_route():
             if team_id and not is_admin:
                 return "Keine Adminrechte für dieses Team", 403
 
+        try:
+            status_enum = ProjectStatus[status_str]
+        except KeyError:
+            return "Ungültiger Status", 400
+
         result = create_project(
             name=name,
             description=description,
@@ -102,6 +108,7 @@ def create_project_route():
             due_date=due_date,
             type=type_enum,
             is_course=is_course,
+            status=status_enum,
             credit_points=credit_points,
         )
 
@@ -270,6 +277,7 @@ def api_projects():
         description = data.get("description")
         type_str = data.get("type")
         team_id = data.get("team_id") or None
+        status_str = data.get("status")
         time_limit_hours = data.get("time_limit_hours")
 
         due_date = None
@@ -300,6 +308,11 @@ def api_projects():
         else:
             team_id = None
 
+        try:
+            status_ = ProjectStatus[status_str]
+        except KeyError:
+            return {"error": "Invalid status"}, 400
+
         result = service_create_project(
             name=name,
             description=description,
@@ -308,6 +321,7 @@ def api_projects():
             time_limit_hours=time_limit_hours,
             due_date=due_date,
             type=type_,
+            status= status_,
             is_course=False,
             credit_points=None
         )
@@ -327,26 +341,13 @@ def api_projects():
     else:
         all_projects = own_projects.all()
 
-    activity_status_raw = request.args.get("activity_status")
-    show_active_filter = request.args.get("show_active")
-
-    activity_status = {}
-    if activity_status_raw:
+    show_status = request.args.get("status")
+    if show_status:
         try:
-            activity_status = json.loads(activity_status_raw)
-        except json.JSONDecodeError:
-            return {"error": "Invalid activity_status JSON format."}, 400
-
-    show_active = None
-    if show_active_filter in ["true", "false"]:
-        show_active = show_active_filter == "true"
-
-    filtered_projects = []
-    for p in all_projects:
-        is_active = activity_status.get(str(p.project_id), True)
-        if show_active is None or is_active == show_active:
-            p._manual_active = is_active
-            filtered_projects.append(p)
+            status_enum = ProjectStatus[show_status]
+            all_projects = [p for p in all_projects if p.status == status_enum]
+        except KeyError:
+            return {"error": "Invalid status filter"}, 400
 
     return {
         "projects": [
@@ -360,13 +361,13 @@ def api_projects():
                 "duration_readable": p.duration_readable,
                 "due_date": p.due_date.isoformat() if p.due_date else None,
                 "team_id": p.team_id,
-                "is_active": p._manual_active,
+                "status": p.status.name if hasattr(p.status, "name") else str(p.status),
                 # Diese 3 Felder extra für FullCalendar:
                 "title": p.name,
                 "date": p.due_date.strftime("%Y-%m-%d") if p.due_date else None,
                 "color": "#f44336",  # oder projektabhängig
             }
-            for p in filtered_projects
+            for p in all_projects
         ]
     }
 
@@ -412,6 +413,11 @@ def api_project_detail(project_id):
             project.type = ProjectType[data["type"]]
         if "time_limit_hours" in data:
             project.time_limit_hours = data["time_limit_hours"]
+        if "status" in data:
+            try:
+                project.status = ProjectStatus[data["status"]]
+            except KeyError:
+                return {"error": "Invalid status value"}, 400
         if "due_date" in data:
             due_date_str = data["due_date"]
             if due_date_str:

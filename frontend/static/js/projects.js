@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let projects = [];
   let allTeamsData = [];
   const typeSelect = document.getElementById("project-type");
+  const statusSelect = document.getElementById("project-status");
 
   //when selecting TeamProject
   const teamSelectLabel = document.getElementById("team-select-label");
@@ -127,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const detailName = document.getElementById("detail-name");
   const detailDesc = document.getElementById("detail-description");
   const detailType = document.getElementById("detail-type");
+  const detailStatus = document.getElementById("detail-status");
   const detailTimeLimit = document.getElementById("detail-time-limit");
   const detailCurrentHours = document.getElementById("detail-current-hours");
   const detailDueDate = document.getElementById("detail-due-date");
@@ -212,6 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
       nameInput.value = proj.name;
       descInput.value = proj.description || "";
       typeSelect.value = proj.type;
+      statusSelect.value = proj.status;
       timeLimitInput.value = proj.time_limit_hours;
       dueDateInput.value = proj.due_date ? proj.due_date.slice(0, 10) : "";
     } else {
@@ -370,6 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
       detailName.textContent = proj.name;
       detailDesc.textContent = proj.description || "-";
       detailType.textContent = proj.type;
+      detailStatus.textContent = proj.status;
       detailTimeLimit.textContent = `${proj.time_limit_hours} h`;
       detailCurrentHours.textContent = proj.duration_readable || "0h 0min 0s";
       detailDueDate.textContent = proj.due_date
@@ -421,6 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
       name: nameInput.value.trim(),
       description: descInput.value.trim(),
       type: typeSelect.value,
+      status: statusSelect.value,
       time_limit_hours: parseInt(timeLimitInput.value, 10),
       due_date: formatDateForBackend(dueDateInput.value),
       ...(typeSelect.value === "TeamProject" && teamSelect.value

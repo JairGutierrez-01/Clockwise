@@ -10,6 +10,8 @@ from reportlab.lib.pagesizes import letter
 from io import BytesIO
 from backend.database import db
 from backend.models import Project, Task, Notification, TimeEntry, UserTeam
+from backend.models.project import ProjectStatus, ProjectType
+
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -33,6 +35,7 @@ def create_project(
     due_date,
     type,
     is_course,
+    status,
     credit_points=None,
 ):
     """Create a new project and persist it in the database.
@@ -45,6 +48,7 @@ def create_project(
         time_limit_hours (int): Time limit for the project.
         due_date (datetime): Project deadline.
         type (str): Project type (Solo or Team).
+        status (str): Project status (active or inactive).
         is_course (bool): Indicates if the project is a course.
         credit_points (int, optional): Credit points if course.
 
@@ -55,7 +59,6 @@ def create_project(
         time_limit_hours = calculate_time_limit_from_credits(int(credit_points))
 
     from backend.services.team_service import create_new_team
-    from backend.models.project import ProjectType
 
     if type == ProjectType.TeamProject and not team_id:
         team_payload = create_new_team(name=f"{name}", user_id=user_id)
@@ -72,6 +75,7 @@ def create_project(
         due_date=due_date,
         type=type,
         is_course=is_course,
+        status=status,
         credit_points=credit_points,
     )
 
@@ -142,6 +146,8 @@ def update_project(project_id, data):
         if hasattr(project, key):
             if key == "credit_points":
                 project.time_limit_hours = calculate_time_limit_from_credits(int(value))
+            elif key == "status":
+                project.status = ProjectStatus(value)
             setattr(project, key, value)
 
     db.session.commit()
@@ -203,6 +209,7 @@ def get_info():
                 "type": p.type.name if hasattr(p.type, "name") else str(p.type),
                 "due_date": p.due_date.isoformat() if p.due_date else None,
                 "team_id": p.team_id,
+                "status": p.status.name if hasattr(p.status, "name") else str(p.status),
             }
             for p in projects
         ]
