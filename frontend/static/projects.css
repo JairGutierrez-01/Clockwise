@@ -231,6 +231,20 @@ body {
   border: 1px solid #ccc;
   width: 100%;
 }
+
+.project-form textarea {
+  display: block;
+  height: 120px;
+  min-height: 100px;
+  resize: none;
+  padding: var(--space-sm);
+  font-size: var(--font-base);
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -439,4 +453,10 @@ body {
 #project-download-dropdown button:hover {
   background-color: var(--color-accent);
   color: var(--color-bg);
+}
+
+.project-form {
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
