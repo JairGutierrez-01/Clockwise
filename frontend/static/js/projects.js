@@ -26,6 +26,27 @@ async function fetchTasks(projectId) {
   }
 }
 
+async function loadCategories() {
+  try {
+    const res = await fetch("/api/categories");
+    if (!res.ok) throw new Error("Fehler beim Laden der Kategorien");
+    const data = await res.json();
+
+    const datalist = document.getElementById("category-suggestions");
+    datalist.innerHTML = "";
+
+    data.categories.forEach((cat) => {
+      const option = document.createElement("option");
+      option.value = cat.name;
+      datalist.appendChild(option);
+    });
+
+    window.ALL_CATEGORIES = data.categories;
+  } catch (err) {
+    console.error("Kategorie-Ladevorgang fehlgeschlagen:", err);
+  }
+}
+
 // ============================================================================
 // Sets up event listeners, state management, and UI update routines after DOM load.
 // ============================================================================
@@ -77,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function userHasProjectAdminRights(project) {
     if (project.type === "SoloProject") return true;
     if (project.type === "TeamProject" && project.team_id) {
-      const team = allTeamsData.find(t => t.team_id === project.team_id);
+      const team = allTeamsData.find((t) => t.team_id === project.team_id);
       return team && team.role === "admin";
     }
     return false;
@@ -162,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await fetch(`/api/tasks/${taskId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status }),
     });
   }
 
@@ -214,13 +235,12 @@ document.addEventListener("DOMContentLoaded", () => {
     detailSection.classList.add("hidden");
     projectListEl.style.display = "grid";
 
-   if (activeFilter === "alltasks") {
-
-   projectListEl.style.display = "none";
-   detailSection.classList.remove("hidden");
-   renderAllTasks();
-  return;
- }
+    if (activeFilter === "alltasks") {
+      projectListEl.style.display = "none";
+      detailSection.classList.remove("hidden");
+      renderAllTasks();
+      return;
+    }
     if (activeFilter === "unassigned") {
       renderUnassignedTasks();
       return;
@@ -302,24 +322,24 @@ document.addEventListener("DOMContentLoaded", () => {
    * Fetch and display all tasks across all projects and unassigned.
    */
   async function renderAllTasks() {
-  projectListEl.innerHTML = "";
-  projectListEl.style.display = "grid";
-  detailSection.classList.add("hidden");
+    projectListEl.innerHTML = "";
+    projectListEl.style.display = "grid";
+    detailSection.classList.add("hidden");
 
-  //Fetch only tasks assigned to current user
-  const res = await fetch(`/api/users/${window.CURRENT_USER_ID}/tasks`);
-  if (!res.ok) {
-    console.error("Failed to fetch user-specific tasks");
-    return;
-  }
+    //Fetch only tasks assigned to current user
+    const res = await fetch(`/api/users/${window.CURRENT_USER_ID}/tasks`);
+    if (!res.ok) {
+      console.error("Failed to fetch user-specific tasks");
+      return;
+    }
 
-  const allTasks = await res.json();
+    const allTasks = await res.json();
 
-  allTasks.forEach((task) => {
-    const card = document.createElement("div");
-    card.className = "project-card";
-    card.dataset.id = String(task.task_id);
-    card.innerHTML = `
+    allTasks.forEach((task) => {
+      const card = document.createElement("div");
+      card.className = "project-card";
+      card.dataset.id = String(task.task_id);
+      card.innerHTML = `
       <h2 class="project-card__name">${task.title}</h2>
       <div class="project-card__meta">
         <p>Project: ${task.project_name || "Unassigned"}</p>
@@ -328,10 +348,10 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <button class="project-card__view">View</button>
     `;
-    card.addEventListener("click", () => openTaskEditModal(task.task_id));
-    projectListEl.appendChild(card);
-  });
-}
+      card.addEventListener("click", () => openTaskEditModal(task.task_id));
+      projectListEl.appendChild(card);
+    });
+  }
   /**
    * Displays the details of a selected project.
    *
@@ -462,14 +482,90 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     openTaskEditModal(taskId);
   });
-
   taskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const catInputEl = document.getElementById("task-category-input");
+    const enteredCatName = catInputEl.value.trim();
+    let categoryId = null;
+
+    // Kategorie prüfen oder neu erstellen
+    if (enteredCatName) {
+      const existing = window.ALL_CATEGORIES.find(
+        (c) => c.name.toLowerCase() === enteredCatName.toLowerCase(),
+      );
+      if (existing) {
+        categoryId = existing.category_id;
+      } else {
+        try {
+          const res = await fetch("/api/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: enteredCatName }),
+          });
+          if (!res.ok) throw new Error("Fehler beim Erstellen der Kategorie");
+          const newCat = await res.json();
+          categoryId = newCat.category_id;
+          await loadCategories(); // neue Kategorie direkt laden
+        } catch (err) {
+          console.error("Kategorie konnte nicht erstellt werden:", err);
+        }
+      }
+    }
+
+    const taskPayload = {
+      title: taskNameInput.value.trim(),
+      description: taskDescInput.value.trim(),
+      category_id: categoryId,
+      due_date: taskDueDateInput.value || null,
+      status: taskStatusSelect.value,
+      project_id: parseInt(projectSelect.value, 10) || null,
+      created_from_tracking: false,
+    };
+
+    // nur für Solo-Projekte user_id zuweisen
+    const projectEntryId = taskPayload.project_id;
+    if (projectEntryId) {
+      const proj = projects.find((p) => p.project_id === projectEntryId);
+      if (proj && proj.type === "SoloProject") {
+        taskPayload.user_id = window.CURRENT_USER_ID;
+      }
+    }
+
+    const editingTaskId = taskForm.dataset.editingTaskId;
+    try {
+      if (editingTaskId) {
+        await fetch(`/api/tasks/${editingTaskId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(taskPayload),
+        });
+        delete taskForm.dataset.editingTaskId;
+      } else {
+        await createTask(taskPayload);
+      }
+
+      taskModal.classList.add("hidden");
+
+      if (activeFilter === "unassigned") {
+        await renderUnassignedTasks();
+      } else if (editingProjectId) {
+        const tasks = await fetchTasks(editingProjectId);
+        renderTaskList(tasks);
+      }
+    } catch (error) {
+      console.error("Fehler beim Speichern der Task:", error);
+    }
+  });
+
+  /*taskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const taskPayload = {
       title: taskNameInput.value.trim(),
       description: taskDescInput.value.trim(),
-      category_id: parseInt(taskCategorySelect.value, 10) || null,
+      //category_id: parseInt(taskCategorySelect.value, 10) || null,
+
       due_date: taskDueDateInput.value || null,
       status: taskStatusSelect.value,
       project_id: parseInt(projectSelect.value, 10) || null, // <-- neu!
@@ -479,12 +575,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // only assign a user for solo projects
     const projectEntryId = taskPayload.project_id;
     if (projectEntryId) {
-      const proj = projects.find(p => p.project_id === projectEntryId);
-      if (proj && proj.type === 'SoloProject') {
+      const proj = projects.find((p) => p.project_id === projectEntryId);
+      if (proj && proj.type === "SoloProject") {
         taskPayload.user_id = window.CURRENT_USER_ID;
       }
     }
-
 
     const editingTaskId = taskForm.dataset.editingTaskId;
     try {
@@ -510,7 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Fehler beim Speichern der Task:", error);
     }
   });
-
+*/
   // --- Initialization ---
   /**
    * Loads projects from the backend and renders them.
@@ -586,8 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
   <span class="task-duration">${durationText}</span>
   <span class="task-date">Due: ${formattedDate}</span>
 `;
-textSpan.classList.add("task-meta-row");
-
+      textSpan.classList.add("task-meta-row");
 
       // Delete-Button
       const deleteBtn = document.createElement("button");
@@ -607,8 +701,6 @@ textSpan.classList.add("task-meta-row");
           console.error("Fehler beim Löschen:", err);
         }
       });
-
-
 
       // Zusammenfügen
       li.appendChild(textSpan);
@@ -672,7 +764,10 @@ textSpan.classList.add("task-meta-row");
   });
 
   document.addEventListener("click", (e) => {
-    if (!projectExportBtn.contains(e.target) && !projectDropdown.contains(e.target)) {
+    if (
+      !projectExportBtn.contains(e.target) &&
+      !projectDropdown.contains(e.target)
+    ) {
       projectDropdown.classList.add("hidden");
     }
   });
@@ -682,9 +777,10 @@ textSpan.classList.add("task-meta-row");
     const format = e.target.dataset.format;
     if (!format) return;
 
-    const url = format === "pdf"
-      ? "/api/projects/export/projects/pdf"
-      : "/api/projects/export/projects/csv";
+    const url =
+      format === "pdf"
+        ? "/api/projects/export/projects/pdf"
+        : "/api/projects/export/projects/csv";
 
     window.open(url, "_blank");
   });

@@ -1,5 +1,5 @@
-from flask import Blueprint, request, redirect, url_for, render_template
-from flask_login import login_required
+from flask import Blueprint, request, redirect, url_for, render_template, jsonify
+from flask_login import login_required, current_user
 
 from backend.services.category_service import (
     create_category,
@@ -12,6 +12,36 @@ from backend.services.category_service import (
 category_bp = Blueprint("category", __name__)
 
 
+@category_bp.route("/api/categories", methods=["GET"])
+@login_required
+def api_get_categories():
+    result = get_all_categories(current_user.id)
+    categories = result.get("categories", [])
+    return jsonify(
+        {
+            "categories": [
+                {"category_id": cat.category_id, "name": cat.name} for cat in categories
+            ]
+        }
+    )
+
+
+@category_bp.route("/api/categories", methods=["POST"])
+@login_required
+def api_create_category():
+    data = request.get_json()
+    name = data.get("name", "").strip()
+
+    if not name:
+        return jsonify({"error": "Category name is required"}), 400
+
+    result = create_category(name, current_user.id)
+    if "error" in result:
+        return jsonify(result), 200
+
+    return jsonify(result), 201
+
+
 @category_bp.route("/categories", methods=["GET"])
 @login_required
 def list_categories():
@@ -20,7 +50,7 @@ def list_categories():
     Returns:
         Response: Renders a template with all categories.
     """
-    result = get_all_categories()
+    result = get_all_categories(current_user.id)
     return render_template("category_list.html", categories=result["categories"])
 
 
@@ -51,7 +81,7 @@ def create_category_route():
     """
     if request.method == "POST":
         name = request.form["name"]
-        result = create_category(name)
+        result = create_category(name, current_user.id)
         if "success" in result:
             return redirect(url_for("category.list_categories"))
         return result["error"]
