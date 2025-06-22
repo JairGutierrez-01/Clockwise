@@ -5,7 +5,7 @@ from flask import (
     url_for,
     jsonify,
 )
-from flask import render_template, session
+from flask import render_template
 from flask_login import login_required, current_user
 from flask_login import login_user as flask_login_user
 
@@ -67,7 +67,6 @@ def login():
 
         if result.get("success"):
             flask_login_user(result["user"])
-            session.permanent = True
             return redirect(url_for("dashboard"))
         else:
             return result.get("error", "Login failed.")
