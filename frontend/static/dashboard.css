@@ -5,6 +5,7 @@
   --calendar-bg: #0f2c44;
   --project-details-bg: #fbedeb;
   --reports-bg: #0f2c44;
+  --team-progress-bg:#0f2c44;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
   --dashboard-max-width: 1200px;
 }
@@ -25,6 +26,7 @@ body.dark-mode {
   --projects-table-bg: #0f2c44;
   --calendar-bg: #0f2c44;
   --project-details-bg: #242424;
+  --team-progress-bg: #0f2c44;
   --reports-bg: #0f2c44;
   --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
@@ -111,6 +113,7 @@ body {
 
 /* Projects Table Card */
 .projects-table {
+  height: 350px;
   background-color: var(--projects-table-bg);
 }
 body.dark-mode .projects-table {
@@ -165,6 +168,7 @@ body.dark-mode .projects-table {
 
 /* Calendar Card */
 .calendar {
+  height: 350px;
   background-color: var(--calendar-bg);
 }
 body.dark-mode .calendar {
@@ -239,6 +243,7 @@ body.dark-mode .project-details {
 /* Reports Card */
 .reports {
   background-color: var(--reports-bg);
+  height: 200px;
 }
 body.dark-mode .reports {
   background-color: var(--reports-bg);
@@ -345,6 +350,8 @@ body.dark-mode .calendar {
 }
 
 #team-activity-box {
+    background-color: var(--team-progress-bg);
+    height: 200px;
     position: relative;
     min-height: 200px;
     padding-right: 130px;
