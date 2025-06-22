@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, redirect, url_for
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_login import login_required, current_user
 
@@ -8,15 +8,6 @@ from backend.models import Notification
 # Blueprint for notification-related endpoints
 notification_bp = Blueprint("notifications", __name__)
 
-
-# For CHANTAL:
-# Endpoint: GET /notifications
-# Returns all notifications for the current user
-# Optional frontend usage:
-#    - To get all notifications:
-#         GET /notifications
-#    - To get only unread notifications:
-#         GET /notifications?unread=true
 @notification_bp.route("/notifications", methods=["GET"])
 @login_required
 @jwt_required()
@@ -49,38 +40,6 @@ def get_notifications():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-# For CHANTAL:
-# Endpoint: PATCH /notifications/<notification_id>
-# Marks a single notification as "read"
-# Frontend usage:
-#    - After the user clicks a notification:
-#         PATCH /notifications/5
-#    - Requires JWT token in Authorization header
-"""
-@notification_bp.route("/notifications/<int:notification_id>", methods=["PATCH"])
-@jwt_required()
-@login_required
-def mark_notification_as_read(notification_id):
-    user_id = get_jwt_identity()
-
-    notification = Notification.query.filter_by(
-        id=notification_id, user_id=user_id
-    ).first()
-
-    if not notification:
-        return jsonify({"error": "Notification not found"}), 404
-
-    if notification.is_read:
-        return jsonify({"message": "Notification already marked as read"}), 200
-
-    notification.is_read = True
-    db.session.commit()
-
-    return jsonify({"message": "Notification marked as read"}), 200
-"""
-
 
 @notification_bp.route("/read/<int:notification_id>", methods=["POST"])
 @login_required

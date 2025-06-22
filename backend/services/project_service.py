@@ -1,9 +1,6 @@
 from datetime import datetime
-from io import BytesIO, StringIO
-
+from io import StringIO
 from flask_login import current_user
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 import csv
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter

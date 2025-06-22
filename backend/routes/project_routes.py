@@ -1,11 +1,9 @@
-from backend.models import UserTeam, Team, Notification, TimeEntry
+from backend.models import UserTeam, Team
 from backend.models.project import Project, ProjectType, ProjectStatus
-from backend.models.task import Task
 from flask_login import current_user, login_required
 from io import BytesIO
 from backend.database import db
 from datetime import datetime
-import json
 from flask import (
     Blueprint,
     request,
@@ -13,7 +11,7 @@ from flask import (
     url_for,
     render_template,
     send_file,
-    make_response, jsonify,
+    make_response,
 )
 from backend.services.project_service import (
     create_project,
@@ -25,7 +23,7 @@ from backend.services.project_service import (
     export_project_info_pdf,
 )
 
-#import for the service function with a new name
+#import the service function with a new name
 from backend.services.project_service import create_project as service_create_project
 
 project_bp = Blueprint("project", __name__)
@@ -118,65 +116,6 @@ def create_project_route():
         return result.get("error", "Project creation failed.")
 
     return render_template("projects.html", team_choices=team_choices)
-    """
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Missing JSON body"}), 400
-
-    name = data.get("name")
-    description = data.get("description")
-    type_str = data.get("type")
-    due_date_str = data.get("due_date")
-    time_limit_hours = data.get("time_limit_hours")
-    is_course = bool(data.get("is_course"))
-    credit_points = data.get("credit_points")
-    team_id = data.get("team_id")
-
-    due_date = None
-    if due_date_str:
-        try:
-            due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
-        except ValueError:
-            return jsonify({"error": "Invalid date format"}), 400
-
-    try:
-        type_enum = ProjectType[type_str]
-        if type_enum == ProjectType.TeamProject and not team_id:
-            return jsonify({"error": "Team is required for TeamProject"}), 400
-    except KeyError:
-        return jsonify({"error": "Invalid project type"}), 400
-
-    if team_id:
-        try:
-            team_id = int(team_id)
-        except ValueError:
-            return jsonify({"error": "Invalid team ID"}), 400
-
-        team = db.session.get(Team, team_id)
-        if not team:
-            return jsonify({"error": "Team not found"}), 404
-
-        is_admin = UserTeam.query.filter_by(
-            user_id=current_user.user_id, team_id=team_id, role="admin"
-        ).first()
-        if not is_admin:
-            return jsonify({"error": "No admin rights for the team"}), 403
-
-    result = create_project(
-        name=name,
-        description=description,
-        user_id=current_user.user_id,
-        team_id=team_id,
-        time_limit_hours=time_limit_hours,
-        due_date=due_date,
-        type=type_enum,
-        is_course=is_course,
-        credit_points=credit_points,
-    )
-
-    if "success" in result:
-        return jsonify({"success": True, "project_id": result["project_id"]})
-    """
 
 @project_bp.route("/project/<int:project_id>", methods=["GET"])
 @login_required
@@ -193,12 +132,7 @@ def view_project(project_id):
     if "success" in result:
         return render_template("projects.html", project=result["project"])
     return result.get("error", "Project not found."), 404
-    """
-    result = get_project(project_id)
-    if "success" in result:
-        return jsonify(result["project"])
-    return jsonify({"error": "Project not found"}), 404
-    """
+
 
 
 @project_bp.route("/project/delete/<int:project_id>", methods=["POST"])
@@ -218,13 +152,7 @@ def delete_project_route(project_id):
     if "success" in result:
         return redirect(url_for("dashboard"))
     return result.get("error", "Delete failed."), 404
-    """
 
-    result = delete_project(project_id)
-    if "success" in result:
-        return jsonify({"success": True})
-    return jsonify({"error": result.get("error", "Delete failed")}), 404
-    """
 
 @project_bp.route("/project/edit/<int:project_id>", methods=["GET", "POST"])
 @login_required
@@ -248,14 +176,7 @@ def edit_project_route(project_id):
     if "success" in result:
         return render_template("projects.html", project=result["project"])
     return result.get("error", "Project not found."), 404
-    """
 
-    data = request.get_json()
-    result = update_project(project_id, data)
-    if "success" in result:
-        return jsonify({"success": True})
-    return jsonify({"error": result.get("error", "Update failed")}), 400
-    """
 
 @project_bp.route("/api/projects", methods=["GET", "POST"])
 @login_required
@@ -433,66 +354,6 @@ def api_project_detail(project_id):
         db.session.delete(project)
         db.session.commit()
         return {"success": True}
-
-
-@project_bp.route("/team-projects", methods=["GET"])
-@login_required
-def view_team_projects_with_user_tasks():
-    """
-    Display team projects and only the tasks assigned to the current user.
-
-    Returns:
-        Response: Rendered HTML with user's assigned tasks per team project.
-    """
-    if not current_user.is_authenticated:
-        return redirect(url_for("login"))
-
-    user_id = current_user.user_id
-
-    team_ids = [
-        ut.team_id for ut in UserTeam.query.filter_by(user_id=user_id).all()
-    ]
-
-    if not team_ids:
-        return render_template("projects.html", projects=[])
-
-    team_projects = Project.query.filter(Project.team_id.in_(team_ids)).all()
-
-    results = []
-    for project in team_projects:
-        tasks = Task.query.filter_by(
-            project_id=project.project_id,
-            user_id=user_id
-        ).all()
-
-        if tasks:
-            results.append({"project": project, "tasks": tasks})
-
-    return render_template("projects.html", project_tasks=results)
-    """
-    user_id = current_user.user_id
-    team_ids = [ut.team_id for ut in UserTeam.query.filter_by(user_id=user_id).all()]
-
-    if not team_ids:
-        return jsonify([])
-
-    team_projects = Project.query.filter(Project.team_id.in_(team_ids)).all()
-
-    results = []
-    for project in team_projects:
-        tasks = Task.query.filter_by(project_id=project.project_id, user_id=user_id).all()
-        if tasks:
-            results.append({
-                "project": {
-                    "project_id": project.project_id,
-                    "name": project.name,
-                    "description": project.description,
-                },
-                "tasks": [{"task_id": t.task_id, "name": t.name} for t in tasks]
-            })
-
-    return jsonify(results)
-    """
 
 @project_bp.route("/api/projects/export/projects/pdf", methods=["GET"])
 @login_required
