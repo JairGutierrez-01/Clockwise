@@ -3,6 +3,7 @@ from flask_login import current_user
 
 from backend.database import db
 from backend.models.task import Task, TaskStatus
+from backend.models.category import Category
 from backend.models.project import Project
 from backend.services.project_service import update_total_duration_for_project
 
@@ -182,12 +183,19 @@ def delete_task(task_id):
             return {"error": "You are not authorized to delete this solo task."}
 
     project_id = task.project_id
+    category_id = task.category_id
 
     db.session.delete(task)
     db.session.commit()
 
     if project_id:
         update_total_duration_for_project(project_id)
+
+    if category_id:
+        task_count = Task.query.filter_by(category_id=category_id).count()
+        if task_count == 0:
+            Category.query.filter_by(category_id=category_id).delete()
+            db.session.commit()
 
     return {
         "success": True,

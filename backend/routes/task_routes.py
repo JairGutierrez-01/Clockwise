@@ -2,8 +2,9 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 
-from backend.models import Project, UserTeam, Task
+from backend.models import Project, UserTeam, Task, Category
 from backend.models.task import TaskStatus
+from backend.database import db
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -74,7 +75,18 @@ def create_task_api():
         title = "Untitled Task"
 
     description = data.get("description")
-    category_id = data.get("category_id")
+    category_name = data.get("category_name", "").strip()
+    category_id = None
+
+    if category_name:
+        existing_category = Category.query.filter_by(name=category_name).first()
+        if existing_category:
+            category_id = existing_category.category_id
+        else:
+            new_category = Category(name=category_name)
+            db.session.add(new_category)
+            db.session.commit()
+            category_id = new_category.category_id
     member_id = data.get("member_id")
     status = "todo"
 
@@ -309,3 +321,35 @@ def update_task_status(task_id):
         }), 200
 
     return jsonify({"error": result.get("error", "Status update failed.")}), 400
+
+@task_bp.route("/categories/used", methods=["GET"])
+@login_required
+def get_used_categories():
+    """
+    Retrieve all categories that are currently used by at least one task.
+
+    This endpoint returns a list of unique category names that are assigned
+    to at least one existing task. Unused categories (i.e., those not assigned
+    to any tasks) are excluded.
+
+    Returns:
+        JSON:
+            {
+                "categories": [
+                    {"name": "Hausarbeit"},
+                    {"name": "Prüfung"},
+                    ...
+                ]
+            }
+    """
+    categories = (
+        db.session.query(Category)
+        .join(Task)
+        .group_by(Category.category_id)
+        .having(db.func.count(Task.task_id) > 0)
+        .all()
+    )
+
+    return jsonify({
+        "categories": [{"name": c.name} for c in categories]
+    })

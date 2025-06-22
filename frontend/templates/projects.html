@@ -152,12 +152,11 @@
           placeholder="Put in or choose category"
         />-->
         <!--<datalist id="category-suggestions"></datalist>-->
-        <select id="task-category" name="category_id">
-          <option value="">-- Select Category --</option>
-          <option value="1">Hausarbeit</option>
-          <option value="2">Prüfung</option>
-          <option value="3">Wiederholung</option>
-        </select>
+        <label for="task-category">Category</label>
+            <input list="category-suggestions" id="task-category" name="category_name" placeholder="Enter or choose category" />
+            <datalist id="category-suggestions">
+              <!-- wird dynamisch gefüllt mit JS -->
+            </datalist>
 
         <label for="task-project">Project</label>
         <select id="task-project" name="project_id">
@@ -187,7 +186,6 @@
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
-
     <script>
       lucide.createIcons();
     </script>

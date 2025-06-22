@@ -101,6 +101,7 @@ class Task(db.Model):
             "admin_id": self.admin_id,
             "member_id": self.member_id,
             "category_id": self.category_id,
+            "category_name": self.category.name if self.category else None,
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             "created_from_tracking": self.created_from_tracking,
             "is_untitled": (
