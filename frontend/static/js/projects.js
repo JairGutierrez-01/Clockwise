@@ -25,7 +25,7 @@ async function fetchTasks(projectId) {
     return [];
   }
 }
-
+/*
 async function loadCategories() {
   try {
     const res = await fetch("/api/categories");
@@ -46,7 +46,7 @@ async function loadCategories() {
     console.error("Kategorie-Ladevorgang fehlgeschlagen:", err);
   }
 }
-
+*/
 // ============================================================================
 // Sets up event listeners, state management, and UI update routines after DOM load.
 // ============================================================================
@@ -66,13 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const typeSelect = document.getElementById("project-type");
 
   //when selecting TeamProject
-  const teamSelectLabel   = document.getElementById("team-select-label");
-  const teamSelect        = document.getElementById("project-team");
+  const teamSelectLabel = document.getElementById("team-select-label");
+  const teamSelect = document.getElementById("project-team");
 
   function populateTeamOptions() {
-    const adminTeams = allTeamsData.filter(t => t.role === "admin");
+    const adminTeams = allTeamsData.filter((t) => t.role === "admin");
     teamSelect.innerHTML = '<option value="">Select Team</option>';
-    adminTeams.forEach(t => {
+    adminTeams.forEach((t) => {
       const opt = document.createElement("option");
       opt.value = t.team_id;
       opt.textContent = t.team_name;
@@ -425,7 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
       due_date: formatDateForBackend(dueDateInput.value),
       ...(typeSelect.value === "TeamProject" && teamSelect.value
         ? { team_id: parseInt(teamSelect.value, 10) }
-        : {})
+        : {}),
     };
 
     if (editingProjectId) {
@@ -482,6 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     openTaskEditModal(taskId);
   });
+  /*
   taskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -557,8 +558,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Fehler beim Speichern der Task:", error);
     }
   });
-
-  /*taskForm.addEventListener("submit", async (event) => {
+*/
+  taskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const taskPayload = {
@@ -605,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Fehler beim Speichern der Task:", error);
     }
   });
-*/
+
   // --- Initialization ---
   /**
    * Loads projects from the backend and renders them.

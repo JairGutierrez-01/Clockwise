@@ -15,6 +15,14 @@ category_bp = Blueprint("category", __name__)
 @category_bp.route("/api/categories", methods=["GET"])
 @login_required
 def api_get_categories():
+    """
+    Get all categories for the currently authenticated user.
+
+    Returns:
+        Response: A Flask Response object containing a JSON structure with a list of
+        categories, where each category includes its ID and name.
+
+    """
     result = get_all_categories(current_user.id)
     categories = result.get("categories", [])
     return jsonify(
@@ -29,6 +37,17 @@ def api_get_categories():
 @category_bp.route("/api/categories", methods=["POST"])
 @login_required
 def api_create_category():
+    """
+    Creates a new category for the currently authenticated user.
+
+    Returns:
+        Response: JSON response containing the creation result. This can include:
+            - Error response with status code 400 if the category name is missing.
+            - Response with status code 200 for other errors returned from the
+              `create_category` function.
+            - Success response with status code 201 if the category creation is
+              successful.
+    """
     data = request.get_json()
     name = data.get("name", "").strip()
 
