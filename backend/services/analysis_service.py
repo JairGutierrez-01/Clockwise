@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from flask_login import current_user
 
 from backend.models import TimeEntry, Task, Project
+from sqlalchemy import or_
 import csv
 from io import StringIO, BytesIO
 
@@ -112,28 +113,38 @@ def load_time_entries():
 
 def load_tasks():
     """
-    Load all tasks for the current logged-in user.
+    Load all tasks visible to the current user:
+      - Solo tasks (user_id)
+      - Tasks assigned to them in team projects (member_id)
+      - All tasks in team projects they administer (admin_id)
 
     Returns:
         list of dict: List of tasks with keys:
             - 'project' (str): Project name
-            - 'status' (str): Task status, e.g., "done", "open"
+            - 'status' (str): Task status ("todo", "in_progress", "done")
             - 'title' (str): Task title
-            - 'start_date' (datetime or None): Task start date if available
+            - 'due_date' (datetime or None): Task due date if available
     """
     if not current_user.is_authenticated:
         return []
-    tasks = Task.query.filter_by(user_id=current_user.user_id).all()
+
+    # Show solo, assigned, and admin‐created tasks
+    tasks = Task.query.filter(
+        or_(
+            Task.user_id == current_user.user_id,
+            Task.member_id == current_user.user_id,
+            Task.admin_id == current_user.user_id
+        )
+    ).all()
+
     result = []
     for task in tasks:
-        result.append(
-            {
-                "project": task.project.name if task.project else None,
-                "status": task.status.value,
-                "title": task.title,
-                "due_date": task.due_date if task.due_date else None,
-            }
-        )
+        result.append({
+            "project": task.project.name if task.project else None,
+            "status": task.status.value,
+            "title": task.title,
+            "due_date": task.due_date if task.due_date else None,
+        })
     return result
 
 
