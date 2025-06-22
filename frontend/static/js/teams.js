@@ -962,7 +962,6 @@ document.addEventListener("click", async function (event) {
         return;
       }
 
-      // Obtener tareas de todos los proyectos del team
       let allTasks = [];
       for (const project of teamProjects) {
         const res = await fetch(`/api/tasks?project_id=${project.project_id}`);
@@ -971,7 +970,6 @@ document.addEventListener("click", async function (event) {
         allTasks = allTasks.concat(projectTasks);
       }
 
-      // Filtrar tareas sin asignar
       const availableTasks = allTasks.filter(task => task.user_id === null || task.user_id === undefined);
 
       if (availableTasks.length === 0) {
