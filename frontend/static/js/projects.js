@@ -109,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleTeamPicker();
   // Check if user has admin rights for a project
   function userHasProjectAdminRights(project) {
+    // damit Admins unabhängig vom Task-Owner Bearbeitungsrechte haben
     if (project.type === "SoloProject") return true;
     if (project.type === "TeamProject" && project.team_id) {
       const team = allTeamsData.find((t) => t.team_id === project.team_id);
@@ -162,6 +163,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const json = await res.json();
     return json.projects;
   }
+
+  async function loadProjects() {
+  try {
+    projects = await fetchProjects();
+    renderProjectList()
+  } catch (err) {
+    console.error("Fehler beim Laden der Projekte:", err);
+  }
+}
 
   async function createProject(data) {
     const res = await fetch("/api/projects", {
@@ -598,6 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const task = await res.json();
       document.getElementById("task-form-title").textContent = "Edit Task";
+
       taskNameInput.value = task.title;
       taskDescInput.value = task.description || "";
       const catInput = document.getElementById("task-category");
@@ -606,37 +617,45 @@ document.addEventListener("DOMContentLoaded", () => {
       taskStatusSelect.value = task.status;
 
       const projectSelect = document.getElementById("task-project");
-      projectSelect.innerHTML =
-        '<option value="">-- Select Project --</option>';
+      projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
       projects.forEach((proj) => {
         const option = document.createElement("option");
         option.value = proj.project_id;
         option.textContent = proj.name;
         projectSelect.appendChild(option);
       });
-
-      // Beim Bearbeiten: vorausgewähltes Projekt setzen
       projectSelect.value = task.project_id || "";
 
-      taskModal.classList.remove("hidden");
+      // Rechte prüfen
+      const currentProject = projects.find(p => p.project_id === task.project_id);
+      const isAdmin = userHasProjectAdminRights(currentProject);
 
-      // Vorübergehend Task-ID speichern
+      const titleInput = document.getElementById("task-name");
+      const descInput = document.getElementById("task-description");
+      const deadlineInput = document.getElementById("task-due-date");
+      const deleteBtn = document.querySelector(".task-delete-btn");
+      const categoryInput = document.getElementById("task-category");
+
+      if (!isAdmin) {
+        [titleInput, descInput, deadlineInput, categoryInput, projectSelect].forEach(el => {
+          el.disabled = true;
+          el.style.opacity = "0.6";
+          el.style.cursor = "not-allowed";
+        });
+        if (deleteBtn) deleteBtn.style.display = "none";
+      } else {
+        [titleInput, descInput, deadlineInput, categoryInput, projectSelect].forEach(el => {
+          el.disabled = false;
+          el.style.opacity = "1";
+          el.style.cursor = "auto";
+        });
+        if (deleteBtn) deleteBtn.style.display = "inline-block";
+      }
+
+      taskModal.classList.remove("hidden");
       taskForm.dataset.editingTaskId = taskId;
     } catch (error) {
       console.error("Fehler beim Laden der Task:", error);
-    }
-  }
-
-  async function loadProjects() {
-    projects = await fetchProjects();
-    renderProjectList();
-    detailSection.classList.add("hidden");
-
-    // Richtig: Nach dem Laden & Rendern prüfen, ob URL eine project_id enthält
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedId = parseInt(urlParams.get("project_id"), 10);
-    if (selectedId) {
-      showProjectDetail(selectedId);
     }
   }
 
@@ -665,6 +684,10 @@ document.addEventListener("DOMContentLoaded", () => {
       textSpan.classList.add("task-meta-row");
 
       // Delete-Button
+     li.appendChild(textSpan);
+    // Adminrechte prüfen
+    const projectOfTask = projects.find(p => p.project_id === task.project_id);
+    if (userHasProjectAdminRights(projectOfTask)) {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "task-delete-btn";
@@ -682,10 +705,8 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Fehler beim Löschen:", err);
         }
       });
-
-      // Zusammenfügen
-      li.appendChild(textSpan);
       li.appendChild(deleteBtn);
+    }
       taskListEl.appendChild(li);
     });
   }
