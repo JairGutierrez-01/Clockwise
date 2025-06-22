@@ -153,7 +153,7 @@ function ensureTeamBoxExists() {
       const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
       if (ignoredElements.includes(event.target.tagName)) return;
 
-      window.location.href = '/teams';
+      window.location.href = '/analysis?view=progress';
     });
   }
 
@@ -500,5 +500,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.clientX < bounding.right - scrollbarThreshold) {
       window.location.href = "/analysis";
     }
+  });
+});
+
+/**
+ * Aktiviert die Klick-Weiterleitung auf die Fortschritts-Kachel im Dashboard.
+ * Leitet zur Analysis-Seite mit aktivierter Progress-Ansicht weiter,
+ * wenn innerhalb der Kachel (außerhalb von dekorativen Elementen) geklickt wird.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const teamCard = document.getElementById("team-activity-box");
+
+  if (!teamCard) return;
+
+  teamCard.style.cursor = "pointer";
+
+  teamCard.addEventListener("click", function (e) {
+    const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
+    if (ignoredElements.includes(e.target.tagName)) return;
+
+    window.location.href = "/analysis?view=progress";
   });
 });

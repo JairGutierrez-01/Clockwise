@@ -875,6 +875,18 @@ function renderTeams(teams) {
   });
 }
 
+//highlight chosen team
+function highlightActiveTeamRow(teamId) {
+  const allRows = document.querySelectorAll("#teamsBody tr");
+  allRows.forEach(row => {
+    if (row.dataset.teamId === teamId) {
+      row.classList.add("active-team-row");
+    } else {
+      row.classList.remove("active-team-row");
+    }
+  });
+}
+
 
 // Show members of the Team
 function renderMembersForTeams(teams) {
@@ -1202,6 +1214,7 @@ function updateCarouselPosition(index) {
   const activeCard = track.children[currentCardIndex];
   if (activeCard) {
     currentDisplayedTeamId = activeCard.dataset.teamId;
+    highlightActiveTeamRow(currentDisplayedTeamId); // Hebt die aktive Zeile links hervor
   } else {
     currentDisplayedTeamId = null;
   }
