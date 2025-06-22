@@ -119,7 +119,7 @@ app.register_blueprint(project_bp)
 app.register_blueprint(project_bp, url_prefix="/api/projects", name="project_api")
 app.register_blueprint(category_bp, url_prefix="/categories")
 app.register_blueprint(analysis_bp, url_prefix="/api/analysis")
-
+app.permanent_session_lifetime = timedelta(hours=24)
 # Create tables if not exist
 with app.app_context():
     db.create_all()
