@@ -954,31 +954,29 @@ document.addEventListener("click", async function (event) {
     const userId = event.target.dataset.userId;
     const teamId = currentDisplayedTeamId;
 
-    const project = allProjectsData.find(p => p.team_id === Number(teamId));
-    if (!project) {
-      showCustomAlert("Error", "No project assigned to this team.", "error");
-      return;
-    }
-
-    const projectId = project.project_id;
-
     try {
-      const response = await fetch(`/api/tasks?project_id=${projectId}`);
-      if (!response.ok) throw new Error("Error fetching tasks.");
-      const tasks = await response.json(); //array de las tareas
+      const teamProjects = allProjectsData.filter(p => p.team_id === Number(teamId));
 
-      if (!tasks || tasks.length === 0) {
-        showCustomAlert("Info", "No tasks found for this project.", "alert");
+      if (teamProjects.length === 0) {
+        showCustomAlert("Error", "No projects assigned to this team.", "error");
         return;
       }
 
-      const availableTasks = tasks.filter(task => {
-          return task.user_id === null || task.user_id === undefined;
-      });
+      // Obtener tareas de todos los proyectos del team
+      let allTasks = [];
+      for (const project of teamProjects) {
+        const res = await fetch(`/api/tasks?project_id=${project.project_id}`);
+        if (!res.ok) continue;
+        const projectTasks = await res.json();
+        allTasks = allTasks.concat(projectTasks);
+      }
+
+      // Filtrar tareas sin asignar
+      const availableTasks = allTasks.filter(task => task.user_id === null || task.user_id === undefined);
 
       if (availableTasks.length === 0) {
-          showCustomAlert("Info", "No available tasks to assign for this user.", "alert");
-          return;
+        showCustomAlert("Info", "No available tasks to assign for this user.", "alert");
+        return;
       }
 
       const taskListHtml = availableTasks.map(task => `
@@ -1009,41 +1007,36 @@ document.addEventListener("click", async function (event) {
       if (closeBtn) closeBtn.onclick = hideCustomModal;
 
       dynamicContentArea.querySelectorAll(".assign-task-btn").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const selectedTaskId = btn.dataset.taskId;
-        let targetUserId = btn.dataset.userId;
-
-        targetUserId = Number(targetUserId);
-
-        try {
-          const assignResponse = await fetch(`/api/tasks/${selectedTaskId}/assign`, {
-            method: "PATCH",
-            headers,
-            body: JSON.stringify({ user_id: targetUserId }),
-            credentials: "include"
-          });
-
-          const result = await assignResponse.json();
-
-          if (assignResponse.ok) {
-            showCustomAlert("Success", "Task assigned successfully!", "success");
-            hideCustomModal();
-            const memberOptionsButton = document.querySelector(`.assign-options-btn[data-user-id="${targetUserId}"]`);
-            if (memberOptionsButton) {
-                const updatedTaskInfo = await fetchAssignedTaskForUser(targetUserId, teamId);
-                document.querySelectorAll(".assign-popover").forEach(el => el.remove());
-                showAssignPopover(memberOptionsButton, updatedTaskInfo, targetUserId);
+        btn.addEventListener("click", async () => {
+          const selectedTaskId = btn.dataset.taskId;
+          let targetUserId = btn.dataset.userId;
+          targetUserId = Number(targetUserId);
+          try {
+            const assignResponse = await fetch(`/api/tasks/${selectedTaskId}/assign`, {
+              method: "PATCH",
+              headers,
+              body: JSON.stringify({ user_id: targetUserId }),
+              credentials: "include"
+            });
+            const result = await assignResponse.json();
+            if (assignResponse.ok) {
+              showCustomAlert("Success", "Task assigned successfully!", "success");
+              hideCustomModal();
+              const memberOptionsButton = document.querySelector(`.assign-options-btn[data-user-id="${targetUserId}"]`);
+              if (memberOptionsButton) {
+                  const updatedTaskInfo = await fetchAssignedTaskForUser(targetUserId, teamId);
+                  document.querySelectorAll(".assign-popover").forEach(el => el.remove());
+                  showAssignPopover(memberOptionsButton, updatedTaskInfo, targetUserId);
+              }
+            } else {
+              showCustomAlert("Error", result.error || "Failed to assign task.", "error");
             }
-          } else {
-            showCustomAlert("Error", result.error || "Failed to assign task.", "error");
+          } catch (err) {
+            console.error("Assignment error:", err);
+            showCustomAlert("Error", "Network error. Could not assign task.", "error");
           }
-        } catch (err) {
-          console.error("Assignment error:", err);
-          showCustomAlert("Error", "Network error. Could not assign task.", "error");
-        }
+        });
       });
-    });
-
     } catch (err) {
       console.error("Error fetching tasks for assignment:", err);
       showCustomAlert("Error", "Could not fetch tasks.", "error");
@@ -1109,14 +1102,12 @@ async function fetchAssignedTaskForUser(userId, teamId) {
 
     let projectId = team.project_id;
 
-    if (!projectId) {
-      const project = allProjectsData.find(p => p.team_id === Number(teamId));
-      if (!project) {
-        console.warn("No project assigned to team for teamId:", teamId);
-        return []; // Return an empty array if no project is assigned
-      }
-      projectId = project.project_id;
+    const teamProjects = allProjectsData.filter(p => p.team_id === Number(teamId));
+    if (!teamProjects || teamProjects.length === 0) {
+        console.warn("No projects assigned to team for teamId:", teamId);
+        return [];
     }
+    const teamProjectIds = teamProjects.map(p => p.project_id);
 
     // Get ALL tasks for the user
     const response = await fetch(`/api/users/${userId}/tasks`);
@@ -1129,7 +1120,7 @@ async function fetchAssignedTaskForUser(userId, teamId) {
 
     // Filter tasks that belong to the currently displayed project
     // Return the array of task objects (empty if none)
-    return allUserTasks.filter(t => t.project_id === projectId);
+    return allUserTasks.filter(t => teamProjectIds.includes(t.project_id));
 }
 
 function showAssignPopover(buttonElement, assignedTasks, userId) {
