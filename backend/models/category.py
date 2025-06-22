@@ -15,8 +15,10 @@ class Category(db.Model):
 
     category_id = db.Column(db.Integer, primary_key=True, index=True)
     name = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
-    task = db.relationship("Task", back_populates="category")
+    tasks = db.relationship("Task", back_populates="category")
+    user = db.relationship("User", back_populates="categories")
 
     def __repr__(self) -> str:
         """

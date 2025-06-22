@@ -487,7 +487,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Kategorie-ID bestimmen
   const catInputEl = document.getElementById("task-category");
-  const enteredCatName = catInputEl.value.trim();
+  let enteredCatName = catInputEl.value.trim();
+
+  enteredCatName = enteredCatName.replace("ß", "ss");
+
+  enteredCatName = enteredCatName.replace(/[^\p{L}\s]/gu, "").trim();
+
+  enteredCatName = enteredCatName
+  .split(/\s+/)
+  .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  .join(" ");
+
   let categoryId = null;
 
   if (enteredCatName) {
@@ -501,7 +511,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch("/api/categories", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: enteredCatName }),
+          body: JSON.stringify({ name: enteredCatName}),
+          credentials: "include"
         });
         if (!res.ok) throw new Error("Fehler beim Erstellen der Kategorie");
         const newCat = await res.json();
@@ -517,6 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
     title: taskNameInput.value.trim(),
     description: taskDescInput.value.trim(),
     category_id: categoryId, // <-- Jetzt korrekt gesetzt!
+    category_name: enteredCatName,
     due_date: taskDueDateInput.value || null,
     status: taskStatusSelect.value,
     project_id: parseInt(projectSelect.value, 10) || null,

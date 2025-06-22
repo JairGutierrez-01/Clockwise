@@ -117,7 +117,7 @@ app.register_blueprint(time_entry_bp, url_prefix="/api/time_entries")
 app.register_blueprint(project_bp)
 # For API-Zugriffe
 app.register_blueprint(project_bp, url_prefix="/api/projects", name="project_api")
-app.register_blueprint(category_bp, url_prefix="/categories")
+app.register_blueprint(category_bp)
 app.register_blueprint(analysis_bp, url_prefix="/api/analysis")
 # Create tables if not exist
 with app.app_context():

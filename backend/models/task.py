@@ -66,7 +66,7 @@ class Task(db.Model):
     admin = db.relationship("User", foreign_keys=[admin_id], back_populates="admin_tasks")
     member = db.relationship("User", foreign_keys=[member_id], back_populates="member_tasks")
     project = db.relationship("Project", back_populates="tasks")
-    category = db.relationship("Category", back_populates="task")
+    category = db.relationship("Category", back_populates="tasks")
 
     @property
     def total_duration(self):
