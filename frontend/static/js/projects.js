@@ -42,6 +42,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskStatusSelect = document.getElementById("task-status");
   let projects = [];
   let allTeamsData = [];
+  const typeSelect = document.getElementById("project-type");
+
+  //when selecting TeamProject
+  const teamSelectLabel   = document.getElementById("team-select-label");
+  const teamSelect        = document.getElementById("project-team");
+
+  function populateTeamOptions() {
+    const adminTeams = allTeamsData.filter(t => t.role === "admin");
+    teamSelect.innerHTML = '<option value="">Select Team</option>';
+    adminTeams.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.team_id;
+      opt.textContent = t.team_name;
+      teamSelect.appendChild(opt);
+    });
+  }
+
+  function toggleTeamPicker() {
+    if (typeSelect.value === "TeamProject") {
+      teamSelect.classList.remove("hidden");
+      teamSelectLabel.classList.remove("hidden");
+      populateTeamOptions();
+    } else {
+      teamSelect.classList.add("hidden");
+      teamSelectLabel.classList.add("hidden");
+      teamSelect.value = "";
+    }
+  }
+
+  typeSelect.addEventListener("change", toggleTeamPicker);
+  toggleTeamPicker();
   // Check if user has admin rights for a project
   function userHasProjectAdminRights(project) {
     if (project.type === "SoloProject") return true;
@@ -69,7 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const formTitle = document.getElementById("form-title");
   const nameInput = document.getElementById("project-name");
   const descInput = document.getElementById("project-description");
-  const typeSelect = document.getElementById("project-type");
   const timeLimitInput = document.getElementById("project-time-limit");
   const dueDateInput = document.getElementById("project-due-date");
   const detailSection = document.getElementById("project-detail");
@@ -373,6 +403,9 @@ document.addEventListener("DOMContentLoaded", () => {
       type: typeSelect.value,
       time_limit_hours: parseInt(timeLimitInput.value, 10),
       due_date: formatDateForBackend(dueDateInput.value),
+      ...(typeSelect.value === "TeamProject" && teamSelect.value
+        ? { team_id: parseInt(teamSelect.value, 10) }
+        : {})
     };
 
     if (editingProjectId) {
