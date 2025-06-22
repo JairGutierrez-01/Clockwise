@@ -26,6 +26,18 @@ async function fetchTasks(projectId) {
   }
 }
 
+async function fetchTeamTasks(teamId) {
+  try {
+    const response = await fetch(`/api/teams/${teamId}/tasks`);
+    if (!response.ok) throw new Error("Fehler beim Laden der Team-Aufgaben");
+    const tasks = await response.json();
+    return tasks;
+  } catch (err) {
+    console.error("fetchTeamTasks Fehler:", err);
+    return [];
+  }
+}
+
 async function loadCategories() {
   try {
     const res = await fetch("/api/categories");
