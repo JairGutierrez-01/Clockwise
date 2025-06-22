@@ -47,6 +47,7 @@ class User(db.Model, UserMixin):
     member_tasks = db.relationship("Task", foreign_keys="Task.member_id", back_populates="member")
     time_entries = db.relationship("TimeEntry", back_populates="user")
     notifications = db.relationship("Notification", back_populates="user")
+    categories = db.relationship("Category", back_populates="user")
 
     def get_id(self):
         return str(self.user_id)

@@ -23,7 +23,7 @@ def api_get_categories():
         categories, where each category includes its ID and name.
 
     """
-    result = get_all_categories(current_user.id)
+    result = get_all_categories(current_user.user_id)
     categories = result.get("categories", [])
     return jsonify(
         {
@@ -54,7 +54,7 @@ def api_create_category():
     if not name:
         return jsonify({"error": "Category name is required"}), 400
 
-    result = create_category(name, current_user.id)
+    result = create_category(name, current_user.user_id)
     if "error" in result:
         return jsonify(result), 200
 
@@ -69,7 +69,7 @@ def list_categories():
     Returns:
         Response: Renders a template with all categories.
     """
-    result = get_all_categories(current_user.id)
+    result = get_all_categories(current_user.user_id)
     return render_template("category_list.html", categories=result["categories"])
 
 
@@ -100,7 +100,7 @@ def create_category_route():
     """
     if request.method == "POST":
         name = request.form["name"]
-        result = create_category(name, current_user.id)
+        result = create_category(name, current_user.user_id)
         if "success" in result:
             return redirect(url_for("category.list_categories"))
         return result["error"]
