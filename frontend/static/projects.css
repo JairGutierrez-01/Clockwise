@@ -460,3 +460,11 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background-color: #2a2f3b;
+  color: #aaa;
+  cursor: not-allowed;
+}
