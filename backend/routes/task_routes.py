@@ -5,7 +5,6 @@ from flask_login import current_user, login_required
 from backend.models import Project, UserTeam, Task, Category
 from backend.models.task import TaskStatus
 from backend.database import db
-import backend.services.notifications as notifications
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -280,27 +279,10 @@ def assign_task_to_user_api(task_id):
     if not is_admin:
         return jsonify({"error": "Only team admins can assign tasks"}), 403
 
-    old_member_id = task.member_id
     result = update_task(task_id, member_id=user_id)
 
     if result.get("success"):
         message = "Task assigned successfully." if user_id is not None else "Task unassigned successfully."
-
-        if user_id is not None and user_id != old_member_id:
-            # Neue Zuweisung → Benachrichtige neue verantwortliche Person
-            notifications.notify_task_assigned(
-                user_id=user_id,
-                task_name=task.title,
-                project_name=project.name
-            )
-        elif user_id is None and old_member_id:
-            # Zuweisung aufgehoben → Benachrichtige alte verantwortliche Person
-            notifications.notify_task_unassigned(
-                user_id=old_member_id,
-                task_name=task.title,
-                project_name=project.name
-            )
-
         return jsonify({
             "message": message,
             "task_id": task_id,

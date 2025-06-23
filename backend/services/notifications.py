@@ -52,6 +52,13 @@ def notify_task_unassigned(user_id, task_name, project_name):
     create_notification(user_id, message, notif_type="task")
 
 
+# Used in: task_routes.py
+# Trigger: Task was deleted from a team project
+def notify_task_deleted(user_id, task_name, project_name):
+    message = f"Your task '{task_name}' in project '{project_name}' was deleted."
+    create_notification(user_id, message, notif_type="task")
+
+
 # Used in: user_team_routes.py
 # Trigger: A user is added to a team (F100)
 def notify_user_added_to_team(user_id, team_name):
