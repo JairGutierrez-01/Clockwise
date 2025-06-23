@@ -33,27 +33,27 @@
     <!-- Hauptcontainer -->
     <main class="analysis-container">
       <div class="analysis-header">
-  <div class="analysis-header-left">
-    <h1>Analysis</h1>
-  </div>
-
-  <div class="analysis-header-right">
-    <div class="controls-wrapper">
-      <div id="analysis-controls" class="filter-style">
-        <button data-view="weekly" class="active">Weekly</button>
-        <button data-view="calendar">Calendar</button>
-        <button data-view="progress">Progress</button>
-      </div>
-      <button id="download-button" title="Exportieren">
-          <i data-lucide="download"></i>
-      </button>
-      <div id="download-dropdown" class="hidden">
-          <button data-format="pdf">Download as PDF</button>
-          <button data-format="csv">Download as CSV</button>
+        <div class="analysis-header-left">
+          <h1>Analysis</h1>
         </div>
-    </div>
-  </div>
-</div>
+
+        <div class="analysis-header-right">
+          <div class="controls-wrapper">
+            <div id="analysis-controls" class="filter-style">
+              <button data-view="weekly" class="active">Weekly</button>
+              <button data-view="calendar">Calendar</button>
+              <button data-view="progress">Progress</button>
+            </div>
+            <button id="download-button" title="Exportieren">
+              <i data-lucide="download"></i>
+            </button>
+            <div id="download-dropdown" class="hidden">
+              <button data-format="pdf">Download as PDF</button>
+              <button data-format="csv">Download as CSV</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Inhalt (Charts / Kalender / Progress) -->
       <div class="dashboard-columns">
@@ -91,7 +91,7 @@
             <div class="progress-panel time-comparison">
               <h4>Actual vs. Planned Time</h4>
               <div class="time-charts">
-                  <canvas id="actualChart"></canvas>
+                <canvas id="actualChart"></canvas>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@
     {% endif %}
 
     <script>
-        lucide.createIcons();
+      lucide.createIcons();
     </script>
   </body>
 </html>

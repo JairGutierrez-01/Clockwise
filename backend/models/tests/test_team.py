@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from backend.database import Base
 from backend.models import Team
 
@@ -57,6 +58,7 @@ def test_team_is_valid(db_session):
 
     team.name = "Valid Team"
     assert team.is_valid()
+
 
 """
     team = Team(name="Lineare Algebra")

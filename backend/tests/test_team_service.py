@@ -1,6 +1,7 @@
 # tests/test_team_service.py
 
 import pytest
+
 from backend.models import User, Team, UserTeam, Project, Task
 from backend.services.team_service import (
     create_new_team,
@@ -81,7 +82,10 @@ def test_remove_member_from_team(db_session, setup_user_team):
     result = remove_member_from_team(user.user_id, team.team_id)
     assert result is True
 
-    assert UserTeam.query.filter_by(user_id=user.user_id, team_id=team.team_id).first() is None
+    assert (
+        UserTeam.query.filter_by(user_id=user.user_id, team_id=team.team_id).first()
+        is None
+    )
 
 
 def test_get_team_members_returns_list(db_session, setup_user_team):
@@ -159,7 +163,9 @@ def test_check_admin_true_and_false(db_session, setup_user_team):
     assert check_admin(user.user_id, team.team_id) is None
 
     # Update to admin
-    UserTeam.query.filter_by(user_id=user.user_id, team_id=team.team_id).update({"role": "admin"})
+    UserTeam.query.filter_by(user_id=user.user_id, team_id=team.team_id).update(
+        {"role": "admin"}
+    )
     db_session.commit()
 
     assert check_admin(user.user_id, team.team_id) is not None

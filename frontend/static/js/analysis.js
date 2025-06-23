@@ -33,15 +33,15 @@ document.addEventListener("DOMContentLoaded", () => {
     "#f1136f",
     "#ff2600",
     "#00cdfb",
-    "#beff00"
+    "#beff00",
   ];
 
-/**
- * Konvertiert eine hexadezimale Farbe in ein RGB-Objekt (um veschiedene Helligkeiten einer Farbe für die Tasks eines Projekts zu verwenden).
- * @param {string} hex - Farbwert in hex-Notation (z.B. "#ff0000")
- * @returns {{r: number, g: number, b: number}} - Die RGB-Werte.
- */
-function hexToRgb(hex) {
+  /**
+   * Konvertiert eine hexadezimale Farbe in ein RGB-Objekt (um veschiedene Helligkeiten einer Farbe für die Tasks eines Projekts zu verwenden).
+   * @param {string} hex - Farbwert in hex-Notation (z.B. "#ff0000")
+   * @returns {{r: number, g: number, b: number}} - Die RGB-Werte.
+   */
+  function hexToRgb(hex) {
     // Entferne das "#" falls vorhanden
     hex = hex.replace(/^#/, "");
     if (hex.length === 3) {
@@ -58,14 +58,14 @@ function hexToRgb(hex) {
     };
   }
 
-/**
- * Wandelt RGB-Werte in HSL um.
- * @param {number} r - Rotwert (0–255)
- * @param {number} g - Grünwert (0–255)
- * @param {number} b - Blauwert (0–255)
- * @returns {[number, number, number]} - HSL als [Hue, Saturation, Lightness]
- */
-function rgbToHsl(r, g, b) {
+  /**
+   * Wandelt RGB-Werte in HSL um.
+   * @param {number} r - Rotwert (0–255)
+   * @param {number} g - Grünwert (0–255)
+   * @param {number} b - Blauwert (0–255)
+   * @returns {[number, number, number]} - HSL als [Hue, Saturation, Lightness]
+   */
+  function rgbToHsl(r, g, b) {
     r /= 255;
     g /= 255;
     b /= 255;
@@ -98,12 +98,12 @@ function rgbToHsl(r, g, b) {
     return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
   }
 
-/**
- * Gibt eine zu einem Projektnamen gehörende Farbe zurück.
- * @param {string} projectName - Name des Projekts.
- * @returns {string} - Hex-Farbwert.
- */
-function getColorForProject(projectName) {
+  /**
+   * Gibt eine zu einem Projektnamen gehörende Farbe zurück.
+   * @param {string} projectName - Name des Projekts.
+   * @returns {string} - Hex-Farbwert.
+   */
+  function getColorForProject(projectName) {
     let hash = 0;
     const full = projectName + "_hash";
     for (let i = 0; i < full.length; i++) {
@@ -113,15 +113,15 @@ function getColorForProject(projectName) {
     return colorPalette[index];
   }
 
-/**
- * Gibt eine abgestufte HSL-Farbe für eine Task innerhalb eines Projekts zurück.
- * @param {string} project - Projektname.
- * @param {string} task - Taskname.
- * @param {number} [indexInStack=0] - Position der Task im Stapel.
- * @param {number} [total=1] - Gesamtanzahl der Tasks.
- * @returns {string} - Farbwert im HSL-Format.
- */
-function getTaskColor(project, task, indexInStack = 0, total = 1) {
+  /**
+   * Gibt eine abgestufte HSL-Farbe für eine Task innerhalb eines Projekts zurück.
+   * @param {string} project - Projektname.
+   * @param {string} task - Taskname.
+   * @param {number} [indexInStack=0] - Position der Task im Stapel.
+   * @param {number} [total=1] - Gesamtanzahl der Tasks.
+   * @returns {string} - Farbwert im HSL-Format.
+   */
+  function getTaskColor(project, task, indexInStack = 0, total = 1) {
     const baseColor = getColorForProject(project);
     const rgb = hexToRgb(baseColor);
     let [h, s, l] = rgbToHsl(rgb.r, rgb.g, rgb.b);
@@ -133,13 +133,13 @@ function getTaskColor(project, task, indexInStack = 0, total = 1) {
     return `hsl(${h}, ${s}%, ${l}%)`;
   }
 
-/**
- * Passt die Helligkeit einer Hexfarbe um einen Prozentwert an.
- * @param {string} color - Ausgangsfarbe in Hex.
- * @param {number} percent - Prozentuale Veränderung (-100 bis +100).
- * @returns {string} - Neue Hexfarbe.
- */
-function shadeColor(color, percent) {
+  /**
+   * Passt die Helligkeit einer Hexfarbe um einen Prozentwert an.
+   * @param {string} color - Ausgangsfarbe in Hex.
+   * @param {number} percent - Prozentuale Veränderung (-100 bis +100).
+   * @returns {string} - Neue Hexfarbe.
+   */
+  function shadeColor(color, percent) {
     const f = parseInt(color.slice(1), 16),
       t = percent < 0 ? 0 : 255,
       p = Math.abs(percent) / 100,
@@ -159,11 +159,11 @@ function shadeColor(color, percent) {
     return `#${newColor}`;
   }
 
-   /**
-    * Rendert das Wochen-Diagramm mit gestapelten Balken pro Projekt/Task.
-    * @param {string|null} [weekStart=null] - ISO-Datum (YYYY-MM-DD) des Wochenanfangs oder null für aktuelle Woche.
-    * @returns {Promise<void>}
-    */
+  /**
+   * Rendert das Wochen-Diagramm mit gestapelten Balken pro Projekt/Task.
+   * @param {string|null} [weekStart=null] - ISO-Datum (YYYY-MM-DD) des Wochenanfangs oder null für aktuelle Woche.
+   * @returns {Promise<void>}
+   */
   async function renderChart(weekStart = null) {
     const ctx = document.getElementById("timeChart").getContext("2d");
     if (chartInstance) chartInstance.destroy();
@@ -440,10 +440,10 @@ function shadeColor(color, percent) {
         const offset = circumference * (1 - percent / 100);
         const frag = document.createRange().createContextualFragment(`
           <svg width="${size}" height="${size}">
-            <circle cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#444" stroke-width="8" fill="none"/>
-            <circle cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#00bfa5" stroke-width="8" fill="none"
+            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#444" stroke-width="8" fill="none"/>
+            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#00bfa5" stroke-width="8" fill="none"
                     stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
-                    transform="rotate(-90 ${size/2} ${size/2})" class="progress-circle-fill"/>
+                    transform="rotate(-90 ${size / 2} ${size / 2})" class="progress-circle-fill"/>
             <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="16" fill="#fff">${percent}%</text>
           </svg>
         `);
@@ -455,9 +455,9 @@ function shadeColor(color, percent) {
       const resComp = await fetch("/api/analysis/actual-vs-planned");
       const compData = await resComp.json();
       const labels = Object.keys(compData);
-      const actuals = labels.map(p => compData[p].actual);
-      const targets = labels.map(p => compData[p].target);
-      const barColorActual  = "#376cae";
+      const actuals = labels.map((p) => compData[p].actual);
+      const targets = labels.map((p) => compData[p].target);
+      const barColorActual = "#376cae";
       const barColorPlanned = "#13406c";
 
       // actual vs planned chart
@@ -470,14 +470,14 @@ function shadeColor(color, percent) {
             {
               label: "Actual (h)",
               data: actuals,
-              backgroundColor: barColorActual
+              backgroundColor: barColorActual,
             },
             {
               label: "Planned (h)",
               data: targets,
-              backgroundColor: barColorPlanned
-            }
-          ]
+              backgroundColor: barColorPlanned,
+            },
+          ],
         },
         options: {
           responsive: true,
@@ -485,20 +485,20 @@ function shadeColor(color, percent) {
             x: {
               stacked: false,
               ticks: { color: "#fff" },
-              grid: { color: "rgba(255,255,255,0.1)" }
+              grid: { color: "rgba(255,255,255,0.1)" },
             },
             y: {
               beginAtZero: true,
               ticks: { color: "#fff" },
-              grid: { color: "rgba(255,255,255,0.1)" }
-            }
+              grid: { color: "rgba(255,255,255,0.1)" },
+            },
           },
           plugins: {
             legend: {
-              labels: { color: "#fff" }
-            }
-          }
-        }
+              labels: { color: "#fff" },
+            },
+          },
+        },
       });
     } catch (e) {
       console.error("Error loading progress data:", e);
@@ -555,40 +555,39 @@ function shadeColor(color, percent) {
   }
 
   const downloadBtn = document.getElementById("download-button");
-const dropdown = document.getElementById("download-dropdown");
+  const dropdown = document.getElementById("download-dropdown");
 
-downloadBtn.addEventListener("click", () => {
-  dropdown.classList.toggle("hidden");
-});
+  downloadBtn.addEventListener("click", () => {
+    dropdown.classList.toggle("hidden");
+  });
 
-// Wenn außerhalb geklickt wird, Dropdown schließen
-document.addEventListener("click", (e) => {
-  if (!downloadBtn.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.classList.add("hidden");
-  }
-});
+  // Wenn außerhalb geklickt wird, Dropdown schließen
+  document.addEventListener("click", (e) => {
+    if (!downloadBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add("hidden");
+    }
+  });
 
-// Export-Logik
-dropdown.addEventListener("click", (e) => {
-  if (e.target.tagName !== "BUTTON") return;
-  const format = e.target.dataset.format;
-  if (!format) return;
+  // Export-Logik
+  dropdown.addEventListener("click", (e) => {
+    if (e.target.tagName !== "BUTTON") return;
+    const format = e.target.dataset.format;
+    if (!format) return;
 
-  // Aktuelle Woche ermitteln
-  const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset);
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
+    // Aktuelle Woche ermitteln
+    const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-  const isoStart = startOfWeek.toISOString().split("T")[0];
-  const isoEnd = endOfWeek.toISOString().split("T")[0];
+    const isoStart = startOfWeek.toISOString().split("T")[0];
+    const isoEnd = endOfWeek.toISOString().split("T")[0];
 
-  const url =
-    format === "pdf"
-      ? `/api/analysis/export/pdf?start=${isoStart}&end=${isoEnd}`
-      : `/api/analysis/export/csv?start=${isoStart}&end=${isoEnd}`;
+    const url =
+      format === "pdf"
+        ? `/api/analysis/export/pdf?start=${isoStart}&end=${isoEnd}`
+        : `/api/analysis/export/csv?start=${isoStart}&end=${isoEnd}`;
 
-  // Startet Download
-  window.open(url, "_blank");
-});
-
+    // Startet Download
+    window.open(url, "_blank");
+  });
 });

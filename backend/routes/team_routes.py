@@ -9,7 +9,8 @@ from backend.services.team_service import (
     check_admin,
     remove_member_from_team,
 )
-#import the service function with a new name
+
+# import the service function with a new name
 from backend.services.team_service import get_team_members as get_team_members_service
 from backend.services.team_service import get_user_teams as get_user_teams_service
 
@@ -30,10 +31,15 @@ def get_user_teams():
         Response: JSON with teams and current user info or error.
     """
     teams = get_user_teams_service(current_user.user_id)
-    return jsonify({"current_user": {
-        "user_id": current_user.user_id,
-        "username": current_user.username
-    }, "teams": teams})
+    return jsonify(
+        {
+            "current_user": {
+                "user_id": current_user.user_id,
+                "username": current_user.username,
+            },
+            "teams": teams,
+        }
+    )
 
 
 @team_bp.route("/", methods=["POST"])
@@ -55,7 +61,6 @@ def create_team():
 
     result = create_new_team(name, current_user.user_id)
     return jsonify(result), 201
-
 
 
 @team_bp.route("/users/<int:user_id>", methods=["GET"])
@@ -97,7 +102,6 @@ def get_user_details(user_id):
     except Exception as e:
         print(f"DEBUG: Exception in get_user_details: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 
 @team_bp.route("/<int:team_id>/add-member", methods=["PATCH"])
@@ -209,7 +213,14 @@ def remove_team_member(team_id):
             user_id=current_user.user_id, team_id=team_id, role="admin"
         ).first()
         if not admin_relation:
-            return jsonify({"error": "You do not have permission to remove members from this team"}), 403
+            return (
+                jsonify(
+                    {
+                        "error": "You do not have permission to remove members from this team"
+                    }
+                ),
+                403,
+            )
 
         # Call service
         success = remove_member_from_team(member_id, team_id)
@@ -221,7 +232,6 @@ def remove_team_member(team_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
-
 
 
 @team_bp.route("/<int:team_id>/members", methods=["GET"])  # Corrected route path
@@ -238,6 +248,7 @@ def get_team_members(team_id):
     """
     members = get_team_members_service(team_id)
     return jsonify(members)
+
 
 @team_bp.route("/<int:team_id>", methods=["DELETE"])
 @login_required
@@ -291,16 +302,13 @@ def api_assign_project_to_team(team_id):
     return jsonify({"success": True, "message": "Project assigned to team"}), 200
 
 
-
 @team_bp.route("/<int:team_id>/tasks", methods=["GET"])
 def get_team_tasks(team_id):
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
 
     is_admin = UserTeam.query.filter_by(
-        user_id=current_user.user_id,
-        team_id=team_id,
-        role="admin"
+        user_id=current_user.user_id, team_id=team_id, role="admin"
     ).first()
 
     projects = Project.query.filter_by(team_id=team_id).all()
@@ -313,12 +321,14 @@ def get_team_tasks(team_id):
 
         project_tasks = tasks_query.all()
         for task in project_tasks:
-            all_tasks.append({
-                "task_id": task.task_id,
-                "project_id": task.project_id,
-                "title": task.title,
-                "assigned_to": task.member.full_name if task.member else None,
-                "is_mine": task.member_id == current_user.user_id
-            })
+            all_tasks.append(
+                {
+                    "task_id": task.task_id,
+                    "project_id": task.project_id,
+                    "title": task.title,
+                    "assigned_to": task.member.full_name if task.member else None,
+                    "is_mine": task.member_id == current_user.user_id,
+                }
+            )
 
     return jsonify(all_tasks), 200

@@ -1,16 +1,26 @@
 import pytest
 from flask_jwt_extended import create_access_token
+
 from backend.models import Notification, User
 
 
 @pytest.fixture
 def setup_notifications(db_session):
-    user = User(username="notifyuser", email="notify@example.com", password_hash="hashed")
+    user = User(
+        username="notifyuser", email="notify@example.com", password_hash="hashed"
+    )
     db_session.add(user)
     db_session.commit()
 
-    n1 = Notification(user_id=user.user_id, message="You were added", type="team", is_read=False)
-    n2 = Notification(user_id=user.user_id, message="New project assigned", type="project", is_read=True)
+    n1 = Notification(
+        user_id=user.user_id, message="You were added", type="team", is_read=False
+    )
+    n2 = Notification(
+        user_id=user.user_id,
+        message="New project assigned",
+        type="project",
+        is_read=True,
+    )
     db_session.add_all([n1, n2])
     db_session.commit()
 
@@ -33,7 +43,9 @@ def test_get_notifications(client, db_session, setup_notifications, login_user):
     assert all("message" in n for n in data)
 
 
-def test_get_only_unread_notifications(client, db_session, setup_notifications, login_user):
+def test_get_only_unread_notifications(
+    client, db_session, setup_notifications, login_user
+):
     user, notifications = setup_notifications
     login_user(user)
     token = create_access_token(identity=user.user_id)
@@ -62,7 +74,9 @@ def test_mark_notification_as_read(client, db_session, setup_notifications, logi
     assert unread_notification.is_read is True
 
 
-def test_mark_already_read_notification(client, db_session, setup_notifications, login_user):
+def test_mark_already_read_notification(
+    client, db_session, setup_notifications, login_user
+):
     user, notifications = setup_notifications
     login_user(user)
 
@@ -84,7 +98,9 @@ def test_delete_notification(client, db_session, setup_notifications, login_user
     assert Notification.query.get(to_delete.id) is None
 
 
-def test_delete_nonexistent_notification(client, db_session, setup_notifications, login_user):
+def test_delete_nonexistent_notification(
+    client, db_session, setup_notifications, login_user
+):
     user, _ = setup_notifications
     login_user(user)
 

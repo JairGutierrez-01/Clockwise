@@ -1,15 +1,14 @@
+import csv
 from collections import defaultdict
 from datetime import datetime, timedelta
-
-from flask_login import current_user
-
-from backend.models import TimeEntry, Task, Project
-from sqlalchemy import or_
-import csv
 from io import StringIO, BytesIO
 
+from flask_login import current_user
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from sqlalchemy import or_
+
+from backend.models import TimeEntry, Task, Project
 
 
 def export_time_entries_pdf(time_entries):
@@ -133,18 +132,20 @@ def load_tasks():
         or_(
             Task.user_id == current_user.user_id,
             Task.member_id == current_user.user_id,
-            Task.admin_id == current_user.user_id
+            Task.admin_id == current_user.user_id,
         )
     ).all()
 
     result = []
     for task in tasks:
-        result.append({
-            "project": task.project.name if task.project else None,
-            "status": task.status.value,
-            "title": task.title,
-            "due_date": task.due_date if task.due_date else None,
-        })
+        result.append(
+            {
+                "project": task.project.name if task.project else None,
+                "status": task.status.value,
+                "title": task.title,
+                "due_date": task.due_date if task.due_date else None,
+            }
+        )
     return result
 
 

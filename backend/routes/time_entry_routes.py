@@ -1,13 +1,12 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 
-from backend.models.time_entry import TimeEntry
-from backend.services import time_entry_service
 import backend.models.task as task_model
 import backend.services.task_service as task_service
+from backend.models.time_entry import TimeEntry
+from backend.services import time_entry_service
+from backend.services.task_service import get_tasks_without_time_entries
 from backend.services.task_service import is_user_authorized_for_task
-from backend.services.time_entry_service import update_durations_for_task_and_project
-from backend.services.time_entry_service import get_latest_project_time_entry_for_user
 from backend.services.time_entry_service import (
     create_time_entry,
     get_time_entry_by_id,
@@ -19,7 +18,8 @@ from backend.services.time_entry_service import (
     pause_time_entry,
     resume_time_entry,
 )
-from backend.services.task_service import get_tasks_without_time_entries
+from backend.services.time_entry_service import get_latest_project_time_entry_for_user
+from backend.services.time_entry_service import update_durations_for_task_and_project
 
 time_entry_bp = Blueprint("time_entries", __name__, url_prefix="/api/time_entries")
 
@@ -49,7 +49,14 @@ def create_time_entry_api():
     if task_id:
         task = task_model.Task.query.get(task_id)
         if not is_user_authorized_for_task(task, user_id):
-            return jsonify({"error": "You are not authorized to create time entries for this task"}), 403
+            return (
+                jsonify(
+                    {
+                        "error": "You are not authorized to create time entries for this task"
+                    }
+                ),
+                403,
+            )
 
     result = create_time_entry(
         user_id=user_id,
@@ -134,10 +141,7 @@ def start_entry():
         ).count()
 
         title = f"Untitled Task #{count + 1}"
-        task_result = task_service.create_task(
-            title=title,
-            created_from_tracking=True
-        )
+        task_result = task_service.create_task(title=title, created_from_tracking=True)
         task_id = task_result["task_id"]
 
     if task_id:
@@ -168,7 +172,10 @@ def stop_entry(entry_id):
     if time_entry:
         task = time_entry.task
         if not is_user_authorized_for_task(task, current_user.user_id):
-            return jsonify({"error": "You are not authorized to stop this time entry"}), 403
+            return (
+                jsonify({"error": "You are not authorized to stop this time entry"}),
+                403,
+            )
 
     result = stop_time_entry(entry_id)
 
@@ -210,7 +217,10 @@ def pause_entry(entry_id):
     if time_entry:
         task = time_entry.task
         if not is_user_authorized_for_task(task, current_user.user_id):
-            return jsonify({"error": "You are not authorized to pause this time entry"}), 403
+            return (
+                jsonify({"error": "You are not authorized to pause this time entry"}),
+                403,
+            )
 
     return jsonify(pause_time_entry(entry_id))
 
@@ -232,7 +242,10 @@ def resume_entry(entry_id):
     if time_entry:
         task = time_entry.task
         if not is_user_authorized_for_task(task, current_user.user_id):
-            return jsonify({"error": "You are not authorized to resume this time entry"}), 403
+            return (
+                jsonify({"error": "You are not authorized to resume this time entry"}),
+                403,
+            )
 
     return jsonify(resume_time_entry(entry_id))
 
@@ -251,7 +264,10 @@ def delete_entry(entry_id):
     if time_entry:
         task = time_entry.task
         if not is_user_authorized_for_task(task, current_user.user_id):
-            return jsonify({"error": "You are not authorized to delete this time entry"}), 403
+            return (
+                jsonify({"error": "You are not authorized to delete this time entry"}),
+                403,
+            )
 
         task_id = time_entry.task_id
         result = delete_time_entry(entry_id)
@@ -281,7 +297,10 @@ def update_entry(entry_id):
     if time_entry:
         task = time_entry.task
         if not is_user_authorized_for_task(task, current_user.user_id):
-            return jsonify({"error": "You are not authorized to update this time entry"}), 403
+            return (
+                jsonify({"error": "You are not authorized to update this time entry"}),
+                403,
+            )
 
     data = request.get_json()
     result = update_time_entry(entry_id, **data)
@@ -291,10 +310,13 @@ def update_entry(entry_id):
 
     return jsonify(result)
 
+
 """
 I MADE A CHANGE IN HERE, CHECK IF IT'S ALRIGHT(JUDE)>>>>>>
 
 """
+
+
 @time_entry_bp.route("/latest_sessions", methods=["GET"])
 @login_required
 def get_latest_sessions():
@@ -319,8 +341,13 @@ def latest_project_entry():
     if not result:
         return jsonify({"error": "No suitable time entry found"}), 404
 
-    return jsonify({
-        "time_entry": result["time_entry"].to_dict(),
-        "task": result["task"].to_dict(),
-        "project": result["project"].to_dict()
-    }), 200
+    return (
+        jsonify(
+            {
+                "time_entry": result["time_entry"].to_dict(),
+                "task": result["task"].to_dict(),
+                "project": result["project"].to_dict(),
+            }
+        ),
+        200,
+    )

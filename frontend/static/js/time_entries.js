@@ -455,7 +455,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const manualDuration = document.getElementById("manual-duration");
   const cancelManualBtn = document.getElementById("cancel-manual-btn");
 
-  if (manualBtn && manualModal && manualForm && manualDate && manualStart && manualEnd && manualDuration && cancelManualBtn) {
+  if (
+    manualBtn &&
+    manualModal &&
+    manualForm &&
+    manualDate &&
+    manualStart &&
+    manualEnd &&
+    manualDuration &&
+    cancelManualBtn
+  ) {
     manualBtn.addEventListener("click", () => {
       manualModal.classList.remove("hidden");
     });
@@ -485,7 +494,11 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const startTime = `${manualDate.value} ${manualStart.value}`;
       const endTime = `${manualDate.value} ${manualEnd.value}`;
-      const diffSec = Math.floor((new Date(`${manualDate.value}T${manualEnd.value}`) - new Date(`${manualDate.value}T${manualStart.value}`)) / 1000);
+      const diffSec = Math.floor(
+        (new Date(`${manualDate.value}T${manualEnd.value}`) -
+          new Date(`${manualDate.value}T${manualStart.value}`)) /
+          1000,
+      );
 
       const payload = {
         task_id: taskId,
@@ -510,7 +523,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   // --- End Manual Entry Modal Logic ---
-
 
   closeEditModal();
 });

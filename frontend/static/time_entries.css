@@ -47,7 +47,9 @@ p {
   font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease-in-out,
+    transform 0.2s ease;
   margin-bottom: 1rem;
 }
 

@@ -1,4 +1,5 @@
 import pytest
+
 from backend.models import Category, User
 from backend.services.category_service import (
     create_category,
@@ -24,7 +25,10 @@ def test_create_category_success(db_session, setup_user):
     assert result["success"] is True
     assert "category_id" in result
     category = Category.query.get(result["category_id"])
-    assert category.name == "Persoenliche Projekte" or category.name == "Persönliche Projekte"
+    assert (
+        category.name == "Persoenliche Projekte"
+        or category.name == "Persönliche Projekte"
+    )
 
 
 def test_create_category_already_exists(db_session, setup_user):
@@ -63,10 +67,12 @@ def test_get_category_not_found():
 
 def test_get_all_categories(db_session, setup_user):
     user = setup_user
-    db_session.add_all([
-        Category(name="X", user_id=user.user_id),
-        Category(name="Y", user_id=user.user_id)
-    ])
+    db_session.add_all(
+        [
+            Category(name="X", user_id=user.user_id),
+            Category(name="Y", user_id=user.user_id),
+        ]
+    )
     db_session.commit()
 
     result = get_all_categories(user.user_id)

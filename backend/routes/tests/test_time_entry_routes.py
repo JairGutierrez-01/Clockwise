@@ -1,13 +1,13 @@
 import json
 from datetime import datetime, timedelta
+
 import pytest
 
-from backend.models.user import User
+from backend.models.project import Project
 from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
-from backend.models.project import Project
+from backend.models.user import User
 from backend.services.time_entry_service import get_latest_project_time_entry_for_user
-
 
 
 @pytest.fixture()
@@ -44,9 +44,11 @@ def test_create_time_entry_api(client, db_session, test_user, test_task):
         "start_time": "2025-06-18 10:00",
         "end_time": "2025-06-18 10:30",
         "duration_seconds": 1800,
-        "comment": "Morning"
+        "comment": "Morning",
     }
-    response = client.post("/api/time_entries/", data=json.dumps(payload), content_type="application/json")
+    response = client.post(
+        "/api/time_entries/", data=json.dumps(payload), content_type="application/json"
+    )
     assert response.status_code == 200
     data = response.get_json()
     assert data["success"]
@@ -55,7 +57,9 @@ def test_create_time_entry_api(client, db_session, test_user, test_task):
 
 def test_get_time_entry_by_id_api(client, db_session, test_user, test_task):
     login_test_user(client, test_user)
-    entry = TimeEntry(user_id=test_user.user_id, task_id=test_task.task_id, duration_seconds=600)
+    entry = TimeEntry(
+        user_id=test_user.user_id, task_id=test_task.task_id, duration_seconds=600
+    )
     db_session.add(entry)
     db_session.commit()
 
@@ -67,12 +71,18 @@ def test_get_time_entry_by_id_api(client, db_session, test_user, test_task):
 
 def test_update_time_entry_api(client, db_session, test_user, test_task):
     login_test_user(client, test_user)
-    entry = TimeEntry(user_id=test_user.user_id, task_id=test_task.task_id, duration_seconds=300)
+    entry = TimeEntry(
+        user_id=test_user.user_id, task_id=test_task.task_id, duration_seconds=300
+    )
     db_session.add(entry)
     db_session.commit()
 
     payload = {"duration_seconds": 900, "comment": "Updated via API"}
-    response = client.put(f"/api/time_entries/{entry.time_entry_id}", data=json.dumps(payload), content_type="application/json")
+    response = client.put(
+        f"/api/time_entries/{entry.time_entry_id}",
+        data=json.dumps(payload),
+        content_type="application/json",
+    )
     assert response.status_code == 200
     assert response.get_json()["success"]
 
@@ -106,7 +116,11 @@ def test_start_and_stop_entry_api(client, db_session, test_user, test_task):
 
     # Start entry
     payload = {"task_id": test_task.task_id, "comment": "Test start"}
-    start_response = client.post("/api/time_entries/start", data=json.dumps(payload), content_type="application/json")
+    start_response = client.post(
+        "/api/time_entries/start",
+        data=json.dumps(payload),
+        content_type="application/json",
+    )
     assert start_response.status_code == 200
     start_data = start_response.get_json()
     assert start_data["success"]
@@ -120,11 +134,15 @@ def test_start_and_stop_entry_api(client, db_session, test_user, test_task):
 
 def test_get_latest_project_time_entry_for_user(db_session, test_user):
     # Projekt und zwei Tasks
-    project = Project(name="Testprojekt", user_id=test_user.user_id, time_limit_hours=25)
+    project = Project(
+        name="Testprojekt", user_id=test_user.user_id, time_limit_hours=25
+    )
     db_session.add(project)
     db_session.commit()
 
-    task1 = Task(title="Mit Projekt", user_id=test_user.user_id, project_id=project.project_id)
+    task1 = Task(
+        title="Mit Projekt", user_id=test_user.user_id, project_id=project.project_id
+    )
     task2 = Task(title="Ohne Projekt", user_id=test_user.user_id)
     db_session.add_all([task1, task2])
     db_session.commit()
@@ -135,7 +153,7 @@ def test_get_latest_project_time_entry_for_user(db_session, test_user):
         task_id=task2.task_id,
         start_time=datetime.now() - timedelta(minutes=20),
         end_time=datetime.now() - timedelta(minutes=10),
-        duration_seconds=600
+        duration_seconds=600,
     )
 
     # Älterer Entry mit Projekt
@@ -144,7 +162,7 @@ def test_get_latest_project_time_entry_for_user(db_session, test_user):
         task_id=task1.task_id,
         start_time=datetime.now() - timedelta(hours=2),
         end_time=datetime.now() - timedelta(hours=1, minutes=30),
-        duration_seconds=1800
+        duration_seconds=1800,
     )
 
     db_session.add_all([entry1, entry2])

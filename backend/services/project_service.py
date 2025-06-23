@@ -1,14 +1,15 @@
-from datetime import datetime
-from io import StringIO
-from flask_login import current_user
 import csv
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
+from datetime import datetime
 from io import BytesIO
-from backend.database import db
-from backend.models import Project, Task, Notification, TimeEntry, UserTeam
-from backend.models.project import ProjectStatus, ProjectType
+from io import StringIO
 
+from flask_login import current_user
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+from backend.database import db
+from backend.models import Project, Task, Notification, UserTeam
+from backend.models.project import ProjectStatus, ProjectType
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -185,57 +186,63 @@ def update_total_duration_for_project(project_id):
         "current_hours": project.current_hours,
     }
 
+
 def serialize_projects(projects):
     serialized = []
     for p in projects:
-        serialized.append({
-            "project_id": p.project_id,
-            "name": p.name,
-            "description": p.description,
-            "type": p.type.name if hasattr(p.type, "name") else str(p.type),
-            "due_date": p.due_date.isoformat() if p.due_date else None,
-            "team_id": p.team_id,
-            "status": p.status.name if hasattr(p.status, "name") else str(p.status),
-            "tasks": [
+        serialized.append(
             {
-                "task_id": t.task_id,
-                "title": t.title,
-                "description": t.description,
-                "status": t.status,
-                "due_date": t.due_date.isoformat() if t.due_date else None,
-                    "time_entries": [
-                        {
-                            "time_entry_id": te.time_entry_id,
-                            "start_time": te.start_time.isoformat(),
-                            "end_time": te.end_time.isoformat() if te.end_time else None,
-                            "duration_seconds": te.duration_seconds,
-                            "user_id": te.user_id,
-                        }
-                        for te in t.time_entries
-                    ]
+                "project_id": p.project_id,
+                "name": p.name,
+                "description": p.description,
+                "type": p.type.name if hasattr(p.type, "name") else str(p.type),
+                "due_date": p.due_date.isoformat() if p.due_date else None,
+                "team_id": p.team_id,
+                "status": p.status.name if hasattr(p.status, "name") else str(p.status),
+                "tasks": [
+                    {
+                        "task_id": t.task_id,
+                        "title": t.title,
+                        "description": t.description,
+                        "status": t.status,
+                        "due_date": t.due_date.isoformat() if t.due_date else None,
+                        "time_entries": [
+                            {
+                                "time_entry_id": te.time_entry_id,
+                                "start_time": te.start_time.isoformat(),
+                                "end_time": (
+                                    te.end_time.isoformat() if te.end_time else None
+                                ),
+                                "duration_seconds": te.duration_seconds,
+                                "user_id": te.user_id,
+                            }
+                            for te in t.time_entries
+                        ],
+                    }
+                    for t in p.tasks
+                ],
             }
-            for t in p.tasks
-        ],
-    })
+        )
     return serialized
+
 
 def get_info():
     own_projects = Project.query.filter_by(user_id=current_user.user_id).all()
 
     team_ids = [
-        ut.team_id for ut in UserTeam.query.filter_by(user_id=current_user.user_id).all()
+        ut.team_id
+        for ut in UserTeam.query.filter_by(user_id=current_user.user_id).all()
     ]
 
-    team_projects = (
-        Project.query
-        .filter(Project.team_id.in_(team_ids), Project.user_id != current_user.user_id)
-        .all()
-    )
+    team_projects = Project.query.filter(
+        Project.team_id.in_(team_ids), Project.user_id != current_user.user_id
+    ).all()
 
     return {
         "own_projects": serialize_projects(own_projects),
         "team_projects": serialize_projects(team_projects),
     }
+
 
 def export_project_info_pdf(data):
     buffer = BytesIO()
@@ -252,9 +259,15 @@ def export_project_info_pdf(data):
         if y < min_y:
             c.showPage()
             y = 750
-        c.drawString(x_indent + 10, y, f"- {project['name']} ({project['due_date'] or 'kein Datum'})")
+        c.drawString(
+            x_indent + 10,
+            y,
+            f"- {project['name']} ({project['due_date'] or 'kein Datum'})",
+        )
         y -= 15
-        c.drawString(x_indent + 15, y, f"Beschreibung: {project.get('description') or '-'}")
+        c.drawString(
+            x_indent + 15, y, f"Beschreibung: {project.get('description') or '-'}"
+        )
         y -= 15
         c.drawString(x_indent + 15, y, f"Status: {project.get('status') or '-'}")
         y -= 15
@@ -263,7 +276,11 @@ def export_project_info_pdf(data):
             if y < min_y:
                 c.showPage()
                 y = 750
-            c.drawString(x_indent + 20, y, f"• Task: {task['title']} [{task['status']}] ({task['due_date'] or 'kein Datum'})")
+            c.drawString(
+                x_indent + 20,
+                y,
+                f"• Task: {task['title']} [{task['status']}] ({task['due_date'] or 'kein Datum'})",
+            )
             y -= 15
 
             if "time_entries" in task:
@@ -274,7 +291,7 @@ def export_project_info_pdf(data):
                     c.drawString(
                         x_indent + 30,
                         y,
-                        f"◦ TimeEntry: {te['start_time']} - {te['end_time'] or '...'} ({te['duration_seconds']}h)"
+                        f"◦ TimeEntry: {te['start_time']} - {te['end_time'] or '...'} ({te['duration_seconds']}h)",
                     )
                     y -= 15
 
@@ -286,9 +303,15 @@ def export_project_info_pdf(data):
         if y < min_y:
             c.showPage()
             y = 750
-        c.drawString(x_indent + 10, y, f"- {project['name']} ({project['due_date'] or 'kein Datum'})")
+        c.drawString(
+            x_indent + 10,
+            y,
+            f"- {project['name']} ({project['due_date'] or 'kein Datum'})",
+        )
         y -= 15
-        c.drawString(x_indent + 15, y, f"Beschreibung: {project.get('description') or '-'}")
+        c.drawString(
+            x_indent + 15, y, f"Beschreibung: {project.get('description') or '-'}"
+        )
         y -= 15
         c.drawString(x_indent + 15, y, f"Status: {project.get('status') or '-'}")
         y -= 15
@@ -297,7 +320,11 @@ def export_project_info_pdf(data):
             if y < min_y:
                 c.showPage()
                 y = 750
-            c.drawString(x_indent + 20, y, f"• Task: {task['title']} [{task['status']}] ({task['due_date'] or 'kein Datum'})")
+            c.drawString(
+                x_indent + 20,
+                y,
+                f"• Task: {task['title']} [{task['status']}] ({task['due_date'] or 'kein Datum'})",
+            )
             y -= 15
 
             if "time_entries" in task:
@@ -308,7 +335,7 @@ def export_project_info_pdf(data):
                     c.drawString(
                         x_indent + 30,
                         y,
-                        f"◦ TimeEntry: {te['start_time']} - {te['end_time'] or '...'} ({te['duration_seconds']}h))"
+                        f"◦ TimeEntry: {te['start_time']} - {te['end_time'] or '...'} ({te['duration_seconds']}h))",
                     )
                     y -= 15
 
@@ -330,42 +357,55 @@ def export_project_info_csv(data):
     """
     buffer = StringIO()
     writer = csv.writer(buffer)
-    writer.writerow([
-        "Bereich", "Projekt", "Projektbeschreibung", "Projektstatus", "Task", "Taskstatus", "Taskdatum", "Start",
-        "Ende", "Dauer(h)"
-    ])
+    writer.writerow(
+        [
+            "Bereich",
+            "Projekt",
+            "Projektbeschreibung",
+            "Projektstatus",
+            "Task",
+            "Taskstatus",
+            "Taskdatum",
+            "Start",
+            "Ende",
+            "Dauer(h)",
+        ]
+    )
 
     team_projects = data.get("team_projects") or []
-    team_project_keys = {
-        (p.get("name"), p.get("id")) for p in team_projects
-    }
+    team_project_keys = {(p.get("name"), p.get("id")) for p in team_projects}
     own_projects = [
-        p for p in data.get("own_projects", [])
+        p
+        for p in data.get("own_projects", [])
         if (p.get("name"), p.get("id")) not in team_project_keys
     ]
 
     for category, projects in [
         ("Eigene Projekte", own_projects),
-        ("Teamprojekte", team_projects)]:
+        ("Teamprojekte", team_projects),
+    ]:
         for project in projects:
             for task in project.get("tasks", []):
                 time_entries = task.get("time_entries", [])
                 if time_entries:
                     for te in time_entries:
-                        writer.writerow([
-                            category,
-                            project.get("name"),
-                            project.get("description"),
-                            project.get("status"),
-                            task.get("title"),
-                            task.get("status"),
-                            task.get("due_date"),
-                            te.get("start_time"),
-                            te.get("end_time"),
-                            te.get("duration_seconds"),
-                        ])
+                        writer.writerow(
+                            [
+                                category,
+                                project.get("name"),
+                                project.get("description"),
+                                project.get("status"),
+                                task.get("title"),
+                                task.get("status"),
+                                task.get("due_date"),
+                                te.get("start_time"),
+                                te.get("end_time"),
+                                te.get("duration_seconds"),
+                            ]
+                        )
                 else:
-                        writer.writerow([
+                    writer.writerow(
+                        [
                             category,
                             project.get("name"),
                             project.get("description"),
@@ -373,8 +413,12 @@ def export_project_info_csv(data):
                             task.get("title"),
                             task.get("status"),
                             task.get("due_date"),
-                            "", "", "", ""
-                    ])
+                            "",
+                            "",
+                            "",
+                            "",
+                        ]
+                    )
 
     buffer.seek(0)
     return buffer.read()

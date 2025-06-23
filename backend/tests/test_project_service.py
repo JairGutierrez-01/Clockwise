@@ -1,14 +1,12 @@
-import pytest
 from datetime import datetime
-from io import BytesIO, StringIO
-from flask_login import FlaskLoginClient
-from flask import Flask
+
+import pytest
+
 from backend.models import (
     User,
     Team,
     Project,
     Task,
-    TimeEntry,
     ProjectStatus,
     ProjectType,
 )
@@ -99,7 +97,12 @@ def test_get_project_not_found():
 
 def test_delete_project_success(db_session, setup_project_env):
     user, _ = setup_project_env
-    p = Project(name="DeleteMe", user_id=user.user_id, type=ProjectType.TeamProject, status=ProjectStatus.Archived)
+    p = Project(
+        name="DeleteMe",
+        user_id=user.user_id,
+        type=ProjectType.TeamProject,
+        status=ProjectStatus.Archived,
+    )
     db_session.add(p)
     db_session.commit()
     result = delete_project(p.project_id)
@@ -161,7 +164,12 @@ def test_update_total_duration(db_session, setup_project_env):
 
 def test_serialize_projects_structure(db_session, setup_project_env):
     user, _ = setup_project_env
-    p = Project(name="SerializeMe", user_id=user.user_id, type=ProjectType.IndividualProject, status=ProjectStatus.InProgress)
+    p = Project(
+        name="SerializeMe",
+        user_id=user.user_id,
+        type=ProjectType.IndividualProject,
+        status=ProjectStatus.InProgress,
+    )
     db_session.add(p)
     db_session.commit()
 
@@ -171,21 +179,35 @@ def test_serialize_projects_structure(db_session, setup_project_env):
     assert serialized[0]["status"] == "InProgress"
 
 
-def test_get_info_returns_own_and_team_projects(db_session, setup_project_env, monkeypatch, test_app):
+def test_get_info_returns_own_and_team_projects(
+    db_session, setup_project_env, monkeypatch, test_app
+):
     user, team = setup_project_env
 
     # Make current_user mockable
     monkeypatch.setattr("backend.services.project_service.current_user", user)
 
-    own_proj = Project(name="OwnProj", user_id=user.user_id, type=ProjectType.IndividualProject, status=ProjectStatus.InProgress)
+    own_proj = Project(
+        name="OwnProj",
+        user_id=user.user_id,
+        type=ProjectType.IndividualProject,
+        status=ProjectStatus.InProgress,
+    )
     db_session.add(own_proj)
     db_session.commit()
 
-    team_proj = Project(name="TeamProj", user_id=9999, team_id=team.team_id, type=ProjectType.TeamProject, status=ProjectStatus.Archived)
+    team_proj = Project(
+        name="TeamProj",
+        user_id=9999,
+        team_id=team.team_id,
+        type=ProjectType.TeamProject,
+        status=ProjectStatus.Archived,
+    )
     db_session.add(team_proj)
     db_session.commit()
 
     from backend.models import UserTeam
+
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id))
     db_session.commit()
 

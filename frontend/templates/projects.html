@@ -75,10 +75,10 @@
             <option value="">Select Team</option>
           </select>
           <label for="project-status">Status *</label>
-            <select name="status" id="project-status" required>
-              <option value="active" selected>Aktiv</option>
-              <option value="inactive">Inaktiv</option>
-            </select>
+          <select name="status" id="project-status" required>
+            <option value="active" selected>Aktiv</option>
+            <option value="inactive">Inaktiv</option>
+          </select>
 
           <label for="project-time-limit">Time Limit (hours) *</label>
           <input
@@ -159,10 +159,15 @@
         />-->
         <!--<datalist id="category-suggestions"></datalist>-->
         <label for="task-category">Category</label>
-            <input list="category-suggestions" id="task-category" name="category_name" placeholder="Enter or choose category" />
-            <datalist id="category-suggestions">
-              <!-- wird dynamisch gefüllt mit JS -->
-            </datalist>
+        <input
+          list="category-suggestions"
+          id="task-category"
+          name="category_name"
+          placeholder="Enter or choose category"
+        />
+        <datalist id="category-suggestions">
+          <!-- wird dynamisch gefüllt mit JS -->
+        </datalist>
 
         <label for="task-project">Project</label>
         <select id="task-project" name="project_id">

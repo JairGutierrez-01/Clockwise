@@ -2,6 +2,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import Enum
+
 from backend.database import db
 
 
@@ -62,9 +63,15 @@ class Task(db.Model):
     time_entries = db.relationship(
         "TimeEntry", back_populates="task", cascade="all, delete-orphan"
     )
-    assigned_user = db.relationship("User", foreign_keys=[user_id], back_populates="assigned_task")
-    admin = db.relationship("User", foreign_keys=[admin_id], back_populates="admin_tasks")
-    member = db.relationship("User", foreign_keys=[member_id], back_populates="member_tasks")
+    assigned_user = db.relationship(
+        "User", foreign_keys=[user_id], back_populates="assigned_task"
+    )
+    admin = db.relationship(
+        "User", foreign_keys=[admin_id], back_populates="admin_tasks"
+    )
+    member = db.relationship(
+        "User", foreign_keys=[member_id], back_populates="member_tasks"
+    )
     project = db.relationship("Project", back_populates="tasks")
     category = db.relationship("Category", back_populates="tasks")
 

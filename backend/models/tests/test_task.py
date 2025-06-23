@@ -1,8 +1,9 @@
-import pytest
 from datetime import datetime
 
-from backend.models.time_entry import TimeEntry
+import pytest
+
 from backend.models.task import Task
+from backend.models.time_entry import TimeEntry
 from backend.models.user import User
 
 
@@ -13,7 +14,7 @@ def test_user(db_session):
         email="t@example.com",
         password_hash="pw",
         first_name="T",
-        last_name="T"
+        last_name="T",
     )
     db_session.add(user)
     db_session.commit()
@@ -35,7 +36,7 @@ def test_create_time_entry(db_session, test_user, test_task):
         start_time=datetime(2025, 6, 18, 10, 0),
         end_time=datetime(2025, 6, 18, 11, 0),
         duration_seconds=3600,
-        comment="Worked on task"
+        comment="Worked on task",
     )
     db_session.add(entry)
     db_session.commit()
@@ -63,7 +64,7 @@ def test_time_entry_to_dict(db_session, test_user, test_task):
         start_time=datetime(2025, 6, 18, 9, 0),
         end_time=datetime(2025, 6, 18, 10, 30),
         duration_seconds=5400,
-        comment="Session"
+        comment="Session",
     )
     db_session.add(entry)
     db_session.commit()

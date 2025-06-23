@@ -42,9 +42,15 @@ class User(db.Model, UserMixin):
 
     teams = db.relationship("UserTeam", back_populates="user")
     project = db.relationship("Project", back_populates="user")
-    assigned_task = db.relationship("Task", foreign_keys="Task.user_id", back_populates="assigned_user")
-    admin_tasks = db.relationship("Task", foreign_keys = "Task.admin_id", back_populates="admin")
-    member_tasks = db.relationship("Task", foreign_keys="Task.member_id", back_populates="member")
+    assigned_task = db.relationship(
+        "Task", foreign_keys="Task.user_id", back_populates="assigned_user"
+    )
+    admin_tasks = db.relationship(
+        "Task", foreign_keys="Task.admin_id", back_populates="admin"
+    )
+    member_tasks = db.relationship(
+        "Task", foreign_keys="Task.member_id", back_populates="member"
+    )
     time_entries = db.relationship("TimeEntry", back_populates="user")
     notifications = db.relationship("Notification", back_populates="user")
     categories = db.relationship("Category", back_populates="user")

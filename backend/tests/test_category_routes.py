@@ -1,4 +1,5 @@
 import pytest
+
 from backend.models import Category, User
 
 
@@ -74,7 +75,9 @@ def test_create_category_route_post(client, setup_category_data, login_user):
     user = setup_category_data
     login_user(user)
 
-    res = client.post("/category/create", data={"name": "Personal"}, follow_redirects=True)
+    res = client.post(
+        "/category/create", data={"name": "Personal"}, follow_redirects=True
+    )
     assert res.status_code == 200
     assert Category.query.filter_by(name="Personal", user_id=user.user_id).first()
 
@@ -87,7 +90,9 @@ def test_edit_category_route_post(client, db_session, setup_category_data, login
     db_session.commit()
 
     response = client.post(
-        f"/category/edit/{category.category_id}", data={"name": "Updated"}, follow_redirects=True
+        f"/category/edit/{category.category_id}",
+        data={"name": "Updated"},
+        follow_redirects=True,
     )
     assert response.status_code == 200
     assert Category.query.get(category.category_id).name == "Updated"

@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 /**
  * Initialisiert den Mini-Kalender auf der Dashboard-Seite.
  * Lädt Due Dates (rote Balken) und Time Entries (blaue Balken) (max. 1 pro Tag für Übersichtlichkeit) asynchron
@@ -133,7 +132,9 @@ function ensureTeamBoxExists() {
   let teamBox = document.getElementById("team-activity-box");
 
   if (!teamBox) {
-    const targetParent = document.querySelector(".dashboard-grid") || document.querySelector("#dashboard");
+    const targetParent =
+      document.querySelector(".dashboard-grid") ||
+      document.querySelector("#dashboard");
     if (!targetParent) return null;
 
     teamBox = document.createElement("div");
@@ -148,12 +149,12 @@ function ensureTeamBoxExists() {
     `;
     targetParent.appendChild(teamBox);
 
-    teamBox.style.cursor = 'pointer';
-    teamBox.addEventListener('click', function (event) {
-      const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
+    teamBox.style.cursor = "pointer";
+    teamBox.addEventListener("click", function (event) {
+      const ignoredElements = ["SPAN", "SVG", "CIRCLE", "TEXT"];
       if (ignoredElements.includes(event.target.tagName)) return;
 
-      window.location.href = '/analysis?view=progress';
+      window.location.href = "/analysis?view=progress";
     });
   }
 
@@ -161,15 +162,18 @@ function ensureTeamBoxExists() {
 }
 
 async function calculateProjectProgress(projectId) {
-    try {
-        const tasks = await fetchTasksByProjectId(projectId);
-        const totalTasks = tasks.length;
-        const doneTasks = tasks.filter(t => t.status === "done").length;
-        return totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
-    } catch (error) {
-        console.error(`Error calculating progress for project ${projectId}:`, error);
-        return 0; // Default to 0% on error
-    }
+  try {
+    const tasks = await fetchTasksByProjectId(projectId);
+    const totalTasks = tasks.length;
+    const doneTasks = tasks.filter((t) => t.status === "done").length;
+    return totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
+  } catch (error) {
+    console.error(
+      `Error calculating progress for project ${projectId}:`,
+      error,
+    );
+    return 0; // Default to 0% on error
+  }
 }
 
 async function findMostAdvancedProjectUnified(unifiedProjects) {
@@ -190,127 +194,131 @@ async function findMostAdvancedProjectUnified(unifiedProjects) {
 }
 
 async function loadTeamActivityBox() {
-    const teamBox = ensureTeamBoxExists();
-    if (!teamBox) return;
+  const teamBox = ensureTeamBoxExists();
+  if (!teamBox) return;
 
-    try {
-        const res = await fetch("/api/teams/full");
-        const data = await res.json();
+  try {
+    const res = await fetch("/api/teams/full");
+    const data = await res.json();
 
-        //Fetch solo projects and prepare unifiedProjects
-        const projectsRes = await fetch("/api/projects", {
-            method: "GET",
-            credentials: "include"
-        });
-        const projectsData = await projectsRes.json();
-        // Fetch solo projects
+    //Fetch solo projects and prepare unifiedProjects
+    const projectsRes = await fetch("/api/projects", {
+      method: "GET",
+      credentials: "include",
+    });
+    const projectsData = await projectsRes.json();
+    // Fetch solo projects
 
-        // Build unifiedProjects array (team + solo)
-        const unifiedProjects = [];
+    // Build unifiedProjects array (team + solo)
+    const unifiedProjects = [];
 
-        // Team projects
-        for (const team of data) {
-            if (team.projects && Array.isArray(team.projects)) {
-                for (const project of team.projects) {
-                    unifiedProjects.push({
-                        project: project,
-                        members: team.members,
-                        isSolo: false
-                    });
-                }
-            }
+    // Team projects
+    for (const team of data) {
+      if (team.projects && Array.isArray(team.projects)) {
+        for (const project of team.projects) {
+          unifiedProjects.push({
+            project: project,
+            members: team.members,
+            isSolo: false,
+          });
         }
-
-        // Solo projects (team_id === null)
-        const soloProjects = projectsData.projects && Array.isArray(projectsData.projects)
-            ? projectsData.projects.filter(p => p.team_id === null)
-            : [];
-        const currentUser = {
-            username: projectsData.username || "You",
-            initials: projectsData.initials || "Me"
-        };
-        for (const project of soloProjects) {
-            unifiedProjects.push({
-                project: project,
-                members: [currentUser],
-                isSolo: true
-            });
-        }
-
-        // For now, just log the unified list
-        console.log("All projects(solo + team):", unifiedProjects);
-
-        const project = await findMostAdvancedProjectUnified(unifiedProjects);
-
-        if (!project) {
-            teamBox.innerHTML = "<p>No active or progressed projects to display.</p>";
-            return;
-        }
-
-        const finalProgress = Math.round(project.calculatedProgress);
-
-        const matchingEntry = unifiedProjects.find(
-            (entry) => entry.project.project_id === project.project_id
-        );
-
-        if (!matchingEntry) {
-            console.error("Error: Project found, but no matching entry in unifiedProjects.");
-            teamBox.innerHTML = "<p>Error displaying project details.</p>";
-            return;
-        }
-
-        const members = matchingEntry.members;
-
-        document.getElementById("team-project-name").textContent = project.name;
-
-        document.getElementById("total-time").textContent = project.duration_readable;
-
-        const memberList = document.getElementById("team-member-list");
-        memberList.innerHTML = "";
-        members.forEach((member) => {
-            const span = document.createElement("span");
-            span.className = "member";
-
-            span.textContent = member.initials || member.username.substring(0, 2).toUpperCase();
-            span.style.backgroundColor = "#888";
-            memberList.appendChild(span);
-        });
-
-        drawProgressCircle("team-progress", finalProgress);
-
-    } catch (error) {
-        console.error("Error loading Team activities:", error);
-        teamBox.innerHTML = "<p>Error loading team data.</p>";
+      }
     }
+
+    // Solo projects (team_id === null)
+    const soloProjects =
+      projectsData.projects && Array.isArray(projectsData.projects)
+        ? projectsData.projects.filter((p) => p.team_id === null)
+        : [];
+    const currentUser = {
+      username: projectsData.username || "You",
+      initials: projectsData.initials || "Me",
+    };
+    for (const project of soloProjects) {
+      unifiedProjects.push({
+        project: project,
+        members: [currentUser],
+        isSolo: true,
+      });
+    }
+
+    // For now, just log the unified list
+    console.log("All projects(solo + team):", unifiedProjects);
+
+    const project = await findMostAdvancedProjectUnified(unifiedProjects);
+
+    if (!project) {
+      teamBox.innerHTML = "<p>No active or progressed projects to display.</p>";
+      return;
+    }
+
+    const finalProgress = Math.round(project.calculatedProgress);
+
+    const matchingEntry = unifiedProjects.find(
+      (entry) => entry.project.project_id === project.project_id,
+    );
+
+    if (!matchingEntry) {
+      console.error(
+        "Error: Project found, but no matching entry in unifiedProjects.",
+      );
+      teamBox.innerHTML = "<p>Error displaying project details.</p>";
+      return;
+    }
+
+    const members = matchingEntry.members;
+
+    document.getElementById("team-project-name").textContent = project.name;
+
+    document.getElementById("total-time").textContent =
+      project.duration_readable;
+
+    const memberList = document.getElementById("team-member-list");
+    memberList.innerHTML = "";
+    members.forEach((member) => {
+      const span = document.createElement("span");
+      span.className = "member";
+
+      span.textContent =
+        member.initials || member.username.substring(0, 2).toUpperCase();
+      span.style.backgroundColor = "#888";
+      memberList.appendChild(span);
+    });
+
+    drawProgressCircle("team-progress", finalProgress);
+  } catch (error) {
+    console.error("Error loading Team activities:", error);
+    teamBox.innerHTML = "<p>Error loading team data.</p>";
+  }
 }
 
 function drawProgressCircle(containerId, percent) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-    const size = 120;
-    const radius = size / 2 - 10;
-    const circumference = 2 * Math.PI * radius;
-    const initialOffset = circumference;
+  const size = 120;
+  const radius = size / 2 - 10;
+  const circumference = 2 * Math.PI * radius;
+  const initialOffset = circumference;
 
-    container.innerHTML = `
+  container.innerHTML = `
         <svg width="${size}" height="${size}">
-            <circle cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#444" stroke-width="10" fill="none"/>
-            <circle class="progress-circle-fill" cx="${size/2}" cy="${size/2}" r="${radius}" stroke="#00bfa5" stroke-width="10"
+            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#444" stroke-width="10" fill="none"/>
+            <circle class="progress-circle-fill" cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#00bfa5" stroke-width="10"
                     fill="none" stroke-dasharray="${circumference}"
-                    stroke-dashoffset="${initialOffset}" transform="rotate(-90 ${size/2} ${size/2})"/>
+                    stroke-dashoffset="${initialOffset}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
             <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#fff">${percent}%</text>
         </svg>
     `;
 
-    setTimeout(() => {
-        const fillCircle = container.querySelector('.progress-circle-fill');
-        if (fillCircle) {
-            fillCircle.style.transition = 'stroke-dashoffset 1s ease-out';
-            const targetOffset = circumference * (1 - percent / 100);
-            fillCircle.style.strokeDashoffset = targetOffset;
-        }
-    }, 50);
+  setTimeout(() => {
+    const fillCircle = container.querySelector(".progress-circle-fill");
+    if (fillCircle) {
+      fillCircle.style.transition = "stroke-dashoffset 1s ease-out";
+      const targetOffset = circumference * (1 - percent / 100);
+      fillCircle.style.strokeDashoffset = targetOffset;
+    }
+  }, 50);
 }
 
 window.addEventListener("load", () => {
@@ -319,12 +327,11 @@ window.addEventListener("load", () => {
   }, 100);
 });
 
-
 async function fetchTasksByProjectId(projectId) {
   try {
     const res = await fetch(`/api/tasks?project_id=${projectId}`, {
       method: "GET",
-      credentials: "include"
+      credentials: "include",
     });
 
     if (!res.ok) {
@@ -354,9 +361,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Farbpalette wie in Analysis
   const colorPalette = [
-    "#00ff7f", "#b700ff", "#00f8dc", "#ff6b00", "#5a4132", "#0bd800",
-    "#f032e6", "#f8ff00", "#c59595", "#008080", "#765595", "#ffc200",
-    "#800000", "#64ac79", "#808000", "#0048ba", "#f1136f", "#ff2600", "#00cdfb", "#beff00"
+    "#00ff7f",
+    "#b700ff",
+    "#00f8dc",
+    "#ff6b00",
+    "#5a4132",
+    "#0bd800",
+    "#f032e6",
+    "#f8ff00",
+    "#c59595",
+    "#008080",
+    "#765595",
+    "#ffc200",
+    "#800000",
+    "#64ac79",
+    "#808000",
+    "#0048ba",
+    "#f1136f",
+    "#ff2600",
+    "#00cdfb",
+    "#beff00",
   ];
 
   function getColorForProject(projectName) {
@@ -372,7 +396,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   function hexToRgb(hex) {
     hex = hex.replace(/^#/, "");
     if (hex.length === 3) {
-      hex = hex.split("").map((c) => c + c).join("");
+      hex = hex
+        .split("")
+        .map((c) => c + c)
+        .join("");
     }
     const bigint = parseInt(hex, 16);
     return {
@@ -388,8 +415,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     b /= 255;
 
     const max = Math.max(r, g, b),
-          min = Math.min(r, g, b);
-    let h, s, l = (max + min) / 2;
+      min = Math.min(r, g, b);
+    let h,
+      s,
+      l = (max + min) / 2;
 
     if (max === min) {
       h = s = 0;
@@ -397,9 +426,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
       }
       h /= 6;
     }
@@ -478,7 +513,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
     });
   } catch (err) {
-    console.error("Error occured while loading data for the weekly report:", err);
+    console.error(
+      "Error occured while loading data for the weekly report:",
+      err,
+    );
   }
 });
 
@@ -516,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
   teamCard.style.cursor = "pointer";
 
   teamCard.addEventListener("click", function (e) {
-    const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
+    const ignoredElements = ["SPAN", "SVG", "CIRCLE", "TEXT"];
     if (ignoredElements.includes(e.target.tagName)) return;
 
     window.location.href = "/analysis?view=progress";

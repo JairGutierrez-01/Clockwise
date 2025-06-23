@@ -41,7 +41,8 @@ async function createTaskAPI(title) {
     body: JSON.stringify({
       title,
       created_from_tracking: true,
-      user_id: window.CURRENT_USER_ID,}),
+      user_id: window.CURRENT_USER_ID,
+    }),
   });
   if (!res.ok) throw new Error("Failed to create task");
   return res.json(); // { success, message, task_id }
@@ -271,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Restore active entry if found in localStorage
   const active = JSON.parse(localStorage.getItem("clockwise_active_entry"));
-    // state
+  // state
   /** @type {Array<Object>} */
   let allTasks = [];
   /** @type {number|null} */
@@ -291,13 +292,13 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEntryId = active.entryId;
 
     // Set input field again
-  if (active.taskTitle) {
-    input.value = active.taskTitle;
-  }
-  if (active.taskId) {
-    input.dataset.taskId = active.taskId;
-    input.disabled = true;
-  }
+    if (active.taskTitle) {
+      input.value = active.taskTitle;
+    }
+    if (active.taskId) {
+      input.dataset.taskId = active.taskId;
+      input.disabled = true;
+    }
 
     display.textContent = formatTime(elapsedTime);
     timerInterval = setInterval(() => {
@@ -340,8 +341,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   })();
 
-
-
   async function startTrackingForTask(taskId, title) {
     // UI vorbereiten
     input.value = title;
@@ -367,18 +366,20 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEntryId = time_entry_id;
     startDisplay = new Date().toLocaleTimeString();
 
-   // Save active entry to localStorage, including task title and id
-    localStorage.setItem("clockwise_active_entry", JSON.stringify({
-      entryId: time_entry_id,
-     startTime: startTime,
-     taskId: taskId,
-      taskTitle: title
-    }));
+    // Save active entry to localStorage, including task title and id
+    localStorage.setItem(
+      "clockwise_active_entry",
+      JSON.stringify({
+        entryId: time_entry_id,
+        startTime: startTime,
+        taskId: taskId,
+        taskTitle: title,
+      }),
+    );
   }
 
   // load tasks for suggestions
   fetchTasks().then((tasks) => (allTasks = tasks));
-
 
   /**
    * Shows or hides the "no sessions" hint based on presence of entries.
@@ -387,7 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateEmptyState() {
     emptyMessage.style.display = list.children.length ? "none" : "block";
   }
-
 
   const container = document.querySelector(".time-tracking");
   requestAnimationFrame(() => {
@@ -636,7 +636,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-
 
   updateEmptyState();
 });

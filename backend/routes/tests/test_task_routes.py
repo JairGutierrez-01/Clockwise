@@ -1,12 +1,12 @@
 import json
-from datetime import datetime
+
 import pytest
 
-from backend.models.user import User
-from backend.models.task import Task
 from backend.models.project import Project
-from backend.models.user_team import UserTeam
+from backend.models.task import Task
 from backend.models.team import Team
+from backend.models.user import User
+from backend.models.user_team import UserTeam
 
 
 @pytest.fixture()
@@ -35,9 +35,11 @@ def test_create_task_api(client, db_session, test_user):
         "description": "Via API",
         "due_date": "2025-12-31",
         "category_id": None,
-        "project_id": None
+        "project_id": None,
     }
-    response = client.post("/api/tasks", data=json.dumps(payload), content_type="application/json")
+    response = client.post(
+        "/api/tasks", data=json.dumps(payload), content_type="application/json"
+    )
     assert response.status_code == 201
     data = response.get_json()
     assert data["success"]
@@ -63,7 +65,11 @@ def test_update_task_api(client, db_session, test_user):
     db_session.commit()
 
     update_payload = {"title": "Updated", "status": "in_progress"}
-    response = client.put(f"/api/tasks/{task.task_id}", data=json.dumps(update_payload), content_type="application/json")
+    response = client.put(
+        f"/api/tasks/{task.task_id}",
+        data=json.dumps(update_payload),
+        content_type="application/json",
+    )
     assert response.status_code == 200
     data = response.get_json()
     assert data["success"]
@@ -107,12 +113,15 @@ def test_get_unassigned_tasks_api(client, db_session, test_user):
     assert isinstance(data, list)
     assert any(t["title"] == "Unassigned" for t in data)
 
+
 def test_get_tasks_by_project_api(client, db_session, test_user):
     login_test_user(client, test_user)
     project = Project(name="P1", user_id=test_user.user_id, time_limit_hours=25)
     db_session.add(project)
     db_session.commit()
-    task = Task(title="ProjectTask", user_id=test_user.user_id, project_id=project.project_id)
+    task = Task(
+        title="ProjectTask", user_id=test_user.user_id, project_id=project.project_id
+    )
     db_session.add(task)
     db_session.commit()
 
@@ -128,7 +137,11 @@ def test_update_task_status_api(client, db_session, test_user):
     db_session.commit()
 
     payload = {"status": "done"}
-    response = client.patch(f"/api/tasks/{task.task_id}/status", data=json.dumps(payload), content_type="application/json")
+    response = client.patch(
+        f"/api/tasks/{task.task_id}/status",
+        data=json.dumps(payload),
+        content_type="application/json",
+    )
     assert response.status_code == 200
     assert response.get_json()["status"] == "done"
 
@@ -146,12 +159,19 @@ def test_assign_task_to_user_api(client, db_session, test_user):
     db_session.add(membership)
 
     # Projekt im Team anlegen
-    project = Project(name="Assign Project", team_id=team.team_id, user_id=test_user.user_id, time_limit_hours=5)
+    project = Project(
+        name="Assign Project",
+        team_id=team.team_id,
+        user_id=test_user.user_id,
+        time_limit_hours=5,
+    )
     db_session.add(project)
     db_session.flush()
 
     # Task im Projekt erstellen
-    task = Task(title="To Assign", user_id=test_user.user_id, project_id=project.project_id)
+    task = Task(
+        title="To Assign", user_id=test_user.user_id, project_id=project.project_id
+    )
     db_session.add(task)
 
     # Zweiten Nutzer anlegen, dem die Aufgabe zugewiesen wird
@@ -160,7 +180,7 @@ def test_assign_task_to_user_api(client, db_session, test_user):
         email="member@example.com",
         password_hash="pw",
         first_name="Member",
-        last_name="User"
+        last_name="User",
     )
     db_session.add(assignee)
 
@@ -171,7 +191,7 @@ def test_assign_task_to_user_api(client, db_session, test_user):
     assign_res = client.patch(
         f"/api/tasks/{task.task_id}/assign",
         data=json.dumps(assign_payload),
-        content_type="application/json"
+        content_type="application/json",
     )
     assert assign_res.status_code == 200
     assign_data = assign_res.get_json()
@@ -182,7 +202,7 @@ def test_assign_task_to_user_api(client, db_session, test_user):
     unassign_res = client.patch(
         f"/api/tasks/{task.task_id}/assign",
         data=json.dumps(unassign_payload),
-        content_type="application/json"
+        content_type="application/json",
     )
     assert unassign_res.status_code == 200
     unassign_data = unassign_res.get_json()

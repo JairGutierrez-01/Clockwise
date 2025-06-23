@@ -1,5 +1,5 @@
 import enum
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import Enum
 
@@ -9,6 +9,7 @@ from backend.database import db
 class ProjectType(enum.Enum):
     TeamProject = "TeamProject"
     SoloProject = "SoloProject"
+
 
 class ProjectStatus(enum.Enum):
     active = "active"
@@ -51,7 +52,9 @@ class Project(db.Model):
     type = db.Column(Enum(ProjectType), default=ProjectType.SoloProject, nullable=False)
     is_course = db.Column(db.Boolean)
     credit_points = db.Column(db.Integer, nullable=True)
-    status = db.Column(Enum(ProjectStatus), default=ProjectStatus.active, nullable=False)
+    status = db.Column(
+        Enum(ProjectStatus), default=ProjectStatus.active, nullable=False
+    )
 
     # Foreign Keys
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)

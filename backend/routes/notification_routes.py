@@ -8,6 +8,7 @@ from backend.models import Notification
 # Blueprint for notification-related endpoints
 notification_bp = Blueprint("notifications", __name__)
 
+
 @notification_bp.route("/notifications", methods=["GET"])
 @login_required
 @jwt_required()
@@ -41,6 +42,7 @@ def get_notifications():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @notification_bp.route("/read/<int:notification_id>", methods=["POST"])
 @login_required
 def mark_notification_as_read(notification_id):
@@ -71,6 +73,7 @@ def mark_notification_as_read(notification_id):
     db.session.commit()
     return jsonify({"message": "Message marked as read"}), 200
 
+
 @notification_bp.route("/delete/<int:notification_id>", methods=["POST"])
 @login_required
 def delete_notification(notification_id):
@@ -98,5 +101,3 @@ def delete_notification(notification_id):
         db.session.commit()
         return "", 302
     return "", 404
-
-

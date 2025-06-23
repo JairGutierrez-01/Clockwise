@@ -1,4 +1,5 @@
 import pytest
+
 from backend.models import Notification, User
 from backend.services.notifications import (
     create_notification,

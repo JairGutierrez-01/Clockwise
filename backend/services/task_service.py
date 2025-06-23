@@ -1,11 +1,12 @@
 from datetime import timedelta
+
 from flask_login import current_user
 
 from backend.database import db
-from backend.models.task import Task, TaskStatus
-from backend.models.time_entry import TimeEntry
 from backend.models.category import Category
 from backend.models.project import Project
+from backend.models.task import Task, TaskStatus
+from backend.models.time_entry import TimeEntry
 from backend.services import notifications
 from backend.services.project_service import update_total_duration_for_project
 
@@ -50,7 +51,9 @@ def create_task(
 
         if project.team_id:
             if project.user_id != current_user.user_id:
-                return {"error": "Only the project admin can create tasks in this team project."}
+                return {
+                    "error": "Only the project admin can create tasks in this team project."
+                }
             # Teamprojekt
             admin_id = current_user.user_id
         else:
@@ -112,8 +115,9 @@ def get_tasks_by_project_for_user(project_id, user_id):
     """
     return Task.query.filter(
         Task.project_id == project_id,
-        ((Task.member_id == user_id) | (Task.user_id == user_id))
+        ((Task.member_id == user_id) | (Task.user_id == user_id)),
     ).all()
+
 
 def update_task(task_id, **kwargs):
     """Update task attributes selectively, , including member changes with notifications.
@@ -134,7 +138,9 @@ def update_task(task_id, **kwargs):
 
     if task.project and task.project.team_id:
         if current_user.user_id not in [task.project.user_id, task.member_id]:
-            return {"error": "Only the project admin or assigned member can update this task."}
+            return {
+                "error": "Only the project admin or assigned member can update this task."
+            }
     else:
         if task.user_id != current_user.user_id:
             return {"error": "You are not authorized to update this task."}
@@ -162,10 +168,10 @@ def update_task(task_id, **kwargs):
 
     # Solo-Projekt-Zuweisung → setze user_id, falls noch nicht gesetzt
     if (
-        "project_id" in kwargs and
-        task.project_id and
-        not task.project.team_id and
-        task.user_id is None
+        "project_id" in kwargs
+        and task.project_id
+        and not task.project.team_id
+        and task.user_id is None
     ):
         task.user_id = current_user.user_id
         db.session.commit()
@@ -219,7 +225,9 @@ def delete_task(task_id):
 
     if task.project and task.project.team_id:
         if current_user.user_id not in [task.project.user_id, task.member_id]:
-            return {"error": "Only the project admin or assigned member can delete this task."}
+            return {
+                "error": "Only the project admin or assigned member can delete this task."
+            }
     else:
         if task.user_id != current_user.user_id:
             return {"error": "You are not authorized to delete this solo task."}
@@ -263,15 +271,13 @@ def get_tasks_without_time_entries(user_id):
     subquery = db.session.query(TimeEntry.task_id).distinct()
 
     tasks = (
-        Task.query
-        .filter(~Task.task_id.in_(subquery))
-        .filter(
-            (Task.member_id == None) | (Task.member_id == user_id)
-        )
+        Task.query.filter(~Task.task_id.in_(subquery))
+        .filter((Task.member_id == None) | (Task.member_id == user_id))
         .all()
     )
 
     return tasks
+
 
 def get_task_with_time_entries(task_id):
     """Retrieve a task along with all associated time entries.
@@ -332,6 +338,7 @@ def update_total_duration_for_task(task_id):
         "total_duration_formatted": str(timedelta(seconds=total_seconds)),
     }
 
+
 """This function also for the new route users/user_id..."""
 
 
@@ -363,16 +370,14 @@ def unassign_tasks_for_user_in_team(user_id, team_id):
 
     # Unassign tasks where user is assigned as team member
     tasks_as_member = Task.query.filter_by(
-        project_id=team_project.project_id,
-        member_id=user_id
+        project_id=team_project.project_id, member_id=user_id
     ).all()
     for task in tasks_as_member:
         task.member_id = None
 
     # Also unassign tasks where user is mistakenly stored as owner (user_id)
     tasks_as_owner = Task.query.filter_by(
-        project_id=team_project.project_id,
-        user_id=user_id
+        project_id=team_project.project_id, user_id=user_id
     ).all()
     for task in tasks_as_owner:
         task.user_id = None

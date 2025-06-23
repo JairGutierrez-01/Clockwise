@@ -1,9 +1,6 @@
-from backend.models import UserTeam, Team
-from backend.models.project import Project, ProjectType, ProjectStatus
-from flask_login import current_user, login_required
-from io import BytesIO
-from backend.database import db
 from datetime import datetime
+from io import BytesIO
+
 from flask import (
     Blueprint,
     request,
@@ -13,6 +10,11 @@ from flask import (
     send_file,
     make_response,
 )
+from flask_login import current_user, login_required
+
+from backend.database import db
+from backend.models import UserTeam, Team
+from backend.models.project import Project, ProjectType, ProjectStatus
 from backend.services.project_service import (
     create_project,
     get_project,
@@ -23,10 +25,11 @@ from backend.services.project_service import (
     export_project_info_pdf,
 )
 
-#import the service function with a new name
+# import the service function with a new name
 from backend.services.project_service import create_project as service_create_project
 
 project_bp = Blueprint("project", __name__)
+
 
 @project_bp.route("/project/create", methods=["GET", "POST"])
 @login_required
@@ -117,6 +120,7 @@ def create_project_route():
 
     return render_template("projects.html", team_choices=team_choices)
 
+
 @project_bp.route("/project/<int:project_id>", methods=["GET"])
 @login_required
 def view_project(project_id):
@@ -132,7 +136,6 @@ def view_project(project_id):
     if "success" in result:
         return render_template("projects.html", project=result["project"])
     return result.get("error", "Project not found."), 404
-
 
 
 @project_bp.route("/project/delete/<int:project_id>", methods=["POST"])
@@ -242,9 +245,9 @@ def api_projects():
             time_limit_hours=time_limit_hours,
             due_date=due_date,
             type=type_,
-            status= status_,
+            status=status_,
             is_course=False,
-            credit_points=None
+            credit_points=None,
         )
         if result.get("success"):
             return {"project_id": result["project_id"]}, 200
@@ -355,6 +358,7 @@ def api_project_detail(project_id):
         db.session.commit()
         return {"success": True}
 
+
 @project_bp.route("/api/projects/export/projects/pdf", methods=["GET"])
 @login_required
 def export_projects_pdf():
@@ -369,6 +373,7 @@ def export_projects_pdf():
         download_name="projects.pdf",
     )
 
+
 @project_bp.route("/api/projects/export/projects/csv", methods=["GET"])
 @login_required
 def export_projects_csv():
@@ -380,5 +385,3 @@ def export_projects_csv():
     response.headers["Content-Disposition"] = "attachment; filename=projects.csv"
     response.headers["Content-Type"] = "text/csv"
     return response
-
-

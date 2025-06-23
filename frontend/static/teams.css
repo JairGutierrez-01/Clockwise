@@ -4,7 +4,7 @@
   --card-bg: #1e2532;
   --text-light: #e0e6ed;
   --text-muted: #94a3b8;
-  --purple: #B18AFF;
+  --purple: #b18aff;
   --border-color: #3f475a;
 
   /* Input background color for modals */
@@ -28,7 +28,9 @@
   --accent-color-light: #a78bfa; /* Light purple accent for hover effects */
   --background-color-dark: #1b263b;
 
-  --accent-color: var(--accent-color-light); /* Using your existing light accent as the general accent */
+  --accent-color: var(
+    --accent-color-light
+  ); /* Using your existing light accent as the general accent */
   --surface-bg: #232a39; /* A distinct background for internal modal lists/forms */
   --surface-hover: #2e384b; /* A slightly darker hover state for surfaces */
 
@@ -659,11 +661,21 @@ body {
 
 /* Keyframes for the shake animation */
 @keyframes shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(1deg); }
-  50% { transform: rotate(0deg); }
-  75% { transform: rotate(-1deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(1deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(-1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 /* shake animation to member in delete mode */
@@ -676,10 +688,8 @@ body {
 /* Style for the delete icon */
 .member-item .delete-icon {
   position: absolute;
-  top: 5px;   /* Position 5px from the top edge of member-item's padding box */
+  top: 5px; /* Position 5px from the top edge of member-item's padding box */
   right: 5px; /* Position 5px from the right edge of member-item's padding box */
-
-
 
   background-color: #ff4d4d;
   color: white;
@@ -697,7 +707,9 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); /* Stronger shadow */
   opacity: 0;
   transform: scale(0); /* Keep scale for initial hidden state */
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
   box-sizing: border-box;
 }
 
@@ -709,7 +721,9 @@ body {
 
 /* Style for the Delete Member button when in delete mode */
 .delete-member-btn.delete-mode-active {
-  background-color: var(--accent-color-dark); /* Change color to indicate active mode */
+  background-color: var(
+    --accent-color-dark
+  ); /* Change color to indicate active mode */
   color: var(--text-color-light);
   box-shadow: 0 0 10px var(--accent-color-light);
   transition: all 0.3s ease;
@@ -721,243 +735,256 @@ body {
 }
 
 .modal-team-form .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    width: 100%; /* Ensure header spans the content width */
-    box-sizing: border-box; /* Include padding/border in width */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  width: 100%; /* Ensure header spans the content width */
+  box-sizing: border-box; /* Include padding/border in width */
 }
 
 .modal-team-form .modal-header h3 {
-    font-size: 1.8rem;
-    color: var(--text-light); /* Use your defined text color */
-    margin: 0;
+  font-size: 1.8rem;
+  color: var(--text-light); /* Use your defined text color */
+  margin: 0;
 }
 
-.modal-team-form .modal-close-btn { /* A more prominent close button like Greenfield */
-    background: none;
-    border: 2px solid var(--text-light); /* White border, using your variable */
-    color: var(--text-light);
-    padding: 8px 18px;
-    border-radius: 999px; /* Pill shape */
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+.modal-team-form .modal-close-btn {
+  /* A more prominent close button like Greenfield */
+  background: none;
+  border: 2px solid var(--text-light); /* White border, using your variable */
+  color: var(--text-light);
+  padding: 8px 18px;
+  border-radius: 999px; /* Pill shape */
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .modal-team-form .modal-close-btn:hover {
-    background-color: var(--text-light);
-    color: var(--card-bg); /* Dark text on your card background color */
-    border-color: var(--text-light); /* Keep border color consistent on hover */
+  background-color: var(--text-light);
+  color: var(--card-bg); /* Dark text on your card background color */
+  border-color: var(--text-light); /* Keep border color consistent on hover */
 }
 
 /* Styling for input fields specifically within the modal forms */
 .modal-team-form input[type="text"],
 .modal-team-form textarea {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--input-bg);
-    color: var(--text-light); /* Your defined light text color */
-    font-size: 1rem;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--input-bg);
+  color: var(--text-light); /* Your defined light text color */
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .modal-team-form input[type="text"]:focus,
 .modal-team-form textarea:focus {
-    border-color: var(--member-color);
-    box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3); /* Soft glow with member color */
+  border-color: var(--member-color);
+  box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3); /* Soft glow with member color */
 }
 
 /* Styling for action buttons within the modal forms */
 /* These buttons should also reuse your .custom-modal-btn and .confirm-btn/.cancel-btn classes */
 .modal-team-form .action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-    width: 100%; /* Ensure buttons span the content width */
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+  width: 100%; /* Ensure buttons span the content width */
 }
 
 /* Styles for lists (e.g., assigning members) within the modal */
 .modal-assign-members-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 200px; /* Adjust as needed for scrollability */
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--card-bg); /* Use your card background for list */
-    padding: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px; /* Adjust as needed for scrollability */
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--card-bg); /* Use your card background for list */
+  padding: 10px;
 }
 
 .modal-assign-members-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.1);
-    color: var(--text-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.1);
+  color: var(--text-light);
 }
 
 .modal-assign-members-list li:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
-.modal-assign-members-list button.assign-button { /* Use a specific class name for these buttons */
-    background-color: var(--purple); /* Your defined purple color */
-    color: white;
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+.modal-assign-members-list button.assign-button {
+  /* Use a specific class name for these buttons */
+  background-color: var(--purple); /* Your defined purple color */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .modal-assign-members-list button.assign-button:hover {
-    background-color: var(--accent-color-light); /* Your defined light purple for hover */
+  background-color: var(
+    --accent-color-light
+  ); /* Your defined light purple for hover */
 }
 
 /* Ensure custom-modal-content itself is flexible for its dynamic content */
 /* Add this if not already present or adjust existing: */
 .custom-modal-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 
-
 .dynamic-content-area {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-sizing: border-box;
 }
 
 .dynamic-content-area .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    width: 100%;
-    box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dynamic-content-area .modal-header h3 {
-    font-size: 1.8rem;
-    color: var(--text-light);
-    margin: 0;
+  font-size: 1.8rem;
+  color: var(--text-light);
+  margin: 0;
 }
 
 .dynamic-content-area .modal-close-btn {
-    background: none;
-    border: 2px solid var(--text-light);
-    color: var(--text-light);
-    padding: 8px 18px;
-    border-radius: 999px; /* Pill shape */
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  background: none;
+  border: 2px solid var(--text-light);
+  color: var(--text-light);
+  padding: 8px 18px;
+  border-radius: 999px; /* Pill shape */
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .dynamic-content-area .modal-close-btn:hover {
-    background-color: var(--text-light);
-    color: var(--card-bg);
-    border-color: var(--text-light);
+  background-color: var(--text-light);
+  color: var(--card-bg);
+  border-color: var(--text-light);
 }
 
 /* Styling for generic form content within the popover-like modals */
 .dynamic-content-area .popover-content {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
 }
 
 .dynamic-content-area .popover-content input[type="text"],
 .dynamic-content-area .popover-content textarea {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--input-bg);
-    color: var(--text-light);
-    font-size: 1rem;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--input-bg);
+  color: var(--text-light);
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .dynamic-content-area .popover-content input[type="text"]:focus,
 .dynamic-content-area .popover-content textarea:focus {
-    border-color: var(--member-color);
-    box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3);
+  border-color: var(--member-color);
+  box-shadow: 0 0 0 3px rgba(110, 197, 255, 0.3);
 }
 
 .dynamic-content-area .action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 15px;
+  width: 100%;
 }
 
 /* Styles for lists */
 .modal-assign-members-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    max-height: 250px; /* Max height for scrollability */
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--surface-bg); /* Use a distinct background */
-    padding: 10px;
-    width: 100%;
-    box-sizing: border-box;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 250px; /* Max height for scrollability */
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--surface-bg); /* Use a distinct background */
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .modal-assign-members-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 5px;
-    border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.1);
-    color: var(--text-light);
-    font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 5px;
+  border-bottom: 1px solid rgba(var(--text-muted-rgb), 0.1);
+  color: var(--text-light);
+  font-size: 0.95rem;
 }
 
 .modal-assign-members-list li:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .modal-assign-members-list button.assign-button {
-    background-color: var(--purple);
-    color: white;
-    padding: 6px 15px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+  background-color: var(--purple);
+  color: white;
+  padding: 6px 15px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .modal-assign-members-list button.assign-button:hover {
-    background-color: var(--accent-color-light);
+  background-color: var(--accent-color-light);
 }
 
 .assign-popover {
@@ -997,7 +1024,6 @@ body {
   background-color: #93c5fd;
 }
 
-
 .assign-popover .view-assigned-tasks-btn {
   background-color: var(--card-bg);
   color: var(--text-light);
@@ -1006,7 +1032,9 @@ body {
   padding: 6px 10px;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
   margin-top: 5px;
 }
 
@@ -1049,7 +1077,6 @@ body {
   background-color: var(--input-bg);
 }
 
-
 .assign-popover {
   position: absolute;
   top: 35px;
@@ -1091,31 +1118,31 @@ body {
 }
 
 .popover-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
 }
 
 .popover-header p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--text-light);
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-light);
 }
 
 .popover-close-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 0 5px;
-    transition: color 0.2s ease;
-    line-height: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 5px;
+  transition: color 0.2s ease;
+  line-height: 1;
 }
 
 .popover-close-btn:hover {
-    color: var(--text-light);
+  color: var(--text-light);
 }
 
 /*tasks section*/
@@ -1154,7 +1181,6 @@ body {
   margin-bottom: 0.5rem;
   font-size: 1.25rem;
 }
-
 
 .project-block {
   margin-left: 1rem;

@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime
+
+import pytest
 
 from backend.models.task import Task, TaskStatus
 from backend.models.time_entry import TimeEntry
@@ -22,7 +23,7 @@ def test_user(db_session):
         email="test@example.com",
         password_hash="hashed_pw",
         first_name="Test",
-        last_name="User"
+        last_name="User",
     )
     db_session.add(user)
     db_session.commit()
@@ -34,12 +35,13 @@ def test_create_and_get_task(db_session, test_user):
         title="Test Task",
         description="This is a test",
         status="todo",
-        user_id=test_user.user_id
+        user_id=test_user.user_id,
     )
     task = get_task_by_id(response["task_id"])
     assert task.title == "Test Task"
     assert task.status == TaskStatus.todo
     assert task.user_id == test_user.user_id
+
 
 def test_update_task(db_session, test_user):
     task = Task(title="Old Title", user_id=test_user.user_id)
@@ -51,6 +53,7 @@ def test_update_task(db_session, test_user):
     assert updated_task.title == "New Title"
     assert updated_task.status == TaskStatus.in_progress
 
+
 def test_delete_task(db_session, test_user):
     task = Task(title="Delete Me", user_id=test_user.user_id)
     db_session.add(task)
@@ -59,6 +62,7 @@ def test_delete_task(db_session, test_user):
     response = delete_task(task.task_id)
     assert response["success"] is True
     assert get_task_by_id(task.task_id) is None
+
 
 def test_get_tasks_without_time_entries(db_session, test_user):
     t1 = Task(title="No Entry", user_id=test_user.user_id)
@@ -71,7 +75,7 @@ def test_get_tasks_without_time_entries(db_session, test_user):
         user_id=test_user.user_id,
         start_time=datetime.now(),
         end_time=datetime.now(),
-        duration_seconds=600
+        duration_seconds=600,
     )
     db_session.add(entry)
     db_session.commit()
@@ -79,6 +83,7 @@ def test_get_tasks_without_time_entries(db_session, test_user):
     results = get_tasks_without_time_entries()
     assert t1 in results
     assert t2 not in results
+
 
 def test_get_task_with_time_entries(db_session, test_user):
     task = Task(title="Tracked", user_id=test_user.user_id)
@@ -90,7 +95,7 @@ def test_get_task_with_time_entries(db_session, test_user):
         user_id=test_user.user_id,
         start_time=datetime.now(),
         end_time=datetime.now(),
-        duration_seconds=1800
+        duration_seconds=1800,
     )
     db_session.add(entry)
     db_session.commit()
@@ -100,13 +105,18 @@ def test_get_task_with_time_entries(db_session, test_user):
     assert len(result["time_entries"]) == 1
     assert result["time_entries"][0]["duration_seconds"] == 1800
 
+
 def test_update_total_duration_for_task(db_session, test_user):
     task = Task(title="DurationTest", user_id=test_user.user_id)
     db_session.add(task)
     db_session.commit()
 
-    entry1 = TimeEntry(task_id=task.task_id, user_id=test_user.user_id, duration_seconds=60)
-    entry2 = TimeEntry(task_id=task.task_id, user_id=test_user.user_id, duration_seconds=120)
+    entry1 = TimeEntry(
+        task_id=task.task_id, user_id=test_user.user_id, duration_seconds=60
+    )
+    entry2 = TimeEntry(
+        task_id=task.task_id, user_id=test_user.user_id, duration_seconds=120
+    )
     db_session.add_all([entry1, entry2])
     db_session.commit()
 

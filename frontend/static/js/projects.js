@@ -165,13 +165,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadProjects() {
-  try {
-    projects = await fetchProjects();
-    renderProjectList()
-  } catch (err) {
-    console.error("Fehler beim Laden der Projekte:", err);
+    try {
+      projects = await fetchProjects();
+      renderProjectList();
+    } catch (err) {
+      console.error("Fehler beim Laden der Projekte:", err);
+    }
   }
-}
 
   async function createProject(data) {
     const res = await fetch("/api/projects", {
@@ -509,92 +509,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     openTaskEditModal(taskId);
   });
- taskForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+  taskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  // Kategorie-ID bestimmen
-  const catInputEl = document.getElementById("task-category");
-  let enteredCatName = catInputEl.value.trim();
+    // Kategorie-ID bestimmen
+    const catInputEl = document.getElementById("task-category");
+    let enteredCatName = catInputEl.value.trim();
 
-  enteredCatName = enteredCatName.replace("ß", "ss");
+    enteredCatName = enteredCatName.replace("ß", "ss");
 
-  enteredCatName = enteredCatName.replace(/[^\p{L}\s]/gu, "").trim();
+    enteredCatName = enteredCatName.replace(/[^\p{L}\s]/gu, "").trim();
 
-  enteredCatName = enteredCatName
-  .split(/\s+/)
-  .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-  .join(" ");
+    enteredCatName = enteredCatName
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
 
-  let categoryId = null;
+    let categoryId = null;
 
-  if (enteredCatName) {
-    const existing = window.ALL_CATEGORIES?.find(
-      (c) => c.name.toLowerCase() === enteredCatName.toLowerCase()
-    );
-    if (existing) {
-      categoryId = existing.category_id;
-    } else {
-      try {
-        const res = await fetch("/api/categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: enteredCatName}),
-          credentials: "include"
-        });
-        if (!res.ok) throw new Error("Fehler beim Erstellen der Kategorie");
-        const newCat = await res.json();
-        categoryId = newCat.category_id;
-        await loadCategories(); // neue Kategorie direkt laden
-      } catch (err) {
-        console.error("Kategorie konnte nicht erstellt werden:", err);
+    if (enteredCatName) {
+      const existing = window.ALL_CATEGORIES?.find(
+        (c) => c.name.toLowerCase() === enteredCatName.toLowerCase(),
+      );
+      if (existing) {
+        categoryId = existing.category_id;
+      } else {
+        try {
+          const res = await fetch("/api/categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: enteredCatName }),
+            credentials: "include",
+          });
+          if (!res.ok) throw new Error("Fehler beim Erstellen der Kategorie");
+          const newCat = await res.json();
+          categoryId = newCat.category_id;
+          await loadCategories(); // neue Kategorie direkt laden
+        } catch (err) {
+          console.error("Kategorie konnte nicht erstellt werden:", err);
+        }
       }
     }
-  }
 
-  const taskPayload = {
-    title: taskNameInput.value.trim(),
-    description: taskDescInput.value.trim(),
-    category_id: categoryId, // <-- Jetzt korrekt gesetzt!
-    category_name: enteredCatName,
-    due_date: taskDueDateInput.value || null,
-    status: taskStatusSelect.value,
-    project_id: parseInt(projectSelect.value, 10) || null,
-    created_from_tracking: false,
-  };
+    const taskPayload = {
+      title: taskNameInput.value.trim(),
+      description: taskDescInput.value.trim(),
+      category_id: categoryId, // <-- Jetzt korrekt gesetzt!
+      category_name: enteredCatName,
+      due_date: taskDueDateInput.value || null,
+      status: taskStatusSelect.value,
+      project_id: parseInt(projectSelect.value, 10) || null,
+      created_from_tracking: false,
+    };
 
-  const projectEntryId = taskPayload.project_id;
-  if (projectEntryId) {
-    const proj = projects.find((p) => p.project_id === projectEntryId);
-    if (proj && proj.type === "SoloProject") {
-      taskPayload.user_id = window.CURRENT_USER_ID;
-    }
-  }
-
-  const editingTaskId = taskForm.dataset.editingTaskId;
-  try {
-    if (editingTaskId) {
-      await fetch(`/api/tasks/${editingTaskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(taskPayload),
-      });
-      delete taskForm.dataset.editingTaskId;
-    } else {
-      await createTask(taskPayload);
+    const projectEntryId = taskPayload.project_id;
+    if (projectEntryId) {
+      const proj = projects.find((p) => p.project_id === projectEntryId);
+      if (proj && proj.type === "SoloProject") {
+        taskPayload.user_id = window.CURRENT_USER_ID;
+      }
     }
 
-    taskModal.classList.add("hidden");
+    const editingTaskId = taskForm.dataset.editingTaskId;
+    try {
+      if (editingTaskId) {
+        await fetch(`/api/tasks/${editingTaskId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(taskPayload),
+        });
+        delete taskForm.dataset.editingTaskId;
+      } else {
+        await createTask(taskPayload);
+      }
 
-    if (activeFilter === "unassigned") {
-      await renderUnassignedTasks();
-    } else if (editingProjectId) {
-      const tasks = await fetchTasks(editingProjectId);
-      renderTaskList(tasks);
+      taskModal.classList.add("hidden");
+
+      if (activeFilter === "unassigned") {
+        await renderUnassignedTasks();
+      } else if (editingProjectId) {
+        const tasks = await fetchTasks(editingProjectId);
+        renderTaskList(tasks);
+      }
+    } catch (error) {
+      console.error("Fehler beim Speichern der Task:", error);
     }
-  } catch (error) {
-    console.error("Fehler beim Speichern der Task:", error);
-  }
-});
+  });
 
   // --- Initialization ---
   /**
@@ -617,7 +617,8 @@ document.addEventListener("DOMContentLoaded", () => {
       taskStatusSelect.value = task.status;
 
       const projectSelect = document.getElementById("task-project");
-      projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
+      projectSelect.innerHTML =
+        '<option value="">-- Select Project --</option>';
       projects.forEach((proj) => {
         const option = document.createElement("option");
         option.value = proj.project_id;
@@ -627,8 +628,11 @@ document.addEventListener("DOMContentLoaded", () => {
       projectSelect.value = task.project_id || "";
 
       // Rechte prüfen
-      const currentProject = projects.find(p => p.project_id === task.project_id);
-      const isAdmin = !task.project_id || userHasProjectAdminRights(currentProject);
+      const currentProject = projects.find(
+        (p) => p.project_id === task.project_id,
+      );
+      const isAdmin =
+        !task.project_id || userHasProjectAdminRights(currentProject);
 
       const titleInput = document.getElementById("task-name");
       const descInput = document.getElementById("task-description");
@@ -637,14 +641,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const categoryInput = document.getElementById("task-category");
 
       if (!isAdmin) {
-        [titleInput, descInput, deadlineInput, categoryInput, projectSelect].forEach(el => {
+        [
+          titleInput,
+          descInput,
+          deadlineInput,
+          categoryInput,
+          projectSelect,
+        ].forEach((el) => {
           el.disabled = true;
           el.style.opacity = "0.6";
           el.style.cursor = "not-allowed";
         });
         if (deleteBtn) deleteBtn.style.display = "none";
       } else {
-        [titleInput, descInput, deadlineInput, categoryInput, projectSelect].forEach(el => {
+        [
+          titleInput,
+          descInput,
+          deadlineInput,
+          categoryInput,
+          projectSelect,
+        ].forEach((el) => {
           el.disabled = false;
           el.style.opacity = "1";
           el.style.cursor = "auto";
@@ -684,33 +700,35 @@ document.addEventListener("DOMContentLoaded", () => {
       textSpan.classList.add("task-meta-row");
 
       // Delete-Button
-     li.appendChild(textSpan);
-    // Adminrechte prüfen
-    const projectOfTask = projects.find(p => p.project_id === task.project_id);
-    const isAdminOrOwner = (
-      userHasProjectAdminRights(projectOfTask) ||
-      (projectOfTask?.type === "SoloProject" && task.user_id === window.CURRENT_USER_ID)
-    );
-    if (isAdminOrOwner) {
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.className = "task-delete-btn";
-      deleteBtn.addEventListener("click", async () => {
-        if (!confirm("Möchtest du diese Aufgabe wirklich löschen?")) return;
+      li.appendChild(textSpan);
+      // Adminrechte prüfen
+      const projectOfTask = projects.find(
+        (p) => p.project_id === task.project_id,
+      );
+      const isAdminOrOwner =
+        userHasProjectAdminRights(projectOfTask) ||
+        (projectOfTask?.type === "SoloProject" &&
+          task.user_id === window.CURRENT_USER_ID);
+      if (isAdminOrOwner) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "task-delete-btn";
+        deleteBtn.addEventListener("click", async () => {
+          if (!confirm("Möchtest du diese Aufgabe wirklich löschen?")) return;
 
-        try {
-          const res = await fetch(`/api/tasks/${task.task_id}`, {
-            method: "DELETE",
-          });
-          if (!res.ok) throw new Error("Löschen fehlgeschlagen");
-          const updatedTasks = await fetchTasks(editingProjectId);
-          renderTaskList(updatedTasks);
-        } catch (err) {
-          console.error("Fehler beim Löschen:", err);
-        }
-      });
-      li.appendChild(deleteBtn);
-    }
+          try {
+            const res = await fetch(`/api/tasks/${task.task_id}`, {
+              method: "DELETE",
+            });
+            if (!res.ok) throw new Error("Löschen fehlgeschlagen");
+            const updatedTasks = await fetchTasks(editingProjectId);
+            renderTaskList(updatedTasks);
+          } catch (err) {
+            console.error("Fehler beim Löschen:", err);
+          }
+        });
+        li.appendChild(deleteBtn);
+      }
       taskListEl.appendChild(li);
     });
   }

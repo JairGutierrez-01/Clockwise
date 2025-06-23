@@ -1,10 +1,11 @@
 from datetime import datetime
+
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 
+from backend.database import db
 from backend.models import Project, UserTeam, Task, Category
 from backend.models.task import TaskStatus
-from backend.database import db
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -13,10 +14,11 @@ from backend.services.task_service import (
     update_task,
     delete_task,
     get_unassigned_tasks as get_unassigned_tasks_from_service,
-    get_tasks_assigned_to_user
+    get_tasks_assigned_to_user,
 )
 
 task_bp = Blueprint("tasks", __name__)
+
 
 @task_bp.route("/tasks", methods=["GET"])
 @login_required
@@ -40,14 +42,14 @@ def get_tasks():
         project = Project.query.get(int(project_id))
         if project and project.team_id:
             is_admin = UserTeam.query.filter_by(
-                user_id=current_user.user_id,
-                team_id=project.team_id,
-                role="admin"
+                user_id=current_user.user_id, team_id=project.team_id, role="admin"
             ).first()
             if is_admin:
                 tasks = get_tasks_by_project(int(project_id))
             else:
-                tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
+                tasks = get_tasks_by_project_for_user(
+                    int(project_id), current_user.user_id
+                )
         else:
             # Solo-Projekt → nur eigene Tasks
             tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
@@ -206,8 +208,7 @@ def get_unassigned_tasks():
         duration_seconds = sum(
             (
                 entry.duration_seconds
-                if entry.duration_seconds
-                   is not None
+                if entry.duration_seconds is not None
                 else int((entry.duration_minutes or 0) * 60)
             )
             for entry in task.time_entries
@@ -258,7 +259,10 @@ def assign_task_to_user_api(task_id):
     user_id = data.get("user_id")
 
     if user_id is not None and not isinstance(user_id, int):
-        return jsonify({"error": "Invalid user_id provided. Must be integer or null."}), 400
+        return (
+            jsonify({"error": "Invalid user_id provided. Must be integer or null."}),
+            400,
+        )
 
     task = Task.query.get(task_id)
     if not task:
@@ -270,9 +274,7 @@ def assign_task_to_user_api(task_id):
 
     team_id = project.team_id
     is_admin = UserTeam.query.filter_by(
-        user_id=current_user.user_id,
-        team_id=team_id,
-        role="admin"
+        user_id=current_user.user_id, team_id=team_id, role="admin"
     ).first()
 
     if not is_admin:
@@ -281,11 +283,15 @@ def assign_task_to_user_api(task_id):
     result = update_task(task_id, member_id=user_id)
 
     if result.get("success"):
-        message = "Task assigned successfully." if user_id is not None else "Task unassigned successfully."
-        return jsonify({
-            "message": message,
-            "task_id": task_id,
-            "member_id": user_id}), 200
+        message = (
+            "Task assigned successfully."
+            if user_id is not None
+            else "Task unassigned successfully."
+        )
+        return (
+            jsonify({"message": message, "task_id": task_id, "member_id": user_id}),
+            200,
+        )
 
     return jsonify({"error": result.get("error", "Task assignment failed.")}), 400
 
@@ -312,21 +318,32 @@ def update_task_status(task_id):
     new_status = data.get("status", "").lower()
 
     if new_status not in TaskStatus.__members__:
-        return jsonify({
-            "error": f"Invalid status: '{new_status}'",
-            "allowed_statuses": list(TaskStatus.__members__.keys())
-        }), 400
+        return (
+            jsonify(
+                {
+                    "error": f"Invalid status: '{new_status}'",
+                    "allowed_statuses": list(TaskStatus.__members__.keys()),
+                }
+            ),
+            400,
+        )
 
     result = update_task(task_id, status=new_status)
 
     if result.get("success"):
-        return jsonify({
-            "message": "Task status updated successfully.",
-            "task_id": task_id,
-            "status": new_status
-        }), 200
+        return (
+            jsonify(
+                {
+                    "message": "Task status updated successfully.",
+                    "task_id": task_id,
+                    "status": new_status,
+                }
+            ),
+            200,
+        )
 
     return jsonify({"error": result.get("error", "Status update failed.")}), 400
+
 
 @task_bp.route("/categories/used", methods=["GET"])
 @login_required
@@ -356,6 +373,4 @@ def get_used_categories():
         .all()
     )
 
-    return jsonify({
-        "categories": [{"name": c.name} for c in categories]
-    })
+    return jsonify({"categories": [{"name": c.name} for c in categories]})

@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from backend.database import Base
 from backend.models import Project, User
 from backend.models.project import ProjectType
@@ -35,7 +36,13 @@ def test_create_project(db_session):
     Args:
         db_session (Session): The database session fixture.
     """
-    user = User(username="owner", email="o@example.com", password_hash="x", first_name="F", last_name="L")
+    user = User(
+        username="owner",
+        email="o@example.com",
+        password_hash="x",
+        first_name="F",
+        last_name="L",
+    )
     db_session.add(user)
     db_session.commit()
 
@@ -43,7 +50,7 @@ def test_create_project(db_session):
         name="Solo Work",
         time_limit_hours=5,
         user_id=user.user_id,
-        type=ProjectType.SoloProject
+        type=ProjectType.SoloProject,
     )
     db_session.add(project)
     db_session.commit()
@@ -67,7 +74,7 @@ def test_project_repr_and_duration(db_session):
         email="tim@example.com",
         password_hash="xyz123",
         first_name="Tim",
-        last_name="Tester"
+        last_name="Tester",
     )
     db_session.add(user)
     db_session.commit()

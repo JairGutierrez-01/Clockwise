@@ -1,6 +1,5 @@
-import pytest
-import sys
 import os
+import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
 
@@ -10,6 +9,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from backend.database import db  # Stelle sicher, dass dein db Objekt von dort kommt
 
 import pytest
+
 
 @pytest.fixture()
 def db_session(flask_app):
@@ -26,6 +26,7 @@ def db_session(flask_app):
     transaction.rollback()
     connection.close()
     session.remove()
+
 
 @pytest.fixture()
 def flask_app():

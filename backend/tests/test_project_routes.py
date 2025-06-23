@@ -1,13 +1,13 @@
-
 import pytest
-from datetime import datetime
-from flask import url_for
+
 from backend.models import User, Team, Project, UserTeam, ProjectType, ProjectStatus
 
 
 @pytest.fixture
 def setup_project_test_data(db_session):
-    user = User(username="projectuser", email="project@example.com", password_hash="123")
+    user = User(
+        username="projectuser", email="project@example.com", password_hash="123"
+    )
     team = Team(name="Project Team")
     db_session.add_all([user, team])
     db_session.commit()
@@ -70,7 +70,9 @@ def test_delete_project_route(client, db_session, setup_project_test_data, login
     db_session.add(project)
     db_session.commit()
 
-    response = client.post(f"/project/delete/{project.project_id}", follow_redirects=True)
+    response = client.post(
+        f"/project/delete/{project.project_id}", follow_redirects=True
+    )
 
     assert response.status_code in (200, 302)
     assert Project.query.get(project.project_id) is None
@@ -142,7 +144,9 @@ def test_api_project_details(client, db_session, setup_project_test_data, login_
     db_session.add(project)
     db_session.commit()
 
-    patch = client.patch(f"/api/projects/{project.project_id}", json={"name": "Patched Name"})
+    patch = client.patch(
+        f"/api/projects/{project.project_id}", json={"name": "Patched Name"}
+    )
     assert patch.status_code == 200
     assert Project.query.get(project.project_id).name == "Patched Name"
 
