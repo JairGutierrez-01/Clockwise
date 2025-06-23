@@ -1,8 +1,9 @@
 import os
 from datetime import datetime, timedelta
 
+import pytz
 from dotenv import load_dotenv
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, session
 from flask import jsonify
 from flask import request
 from flask_jwt_extended import JWTManager
@@ -464,6 +465,51 @@ def update_last_active():
         ):
             current_user.last_active = now
             db.session.commit()
+
+
+@app.before_request
+def make_session_permanent():
+    """Marks the session as permanent and sets its lifetime to 24 hours.
+
+    This function is executed before each request. It ensures that the session
+    persists across browser restarts and is valid for 24 hours.
+    """
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(hours=24)
+
+
+@app.before_request
+def check_session_expiry():
+    """Checks user activity and logs out after 24 hours of inactivity.
+
+    This function is executed before each request. It reads the 'last_activity'
+    timestamp from the session, compares it to the current time, and logs the user out
+    if more than 24 hours have passed since the last interaction.
+
+    If the session is still valid, it updates the 'last_activity' timestamp.
+
+    Returns:
+        Response or None: Redirects to the login page if the session has expired;
+        otherwise, continues processing the request.
+    """
+    try:
+        last_activity = session.get("last_activity")
+        if last_activity:
+            # Convert the stored ISO string back to a timezone-aware datetime object
+            last_activity = datetime.fromisoformat(last_activity)
+            current_time = datetime.now(pytz.UTC)
+
+            # Check if more than 24 hours (86400 seconds) have passed
+            if (current_time - last_activity).total_seconds() > 86400:
+                session.clear()
+                return redirect(url_for("login"))
+
+        # Update 'last_activity' timestamp
+        session["last_activity"] = datetime.now(pytz.UTC).isoformat()
+    except Exception as e:
+        # In case of error (e.g. invalid timestamp), clear the session for safety
+        session.clear()
+        return redirect(url_for("login"))
 
 
 if __name__ == "__main__":
