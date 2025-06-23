@@ -474,3 +474,10 @@ select:disabled {
   color: #aaa;
   cursor: not-allowed;
 }
+
+
+.fc-event-title,
+.fc-event-time {
+  white-space: normal !important;
+  overflow-wrap: break-word;
+}
