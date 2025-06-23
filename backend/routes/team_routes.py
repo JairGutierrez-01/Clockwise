@@ -332,3 +332,53 @@ def get_team_tasks(team_id):
             )
 
     return jsonify(all_tasks), 200
+
+@team_bp.route("/full", methods=["GET"])
+@login_required
+def get_full_teams():
+    """
+    Returns all teams the current user is a member of,
+    including their projects and members (with roles).
+    """
+    user_teams = (
+        db.session.query(Team)
+        .join(UserTeam)
+        .filter(UserTeam.user_id == current_user.user_id)
+        .all()
+    )
+
+    def serialize_userteam(userteam):
+        return {
+            "user_id": userteam.user.user_id,
+            "username": userteam.user.username,
+            "first_name": userteam.user.first_name,
+            "last_name": userteam.user.last_name,
+            "role": userteam.role,
+        }
+
+    def serialize_project(project):
+        return {
+            "project_id": project.project_id,
+            "name": project.name,
+            "description": project.description,
+            "type": project.type.name if project.type else None,
+            "status": project.status.name if project.status else None,
+            "time_limit_hours": project.time_limit_hours,
+            "current_hours": project.current_hours or 0,
+            "duration_readable": project.duration_readable,
+            "due_date": project.due_date.isoformat() if project.due_date else None,
+        }
+
+    result = []
+    for team in user_teams:
+        team_data = {
+            "team_id": team.team_id,
+            "name": team.name,
+            "description": team.description,
+            "created_at": team.created_at.isoformat() if team.created_at else None,
+            "members": [serialize_userteam(ut) for ut in team.members],
+            "projects": [serialize_project(p) for p in team.project],
+        }
+        result.append(team_data)
+
+    return result
