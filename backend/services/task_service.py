@@ -150,13 +150,23 @@ def update_task(task_id, **kwargs):
 
     old_member_id = task.member_id
     new_member_id = kwargs.get("member_id", old_member_id)
-
     old_project_id = task.project_id
 
     for key, value in kwargs.items():
         if key in ALLOWED_TASK_FIELDS:
             setattr(task, key, value)
+
     db.session.commit()
+
+    # Solo-Projekt-Zuweisung → setze user_id, falls noch nicht gesetzt
+    if (
+        "project_id" in kwargs and
+        task.project_id and
+        not task.project.team_id and
+        task.user_id is None
+    ):
+        task.user_id = current_user.user_id
+        db.session.commit()
 
     if "project_id" in kwargs:
         if old_project_id and old_project_id != task.project_id:

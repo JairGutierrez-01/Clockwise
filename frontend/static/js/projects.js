@@ -628,7 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Rechte prüfen
       const currentProject = projects.find(p => p.project_id === task.project_id);
-      const isAdmin = userHasProjectAdminRights(currentProject);
+      const isAdmin = !task.project_id || userHasProjectAdminRights(currentProject);
 
       const titleInput = document.getElementById("task-name");
       const descInput = document.getElementById("task-description");
