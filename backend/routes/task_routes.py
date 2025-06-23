@@ -34,9 +34,8 @@ def get_tasks():
     project_id = request.args.get("project_id")
     unassigned = request.args.get("unassigned")
 
-
     if unassigned == "true":
-        tasks = get_unassigned_tasks_from_service()
+        tasks = get_unassigned_tasks_from_service(current_user.user_id)
     elif project_id:
         project = Project.query.get(int(project_id))
         if project and project.team_id:
@@ -200,7 +199,7 @@ def get_unassigned_tasks():
     Returns:
         JSON: List of unassigned task objects.
     """
-    tasks = get_unassigned_tasks_from_service()
+    tasks = get_unassigned_tasks_from_service(current_user.user_id)
     task_list = []
 
     for task in tasks:

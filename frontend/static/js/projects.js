@@ -687,7 +687,11 @@ document.addEventListener("DOMContentLoaded", () => {
      li.appendChild(textSpan);
     // Adminrechte prüfen
     const projectOfTask = projects.find(p => p.project_id === task.project_id);
-    if (userHasProjectAdminRights(projectOfTask)) {
+    const isAdminOrOwner = (
+      userHasProjectAdminRights(projectOfTask) ||
+      (projectOfTask?.type === "SoloProject" && task.user_id === window.CURRENT_USER_ID)
+    );
+    if (isAdminOrOwner) {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "task-delete-btn";

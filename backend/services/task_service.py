@@ -110,8 +110,10 @@ def get_tasks_by_project_for_user(project_id, user_id):
     """
     Returns only the tasks of a project assigned to the given user.
     """
-    return Task.query.filter_by(project_id=project_id, member_id=user_id).all()
-
+    return Task.query.filter(
+        Task.project_id == project_id,
+        ((Task.member_id == user_id) | (Task.user_id == user_id))
+    ).all()
 
 def update_task(task_id, **kwargs):
     """Update task attributes selectively, , including member changes with notifications.
@@ -295,13 +297,13 @@ def get_task_with_time_entries(task_id):
     }
 
 
-def get_unassigned_tasks():
+def get_unassigned_tasks(user_id):
     """Retrieve all tasks that are not assigned to any project.
 
     Returns:
         list: List of Task objects where project_id is None.
     """
-    return Task.query.filter(Task.project_id == None).all()
+    return Task.query.filter(Task.project_id == None, Task.user_id == user_id).all()
 
 
 def update_total_duration_for_task(task_id):
