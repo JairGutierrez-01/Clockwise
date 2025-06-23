@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 from backend.models import Project, UserTeam, Task, Category
 from backend.models.task import TaskStatus
 from backend.database import db
+from backend.services.notifications import notify_task_assigned
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -285,6 +286,14 @@ def assign_task_to_user_api(task_id):
 
     if result.get("success"):
         message = "Task assigned successfully." if user_id is not None else "Task unassigned successfully."
+
+        if user_id is not None:
+            notify_task_assigned(
+                user_id=user_id,
+                task_name=task.title,
+                project_name=project.name
+            )
+
         return jsonify({
             "message": message,
             "task_id": task_id,
