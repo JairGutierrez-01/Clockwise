@@ -3,6 +3,7 @@ from flask_login import current_user
 
 from backend.database import db
 from backend.models.task import Task, TaskStatus
+from backend.models.time_entry import TimeEntry
 from backend.models.category import Category
 from backend.models.project import Project
 from backend.services.project_service import update_total_duration_for_project
@@ -204,16 +205,24 @@ def delete_task(task_id):
     }
 
 
-def get_tasks_without_time_entries():
+def get_tasks_without_time_entries(user_id):
     """Retrieve all tasks that do not have any associated time entries.
 
     Returns:
         list: A list of Task objects without time entries.
     """
-    return (
-        Task.query.outerjoin(Task.time_entries).filter(Task.time_entries == None).all()
+    subquery = db.session.query(TimeEntry.task_id).distinct()
+
+    tasks = (
+        Task.query
+        .filter(~Task.task_id.in_(subquery))
+        .filter(
+            (Task.member_id == None) | (Task.member_id == user_id)
+        )
+        .all()
     )
 
+    return tasks
 
 def get_task_with_time_entries(task_id):
     """Retrieve a task along with all associated time entries.

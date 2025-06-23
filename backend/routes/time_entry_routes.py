@@ -99,7 +99,7 @@ def get_tasks_without_entries():
     Returns:
         JSON: List of available tasks.
     """
-    tasks = get_tasks_without_time_entries()
+    tasks = get_tasks_without_time_entries(current_user.user_id)
     return jsonify([task.to_dict() for task in tasks])
 
 
