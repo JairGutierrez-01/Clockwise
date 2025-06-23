@@ -10,6 +10,10 @@ class ProjectType(enum.Enum):
     TeamProject = "TeamProject"
     SoloProject = "SoloProject"
 
+class ProjectStatus(enum.Enum):
+    active = "active"
+    inactive = "inactive"
+
 
 class Project(db.Model):
     """
@@ -26,6 +30,7 @@ class Project(db.Model):
         type (enum): Project Type (TeamProject, SoloProject).
         is_course (bool): Statement if Project is a Course or not.
         credit_points (int, optional): The credit points of the course, if it is a course.
+        is_active (bool): Statement if Project is active or not.
         user_id (int): Foreign key of the user the project belongs to.
         team_id (int): Foreign key of the team the project belongs to.
         task (relationship): The tasks the project contains.
@@ -46,6 +51,7 @@ class Project(db.Model):
     type = db.Column(Enum(ProjectType), default=ProjectType.SoloProject, nullable=False)
     is_course = db.Column(db.Boolean)
     credit_points = db.Column(db.Integer, nullable=True)
+    status = db.Column(Enum(ProjectStatus), default=ProjectStatus.active, nullable=False)
 
     # Foreign Keys
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)

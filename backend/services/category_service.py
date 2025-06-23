@@ -1,21 +1,31 @@
 from backend.database import db
 from backend.models import Category, Notification
+import re
 
 
-def create_category(name, user_id, ):
-    """Create a new category.
+def create_category(name, user_id):
+    """Create a new category for a specific user.
 
     Args:
-        name (str): The name of the new category.
+        name (str): The raw category name input.
+        user_id (int): The ID of the user creating the category.
 
     Returns:
-        dict: Success message and category ID or error if already exists.
+        dict: A dictionary indicating success or containing an error message.
     """
-    existing = Category.query.filter_by(name=name).first()
+    name = name.replace("ß", "ss")
+    name = re.sub(r"[^a-zA-ZäöüÄÖÜ\s]", "", name).strip()
+
+    if not name:
+        return {"error": "Category name is invalid or empty."}
+
+    name = " ".join(word.capitalize() for word in name.split())
+
+    existing = Category.query.filter_by(name=name, user_id=user_id).first()
     if existing:
         return {"error": "Category already exists."}
 
-    category = Category(name=name)
+    category = Category(name=name, user_id=user_id)
     db.session.add(category)
     db.session.commit()
 
@@ -25,9 +35,10 @@ def create_category(name, user_id, ):
         message=f"Category created '{category.name}'.",
         type="category",
     )
+
     db.session.add(notification)
     db.session.commit()
-    return {"success": True, "category_id": category.category_id}
+    return {"success": True, "category_id": category.category_id, "name": category.name}
 
 
 def get_category(category_id):
@@ -45,13 +56,16 @@ def get_category(category_id):
     return {"success": True, "category": category}
 
 
-def get_all_categories():
-    """Retrieve all categories.
+def get_all_categories(user_id):
+    """Retrieve all categories for a specific user.
+
+    Args:
+        user_id (int): The ID of the user.
 
     Returns:
-        dict: A list of all category objects.
+        dict: A list of category objects.
     """
-    categories = Category.query.all()
+    categories = Category.query.filter_by(user_id=user_id).all()
     return {"success": True, "categories": categories}
 
 

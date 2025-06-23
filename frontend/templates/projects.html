@@ -14,34 +14,38 @@
       href="{{ url_for('static', filename='projects.css') }}"
     />
     <script src="https://unpkg.com/lucide@latest"></script>
-      <script>window.CURRENT_USER_ID = {{ current_user.user_id }};</script>
+    <script>
+      window.CURRENT_USER_ID = {{ current_user.user_id }};
+    </script>
   </head>
   <body class="dark-mode">
     {% include 'navbar.html' %}
     <div class="project-page">
       <!-- Header with Filter & Create Button -->
       <header class="project-header">
-          <h1>Projects</h1>
-          <div style="display: flex; gap: 1rem; align-items: center;">
-            <div id="filter-controls">
-              <button data-filter="all" class="active">All</button>
-              <button data-filter="SoloProject">Solo Projects</button>
-              <button data-filter="TeamProject">Team Projects</button>
-              <button data-filter="unassigned">Unassigned Tasks</button>
-              <button data-filter="alltasks">All Tasks</button>
-            </div>
-            <div class="project-controls-wrapper">
-              <button id="create-project-btn" type="button">＋ New Project</button>
-              <button id="project-download-button" title="Export Projects">
-                <i data-lucide="download"></i>
-              </button>
-              <div id="project-download-dropdown" class="hidden">
-                  <button data-format="pdf">Download as PDF</button>
-                  <button data-format="csv">Download as CSV</button>
-              </div>
+        <h1>Projects</h1>
+        <div style="display: flex; gap: 1rem; align-items: center">
+          <div id="filter-controls">
+            <button data-filter="all" class="active">All</button>
+            <button data-filter="SoloProject">Solo Projects</button>
+            <button data-filter="TeamProject">Team Projects</button>
+            <button data-filter="unassigned">Unassigned Tasks</button>
+            <button data-filter="alltasks">All Tasks</button>
+          </div>
+          <div class="project-controls-wrapper">
+            <button id="create-project-btn" type="button">
+              ＋ New Project
+            </button>
+            <button id="project-download-button" title="Export Projects">
+              <i data-lucide="download"></i>
+            </button>
+            <div id="project-download-dropdown" class="hidden">
+              <button data-format="pdf">Download as PDF</button>
+              <button data-format="csv">Download as CSV</button>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
       <!-- List of Existing Projects -->
       <section id="project-list" class="project-list">
@@ -64,6 +68,17 @@
             <option value="SoloProject">SoloProject</option>
             <option value="TeamProject">TeamProject</option>
           </select>
+          <label for="project-team" id="team-select-label" class="hidden"
+            >Team</label
+          >
+          <select id="project-team" name="team_id" class="hidden">
+            <option value="">Select Team</option>
+          </select>
+          <label for="project-status">Status *</label>
+            <select name="status" id="project-status" required>
+              <option value="active" selected>Aktiv</option>
+              <option value="inactive">Inaktiv</option>
+            </select>
 
           <label for="project-time-limit">Time Limit (hours) *</label>
           <input
@@ -99,6 +114,8 @@
           <dd id="detail-description">…</dd>
           <dt>Type:</dt>
           <dd id="detail-type">SoloProject</dd>
+          <dt>Status:</dt>
+          <dd id="detail-status">Active</dd>
           <dt>Time Limit:</dt>
           <dd id="detail-time-limit">10 h</dd>
           <p>
@@ -133,14 +150,19 @@
 
         <label for="task-description">Description</label>
         <textarea id="task-description" name="description"></textarea>
-
+        <!--
         <label for="task-category">Category</label>
-        <select id="task-category" name="category_id">
-          <option value="">-- Select Category --</option>
-          <option value="1">Hausarbeit</option>
-          <option value="2">Prüfung</option>
-          <option value="3">Wiederholung</option>
-        </select>
+        <input
+          list="category-suggestions"
+          id="task-category-input"
+          placeholder="Put in or choose category"
+        />-->
+        <!--<datalist id="category-suggestions"></datalist>-->
+        <label for="task-category">Category</label>
+            <input list="category-suggestions" id="task-category" name="category_name" placeholder="Enter or choose category" />
+            <datalist id="category-suggestions">
+              <!-- wird dynamisch gefüllt mit JS -->
+            </datalist>
 
         <label for="task-project">Project</label>
         <select id="task-project" name="project_id">
@@ -170,7 +192,6 @@
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
-
     <script>
       lucide.createIcons();
     </script>

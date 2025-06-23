@@ -66,35 +66,6 @@ def create_new_team(name, user_id):
 
     return {"team_id": new_team.team_id, "message": "Team created"}
 
-# unnötig?
-def get_user_by_id(user_id):
-    """Fetch a user by ID.
-
-    Args:
-        user_id (int): ID of the user.
-
-    Returns:
-        User: User object or None.
-    """
-    return User.query.filter_by(user_id=user_id).first()
-
-# unnötig?
-def resolve_user_id(raw_user_input):
-    """Resolves user ID from user ID or username.
-
-    Args:
-        raw_user_input (str|int): User ID or username.
-
-    Returns:
-        int|None: User ID if found, else None.
-    """
-    if str(raw_user_input).isdigit():
-        return int(raw_user_input)
-    user = User.query.filter_by(username=raw_user_input.strip()).first()
-    if user:
-        return user.user_id
-    return None
-
 
 def check_admin(user_id, team_id):
     """Checks if the user is an admin of the team.
@@ -123,38 +94,7 @@ def is_team_member(user_id, team_id):
     """
     return UserTeam.query.filter_by(user_id=user_id, team_id=team_id).first()
 
-# brauch ich nicht?
-def add_member_to_team(user_id, team_id, role):
-    """Adds a user to the team with a role.
 
-    Args:
-        user_id (int): ID of the user to add.
-        team_id (int): ID of the team.
-        role (str): Role of the user.
-
-    Returns:
-        bool: True if successful.
-    """
-    new_member = UserTeam(user_id=user_id, team_id=team_id, role=role)
-    team = Team.query.filter_by(team_id=team_id).first()
-    db.session.add(new_member)
-    db.session.commit()
-
-    team_name = Team.query.filter_by(team_id=team_id).first().name
-    notification = Notification(
-        user_id=user_id,
-        project_id=None,
-        message=f"You were added to the team '{team_name}'",
-        type="team",
-    )
-    print(f"Creating notification for user {user_id}")
-    db.session.add(notification)
-    db.session.commit()
-
-    notify_user_added_to_team(user_id, team_name)
-    return True
-
-# nötig!
 def remove_member_from_team(user_id, team_id):
     """Removes a user from a team and unassigns their tasks.
 
@@ -176,6 +116,7 @@ def remove_member_from_team(user_id, team_id):
     db.session.delete(relation)
     db.session.commit()
     return True
+
 
 def get_team_members(team_id):
     """Retrieves all members of a team.
@@ -212,6 +153,7 @@ def delete_team_and_related(team_id):
         db.session.commit()
         return True
     return False
+
 
 def get_teams(user_id):
     """

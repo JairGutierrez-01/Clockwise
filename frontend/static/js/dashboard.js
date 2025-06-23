@@ -153,7 +153,7 @@ function ensureTeamBoxExists() {
       const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
       if (ignoredElements.includes(event.target.tagName)) return;
 
-      window.location.href = '/teams';
+      window.location.href = '/analysis?view=progress';
     });
   }
 
@@ -172,29 +172,21 @@ async function calculateProjectProgress(projectId) {
     }
 }
 
-async function findMostAdvancedProject(teamsData) {
-    let mostAdvancedProject = null;
-    let maxProgress = -1;
+async function findMostAdvancedProjectUnified(unifiedProjects) {
+  let mostAdvancedProject = null;
+  let maxProgress = -1;
 
-    if (!teamsData || !Array.isArray(teamsData) || teamsData.length === 0) {
-        return null;
+  for (const entry of unifiedProjects) {
+    const { project } = entry;
+    const currentProgress = await calculateProjectProgress(project.project_id);
+
+    if (currentProgress > maxProgress) {
+      maxProgress = currentProgress;
+      mostAdvancedProject = { ...project, calculatedProgress: currentProgress };
     }
+  }
 
-    for (const team of teamsData) {
-        if (team.projects && Array.isArray(team.projects)) {
-            for (const project of team.projects) {
-                const currentProgress = await calculateProjectProgress(project.project_id);
-
-                if (currentProgress > maxProgress) {
-                    maxProgress = currentProgress;
-
-                    mostAdvancedProject = { ...project, calculatedProgress: currentProgress };
-                }
-            }
-        }
-    }
-
-    return mostAdvancedProject;
+  return mostAdvancedProject;
 }
 
 async function loadTeamActivityBox() {
@@ -205,7 +197,50 @@ async function loadTeamActivityBox() {
         const res = await fetch("/api/teams/full");
         const data = await res.json();
 
-        const project = await findMostAdvancedProject(data);
+        //Fetch solo projects and prepare unifiedProjects
+        const projectsRes = await fetch("/api/projects", {
+            method: "GET",
+            credentials: "include"
+        });
+        const projectsData = await projectsRes.json();
+        // Fetch solo projects
+
+        // Build unifiedProjects array (team + solo)
+        const unifiedProjects = [];
+
+        // Team projects
+        for (const team of data) {
+            if (team.projects && Array.isArray(team.projects)) {
+                for (const project of team.projects) {
+                    unifiedProjects.push({
+                        project: project,
+                        members: team.members,
+                        isSolo: false
+                    });
+                }
+            }
+        }
+
+        // Solo projects (team_id === null)
+        const soloProjects = projectsData.projects && Array.isArray(projectsData.projects)
+            ? projectsData.projects.filter(p => p.team_id === null)
+            : [];
+        const currentUser = {
+            username: projectsData.username || "You",
+            initials: projectsData.initials || "Me"
+        };
+        for (const project of soloProjects) {
+            unifiedProjects.push({
+                project: project,
+                members: [currentUser],
+                isSolo: true
+            });
+        }
+
+        // For now, just log the unified list
+        console.log("All projects(solo + team):", unifiedProjects);
+
+        const project = await findMostAdvancedProjectUnified(unifiedProjects);
 
         if (!project) {
             teamBox.innerHTML = "<p>No active or progressed projects to display.</p>";
@@ -214,19 +249,17 @@ async function loadTeamActivityBox() {
 
         const finalProgress = Math.round(project.calculatedProgress);
 
-        let targetTeam = null;
-        for (const t of data) {
-            if (t.projects && t.projects.some(p => p.project_id === project.project_id)) {
-                targetTeam = t;
-                break;
-            }
-        }
+        const matchingEntry = unifiedProjects.find(
+            (entry) => entry.project.project_id === project.project_id
+        );
 
-        if (!targetTeam) {
-            console.error("Error: Project found, but its team could not be located.");
+        if (!matchingEntry) {
+            console.error("Error: Project found, but no matching entry in unifiedProjects.");
             teamBox.innerHTML = "<p>Error displaying project details.</p>";
             return;
         }
+
+        const members = matchingEntry.members;
 
         document.getElementById("team-project-name").textContent = project.name;
 
@@ -234,7 +267,7 @@ async function loadTeamActivityBox() {
 
         const memberList = document.getElementById("team-member-list");
         memberList.innerHTML = "";
-        targetTeam.members.forEach((member) => {
+        members.forEach((member) => {
             const span = document.createElement("span");
             span.className = "member";
 
@@ -286,20 +319,6 @@ window.addEventListener("load", () => {
   }, 100);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-  const teamCard = document.querySelector("#team-activity-box");
-  if (teamCard) {
-    teamCard.style.cursor = "pointer";
-    teamCard.addEventListener("click", function (e) {
-      const bounding = this.getBoundingClientRect();
-      const scrollbarThreshold = 20;
-
-      if (e.clientX < bounding.right - scrollbarThreshold) {
-        window.location.href = "/teams";
-      }
-    });
-  }
-});
 
 async function fetchTasksByProjectId(projectId) {
   try {
@@ -481,5 +500,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.clientX < bounding.right - scrollbarThreshold) {
       window.location.href = "/analysis";
     }
+  });
+});
+
+/**
+ * Aktiviert die Klick-Weiterleitung auf die Fortschritts-Kachel im Dashboard.
+ * Leitet zur Analysis-Seite mit aktivierter Progress-Ansicht weiter,
+ * wenn innerhalb der Kachel (außerhalb von dekorativen Elementen) geklickt wird.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const teamCard = document.getElementById("team-activity-box");
+
+  if (!teamCard) return;
+
+  teamCard.style.cursor = "pointer";
+
+  teamCard.addEventListener("click", function (e) {
+    const ignoredElements = ['SPAN', 'SVG', 'CIRCLE', 'TEXT'];
+    if (ignoredElements.includes(e.target.tagName)) return;
+
+    window.location.href = "/analysis?view=progress";
   });
 });
