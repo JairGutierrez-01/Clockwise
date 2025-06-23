@@ -3,7 +3,10 @@ from flask_login import current_user
 
 from backend.database import db
 from backend.models.task import Task, TaskStatus
+from backend.models.time_entry import TimeEntry
+from backend.models.category import Category
 from backend.models.project import Project
+from backend.services import notifications
 from backend.services.project_service import update_total_duration_for_project
 
 
@@ -103,8 +106,15 @@ def get_tasks_by_project(project_id):
     return Task.query.filter_by(project_id=project_id).all()
 
 
+def get_tasks_by_project_for_user(project_id, user_id):
+    """
+    Returns only the tasks of a project assigned to the given user.
+    """
+    return Task.query.filter_by(project_id=project_id, member_id=user_id).all()
+
+
 def update_task(task_id, **kwargs):
-    """Update task attributes selectively.
+    """Update task attributes selectively, , including member changes with notifications.
 
     - Team projects: Only the admin or assigned member can update.
     - Solo/default tasks: Only the owner (user_id) can update.
@@ -138,18 +148,49 @@ def update_task(task_id, **kwargs):
         "category_id",
     ]
 
+    old_member_id = task.member_id
+    new_member_id = kwargs.get("member_id", old_member_id)
     old_project_id = task.project_id
 
     for key, value in kwargs.items():
         if key in ALLOWED_TASK_FIELDS:
             setattr(task, key, value)
+
     db.session.commit()
+
+    # Solo-Projekt-Zuweisung → setze user_id, falls noch nicht gesetzt
+    if (
+        "project_id" in kwargs and
+        task.project_id and
+        not task.project.team_id and
+        task.user_id is None
+    ):
+        task.user_id = current_user.user_id
+        db.session.commit()
 
     if "project_id" in kwargs:
         if old_project_id and old_project_id != task.project_id:
             update_total_duration_for_project(old_project_id)
         if task.project_id:
             update_total_duration_for_project(task.project_id)
+
+    # Benachrichtigung bei Assign / Reassign / Unassign
+    if "member_id" in kwargs and task.project and task.project.team_id:
+        project = task.project
+        if new_member_id and new_member_id != old_member_id:
+            # Reassigned oder neu assigned
+            notifications.notify_task_assigned(
+                user_id=new_member_id,
+                task_name=task.title,
+                project_name=project.name,
+            )
+        elif new_member_id is None and old_member_id:
+            # Zuweisung aufgehoben
+            notifications.notify_task_unassigned(
+                user_id=old_member_id,
+                task_name=task.title,
+                project_name=project.name,
+            )
 
     return {
         "success": True,
@@ -181,13 +222,28 @@ def delete_task(task_id):
         if task.user_id != current_user.user_id:
             return {"error": "You are not authorized to delete this solo task."}
 
+    if task.project and task.project.team_id and task.member_id:
+        project = task.project
+        notifications.notify_task_deleted(
+            user_id=task.member_id,
+            task_name=task.title,
+            project_name=project.name,
+        )
+
     project_id = task.project_id
+    category_id = task.category_id
 
     db.session.delete(task)
     db.session.commit()
 
     if project_id:
         update_total_duration_for_project(project_id)
+
+    if category_id:
+        task_count = Task.query.filter_by(category_id=category_id).count()
+        if task_count == 0:
+            Category.query.filter_by(category_id=category_id).delete()
+            db.session.commit()
 
     return {
         "success": True,
@@ -196,16 +252,24 @@ def delete_task(task_id):
     }
 
 
-def get_tasks_without_time_entries():
+def get_tasks_without_time_entries(user_id):
     """Retrieve all tasks that do not have any associated time entries.
 
     Returns:
         list: A list of Task objects without time entries.
     """
-    return (
-        Task.query.outerjoin(Task.time_entries).filter(Task.time_entries == None).all()
+    subquery = db.session.query(TimeEntry.task_id).distinct()
+
+    tasks = (
+        Task.query
+        .filter(~Task.task_id.in_(subquery))
+        .filter(
+            (Task.member_id == None) | (Task.member_id == user_id)
+        )
+        .all()
     )
 
+    return tasks
 
 def get_task_with_time_entries(task_id):
     """Retrieve a task along with all associated time entries.

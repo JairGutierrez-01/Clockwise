@@ -26,6 +26,39 @@ async function fetchTasks(projectId) {
   }
 }
 
+async function fetchTeamTasks(teamId) {
+  try {
+    const response = await fetch(`/api/teams/${teamId}/tasks`);
+    if (!response.ok) throw new Error("Fehler beim Laden der Team-Aufgaben");
+    const tasks = await response.json();
+    return tasks;
+  } catch (err) {
+    console.error("fetchTeamTasks Fehler:", err);
+    return [];
+  }
+}
+
+async function loadCategories() {
+  try {
+    const res = await fetch("/api/categories");
+    if (!res.ok) throw new Error("Fehler beim Laden der Kategorien");
+    const data = await res.json();
+
+    const datalist = document.getElementById("category-suggestions");
+    datalist.innerHTML = "";
+
+    data.categories.forEach((cat) => {
+      const option = document.createElement("option");
+      option.value = cat.name;
+      datalist.appendChild(option);
+    });
+
+    window.ALL_CATEGORIES = data.categories;
+  } catch (err) {
+    console.error("Kategorie-Ladevorgang fehlgeschlagen:", err);
+  }
+}
+
 // ============================================================================
 // Sets up event listeners, state management, and UI update routines after DOM load.
 // ============================================================================
@@ -42,11 +75,44 @@ document.addEventListener("DOMContentLoaded", () => {
   const taskStatusSelect = document.getElementById("task-status");
   let projects = [];
   let allTeamsData = [];
+  const typeSelect = document.getElementById("project-type");
+  const statusSelect = document.getElementById("project-status");
+
+  //when selecting TeamProject
+  const teamSelectLabel = document.getElementById("team-select-label");
+  const teamSelect = document.getElementById("project-team");
+
+  function populateTeamOptions() {
+    const adminTeams = allTeamsData.filter((t) => t.role === "admin");
+    teamSelect.innerHTML = '<option value="">Select Team</option>';
+    adminTeams.forEach((t) => {
+      const opt = document.createElement("option");
+      opt.value = t.team_id;
+      opt.textContent = t.team_name;
+      teamSelect.appendChild(opt);
+    });
+  }
+
+  function toggleTeamPicker() {
+    if (typeSelect.value === "TeamProject") {
+      teamSelect.classList.remove("hidden");
+      teamSelectLabel.classList.remove("hidden");
+      populateTeamOptions();
+    } else {
+      teamSelect.classList.add("hidden");
+      teamSelectLabel.classList.add("hidden");
+      teamSelect.value = "";
+    }
+  }
+
+  typeSelect.addEventListener("change", toggleTeamPicker);
+  toggleTeamPicker();
   // Check if user has admin rights for a project
   function userHasProjectAdminRights(project) {
+    // damit Admins unabhängig vom Task-Owner Bearbeitungsrechte haben
     if (project.type === "SoloProject") return true;
     if (project.type === "TeamProject" && project.team_id) {
-      const team = allTeamsData.find(t => t.team_id === project.team_id);
+      const team = allTeamsData.find((t) => t.team_id === project.team_id);
       return team && team.role === "admin";
     }
     return false;
@@ -69,13 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const formTitle = document.getElementById("form-title");
   const nameInput = document.getElementById("project-name");
   const descInput = document.getElementById("project-description");
-  const typeSelect = document.getElementById("project-type");
   const timeLimitInput = document.getElementById("project-time-limit");
   const dueDateInput = document.getElementById("project-due-date");
   const detailSection = document.getElementById("project-detail");
   const detailName = document.getElementById("detail-name");
   const detailDesc = document.getElementById("detail-description");
   const detailType = document.getElementById("detail-type");
+  const detailStatus = document.getElementById("detail-status");
   const detailTimeLimit = document.getElementById("detail-time-limit");
   const detailCurrentHours = document.getElementById("detail-current-hours");
   const detailDueDate = document.getElementById("detail-due-date");
@@ -97,6 +163,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const json = await res.json();
     return json.projects;
   }
+
+  async function loadProjects() {
+  try {
+    projects = await fetchProjects();
+    renderProjectList()
+  } catch (err) {
+    console.error("Fehler beim Laden der Projekte:", err);
+  }
+}
 
   async function createProject(data) {
     const res = await fetch("/api/projects", {
@@ -132,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await fetch(`/api/tasks/${taskId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status }),
     });
   }
 
@@ -161,6 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
       nameInput.value = proj.name;
       descInput.value = proj.description || "";
       typeSelect.value = proj.type;
+      statusSelect.value = proj.status;
       timeLimitInput.value = proj.time_limit_hours;
       dueDateInput.value = proj.due_date ? proj.due_date.slice(0, 10) : "";
     } else {
@@ -184,13 +260,12 @@ document.addEventListener("DOMContentLoaded", () => {
     detailSection.classList.add("hidden");
     projectListEl.style.display = "grid";
 
-   if (activeFilter === "alltasks") {
-
-   projectListEl.style.display = "none";
-   detailSection.classList.remove("hidden");
-   renderAllTasks();
-  return;
- }
+    if (activeFilter === "alltasks") {
+      projectListEl.style.display = "none";
+      detailSection.classList.remove("hidden");
+      renderAllTasks();
+      return;
+    }
     if (activeFilter === "unassigned") {
       renderUnassignedTasks();
       return;
@@ -272,24 +347,24 @@ document.addEventListener("DOMContentLoaded", () => {
    * Fetch and display all tasks across all projects and unassigned.
    */
   async function renderAllTasks() {
-  projectListEl.innerHTML = "";
-  projectListEl.style.display = "grid";
-  detailSection.classList.add("hidden");
+    projectListEl.innerHTML = "";
+    projectListEl.style.display = "grid";
+    detailSection.classList.add("hidden");
 
-  //Fetch only tasks assigned to current user
-  const res = await fetch(`/api/users/${window.CURRENT_USER_ID}/tasks`);
-  if (!res.ok) {
-    console.error("Failed to fetch user-specific tasks");
-    return;
-  }
+    //Fetch only tasks assigned to current user
+    const res = await fetch(`/api/users/${window.CURRENT_USER_ID}/tasks`);
+    if (!res.ok) {
+      console.error("Failed to fetch user-specific tasks");
+      return;
+    }
 
-  const allTasks = await res.json();
+    const allTasks = await res.json();
 
-  allTasks.forEach((task) => {
-    const card = document.createElement("div");
-    card.className = "project-card";
-    card.dataset.id = String(task.task_id);
-    card.innerHTML = `
+    allTasks.forEach((task) => {
+      const card = document.createElement("div");
+      card.className = "project-card";
+      card.dataset.id = String(task.task_id);
+      card.innerHTML = `
       <h2 class="project-card__name">${task.title}</h2>
       <div class="project-card__meta">
         <p>Project: ${task.project_name || "Unassigned"}</p>
@@ -298,10 +373,10 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <button class="project-card__view">View</button>
     `;
-    card.addEventListener("click", () => openTaskEditModal(task.task_id));
-    projectListEl.appendChild(card);
-  });
-}
+      card.addEventListener("click", () => openTaskEditModal(task.task_id));
+      projectListEl.appendChild(card);
+    });
+  }
   /**
    * Displays the details of a selected project.
    *
@@ -320,6 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
       detailName.textContent = proj.name;
       detailDesc.textContent = proj.description || "-";
       detailType.textContent = proj.type;
+      detailStatus.textContent = proj.status;
       detailTimeLimit.textContent = `${proj.time_limit_hours} h`;
       detailCurrentHours.textContent = proj.duration_readable || "0h 0min 0s";
       detailDueDate.textContent = proj.due_date
@@ -371,8 +447,12 @@ document.addEventListener("DOMContentLoaded", () => {
       name: nameInput.value.trim(),
       description: descInput.value.trim(),
       type: typeSelect.value,
+      status: statusSelect.value,
       time_limit_hours: parseInt(timeLimitInput.value, 10),
       due_date: formatDateForBackend(dueDateInput.value),
+      ...(typeSelect.value === "TeamProject" && teamSelect.value
+        ? { team_id: parseInt(teamSelect.value, 10) }
+        : {}),
     };
 
     if (editingProjectId) {
@@ -429,54 +509,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     openTaskEditModal(taskId);
   });
+ taskForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-  taskForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  // Kategorie-ID bestimmen
+  const catInputEl = document.getElementById("task-category");
+  let enteredCatName = catInputEl.value.trim();
 
-    const taskPayload = {
-      title: taskNameInput.value.trim(),
-      description: taskDescInput.value.trim(),
-      category_id: parseInt(taskCategorySelect.value, 10) || null,
-      due_date: taskDueDateInput.value || null,
-      status: taskStatusSelect.value,
-      project_id: parseInt(projectSelect.value, 10) || null, // <-- neu!
-      created_from_tracking: false,
-    };
+  enteredCatName = enteredCatName.replace("ß", "ss");
 
-    // only assign a user for solo projects
-    const projectEntryId = taskPayload.project_id;
-    if (projectEntryId) {
-      const proj = projects.find(p => p.project_id === projectEntryId);
-      if (proj && proj.type === 'SoloProject') {
-        taskPayload.user_id = window.CURRENT_USER_ID;
-      }
-    }
+  enteredCatName = enteredCatName.replace(/[^\p{L}\s]/gu, "").trim();
 
+  enteredCatName = enteredCatName
+  .split(/\s+/)
+  .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  .join(" ");
 
-    const editingTaskId = taskForm.dataset.editingTaskId;
-    try {
-      if (editingTaskId) {
-        await fetch(`/api/tasks/${editingTaskId}`, {
-          method: "PUT",
+  let categoryId = null;
+
+  if (enteredCatName) {
+    const existing = window.ALL_CATEGORIES?.find(
+      (c) => c.name.toLowerCase() === enteredCatName.toLowerCase()
+    );
+    if (existing) {
+      categoryId = existing.category_id;
+    } else {
+      try {
+        const res = await fetch("/api/categories", {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(taskPayload),
+          body: JSON.stringify({ name: enteredCatName}),
+          credentials: "include"
         });
-        delete taskForm.dataset.editingTaskId;
-      } else {
-        await createTask(taskPayload);
+        if (!res.ok) throw new Error("Fehler beim Erstellen der Kategorie");
+        const newCat = await res.json();
+        categoryId = newCat.category_id;
+        await loadCategories(); // neue Kategorie direkt laden
+      } catch (err) {
+        console.error("Kategorie konnte nicht erstellt werden:", err);
       }
-
-      taskModal.classList.add("hidden");
-      if (activeFilter === "unassigned") {
-        await renderUnassignedTasks();
-      } else if (editingProjectId) {
-        const tasks = await fetchTasks(editingProjectId);
-        renderTaskList(tasks);
-      }
-    } catch (error) {
-      console.error("Fehler beim Speichern der Task:", error);
     }
-  });
+  }
+
+  const taskPayload = {
+    title: taskNameInput.value.trim(),
+    description: taskDescInput.value.trim(),
+    category_id: categoryId, // <-- Jetzt korrekt gesetzt!
+    category_name: enteredCatName,
+    due_date: taskDueDateInput.value || null,
+    status: taskStatusSelect.value,
+    project_id: parseInt(projectSelect.value, 10) || null,
+    created_from_tracking: false,
+  };
+
+  const projectEntryId = taskPayload.project_id;
+  if (projectEntryId) {
+    const proj = projects.find((p) => p.project_id === projectEntryId);
+    if (proj && proj.type === "SoloProject") {
+      taskPayload.user_id = window.CURRENT_USER_ID;
+    }
+  }
+
+  const editingTaskId = taskForm.dataset.editingTaskId;
+  try {
+    if (editingTaskId) {
+      await fetch(`/api/tasks/${editingTaskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(taskPayload),
+      });
+      delete taskForm.dataset.editingTaskId;
+    } else {
+      await createTask(taskPayload);
+    }
+
+    taskModal.classList.add("hidden");
+
+    if (activeFilter === "unassigned") {
+      await renderUnassignedTasks();
+    } else if (editingProjectId) {
+      const tasks = await fetchTasks(editingProjectId);
+      renderTaskList(tasks);
+    }
+  } catch (error) {
+    console.error("Fehler beim Speichern der Task:", error);
+  }
+});
 
   // --- Initialization ---
   /**
@@ -490,44 +608,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const task = await res.json();
       document.getElementById("task-form-title").textContent = "Edit Task";
+
       taskNameInput.value = task.title;
       taskDescInput.value = task.description || "";
-      taskCategorySelect.value = task.category_id || "";
+      const catInput = document.getElementById("task-category");
+      catInput.value = task.category_name || "";
       taskDueDateInput.value = task.due_date || "";
       taskStatusSelect.value = task.status;
 
       const projectSelect = document.getElementById("task-project");
-      projectSelect.innerHTML =
-        '<option value="">-- Select Project --</option>';
+      projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
       projects.forEach((proj) => {
         const option = document.createElement("option");
         option.value = proj.project_id;
         option.textContent = proj.name;
         projectSelect.appendChild(option);
       });
-
-      // Beim Bearbeiten: vorausgewähltes Projekt setzen
       projectSelect.value = task.project_id || "";
 
-      taskModal.classList.remove("hidden");
+      // Rechte prüfen
+      const currentProject = projects.find(p => p.project_id === task.project_id);
+      const isAdmin = !task.project_id || userHasProjectAdminRights(currentProject);
 
-      // Vorübergehend Task-ID speichern
+      const titleInput = document.getElementById("task-name");
+      const descInput = document.getElementById("task-description");
+      const deadlineInput = document.getElementById("task-due-date");
+      const deleteBtn = document.querySelector(".task-delete-btn");
+      const categoryInput = document.getElementById("task-category");
+
+      if (!isAdmin) {
+        [titleInput, descInput, deadlineInput, categoryInput, projectSelect].forEach(el => {
+          el.disabled = true;
+          el.style.opacity = "0.6";
+          el.style.cursor = "not-allowed";
+        });
+        if (deleteBtn) deleteBtn.style.display = "none";
+      } else {
+        [titleInput, descInput, deadlineInput, categoryInput, projectSelect].forEach(el => {
+          el.disabled = false;
+          el.style.opacity = "1";
+          el.style.cursor = "auto";
+        });
+        if (deleteBtn) deleteBtn.style.display = "inline-block";
+      }
+
+      taskModal.classList.remove("hidden");
       taskForm.dataset.editingTaskId = taskId;
     } catch (error) {
       console.error("Fehler beim Laden der Task:", error);
-    }
-  }
-
-  async function loadProjects() {
-    projects = await fetchProjects();
-    renderProjectList();
-    detailSection.classList.add("hidden");
-
-    // Richtig: Nach dem Laden & Rendern prüfen, ob URL eine project_id enthält
-    const urlParams = new URLSearchParams(window.location.search);
-    const selectedId = parseInt(urlParams.get("project_id"), 10);
-    if (selectedId) {
-      showProjectDetail(selectedId);
     }
   }
 
@@ -553,10 +681,13 @@ document.addEventListener("DOMContentLoaded", () => {
   <span class="task-duration">${durationText}</span>
   <span class="task-date">Due: ${formattedDate}</span>
 `;
-textSpan.classList.add("task-meta-row");
-
+      textSpan.classList.add("task-meta-row");
 
       // Delete-Button
+     li.appendChild(textSpan);
+    // Adminrechte prüfen
+    const projectOfTask = projects.find(p => p.project_id === task.project_id);
+    if (userHasProjectAdminRights(projectOfTask)) {
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "task-delete-btn";
@@ -574,12 +705,8 @@ textSpan.classList.add("task-meta-row");
           console.error("Fehler beim Löschen:", err);
         }
       });
-
-
-
-      // Zusammenfügen
-      li.appendChild(textSpan);
       li.appendChild(deleteBtn);
+    }
       taskListEl.appendChild(li);
     });
   }
@@ -639,7 +766,10 @@ textSpan.classList.add("task-meta-row");
   });
 
   document.addEventListener("click", (e) => {
-    if (!projectExportBtn.contains(e.target) && !projectDropdown.contains(e.target)) {
+    if (
+      !projectExportBtn.contains(e.target) &&
+      !projectDropdown.contains(e.target)
+    ) {
       projectDropdown.classList.add("hidden");
     }
   });
@@ -649,9 +779,10 @@ textSpan.classList.add("task-meta-row");
     const format = e.target.dataset.format;
     if (!format) return;
 
-    const url = format === "pdf"
-      ? "/api/projects/export/projects/pdf"
-      : "/api/projects/export/projects/csv";
+    const url =
+      format === "pdf"
+        ? "/api/projects/export/projects/pdf"
+        : "/api/projects/export/projects/csv";
 
     window.open(url, "_blank");
   });
