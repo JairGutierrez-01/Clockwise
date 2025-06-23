@@ -105,6 +105,13 @@ def get_tasks_by_project(project_id):
     return Task.query.filter_by(project_id=project_id).all()
 
 
+def get_tasks_by_project_for_user(project_id, user_id):
+    """
+    Returns only the tasks of a project assigned to the given user.
+    """
+    return Task.query.filter_by(project_id=project_id, member_id=user_id).all()
+
+
 def update_task(task_id, **kwargs):
     """Update task attributes selectively.
 

@@ -9,6 +9,7 @@ from backend.services.task_service import (
     create_task,
     get_task_by_id,
     get_tasks_by_project,
+    get_tasks_by_project_for_user,
     update_task,
     delete_task,
     get_unassigned_tasks as get_unassigned_tasks_from_service,
@@ -33,19 +34,28 @@ def get_tasks():
     project_id = request.args.get("project_id")
     unassigned = request.args.get("unassigned")
 
+
     if unassigned == "true":
         tasks = get_unassigned_tasks_from_service()
     elif project_id:
-        tasks = get_tasks_by_project(int(project_id))
+        project = Project.query.get(int(project_id))
+        if project and project.team_id:
+            is_admin = UserTeam.query.filter_by(
+                user_id=current_user.user_id,
+                team_id=project.team_id,
+                role="admin"
+            ).first()
+            if is_admin:
+                tasks = get_tasks_by_project(int(project_id))
+            else:
+                tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
+        else:
+            # Solo-Projekt → nur eigene Tasks
+            tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
     else:
         tasks = []
 
-    task_list = []
-    for task in tasks:
-        task_dict = task.to_dict()
-        task_list.append(task_dict)
-
-    return jsonify(task_list)
+    return jsonify([task.to_dict() for task in tasks])
 
 
 @task_bp.route("/tasks", methods=["POST"])
