@@ -6,10 +6,10 @@ const headers = {
 let cardWidth = 0;
 let gap = 0;
 let cardWidthWithGap = 0;
-let currentCardIndex = 0; // Keep track of current card index
+let currentCardIndex = 0; // Keep track of the current card index
 let currentDisplayedTeamId = null; // To store the ID of the currently displayed team
 let allTeamsData = []; // Global storage of all team data, needed for task assignment lookup
-let allProjectsData = []; // Store all projects to map team -> project_id
+let allProjectsData = []; // Store all projects to map team project_id
 
 // Global variables to store the logged-in user's ID and username
 let currentLoggedInUserId = null;
@@ -1256,6 +1256,9 @@ function renderMembersForTeams(teams) {
           <div class="assigned-task-item">
             <span class="task-title">${task.title}</span>
             <span class="task-status-display">Status: ${task.status || "Not Set"}</span>
+            <button class="unassign-task-btn" data-task-id="${task.task_id}" data-user-id="${userId}">
+              Unassign
+            </button>
             </div>
         </li>`,
           )
@@ -1280,6 +1283,53 @@ function renderMembersForTeams(teams) {
 
         const closeBtn = customModal.querySelector(".modal-close-btn");
         if (closeBtn) closeBtn.onclick = hideCustomModal;
+
+        // Attach event listeners to the unassign buttons
+        dynamicContentArea
+          .querySelectorAll(".unassign-task-btn")
+          .forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const taskId = btn.dataset.taskId;
+              const userId = btn.dataset.userId;
+
+              try {
+                const res = await fetch(`/api/tasks/${taskId}/assign`, {
+                  method: "PATCH",
+                  headers,
+                  body: JSON.stringify({ user_id: null }),
+                  credentials: "include",
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                  showCustomAlert("Success", "Task unassigned successfully!", "success");
+                  hideCustomModal();
+
+                  const memberOptionsButton = document.querySelector(
+                    `.assign-options-btn[data-user-id="${userId}"]`
+                  );
+
+                  if (memberOptionsButton) {
+                    const updatedTaskInfo = await fetchAssignedTaskForUser(
+                      userId,
+                      currentDisplayedTeamId
+                    );
+
+                    document.querySelectorAll(".assign-popover").forEach((el) => el.remove());
+
+                    showAssignPopover(memberOptionsButton, updatedTaskInfo, userId);
+                  }
+                } else {
+                  showCustomAlert("Error", result.error || "Could not unassign task.", "error");
+                }
+              } catch (err) {
+                console.error("Unassign error:", err);
+                showCustomAlert("Error", "Network error during unassign.", "error");
+              }
+            });
+          });
+
       } catch (err) {
         console.error("Error fetching assigned tasks for view modal:", err);
         showCustomAlert("Error", "Could not fetch assigned tasks.", "error");

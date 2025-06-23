@@ -1060,6 +1060,7 @@ body {
   justify-content: space-between;
   align-items: center;
   border: 1px solid var(--border-color);
+  gap: 10px; /* Add spacing between child elements */
 }
 
 .modal-assigned-tasks-list li .task-title {
@@ -1115,6 +1116,51 @@ body {
 
 .assign-popover .open-assign-modal-btn:hover {
   background-color: #93c5fd;
+}
+
+.assigned-task-item {
+  display: flex; /* Makes the container a flex container */
+  align-items: center; /* Vertically aligns items in the middle */
+  justify-content: space-between;
+  padding: 8px 15px;
+  margin-bottom: 5px;
+  background-color: #2a2a2a;
+  border-radius: 6px;
+}
+
+
+.task-title {
+  flex-grow: 1; /* Allows the title to take available space */
+  margin-right: 10px; /* Space between title and status */
+  color: white; /* Example text color */
+}
+
+.task-status-display {
+  flex-shrink: 0; /* Prevents status from shrinking */
+  margin-right: 15px;
+  white-space: nowrap;
+  font-size: 0.8em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background-color: #4a4a4a;
+  color: #ccc;
+}
+
+
+.unassign-task-btn {
+  background-color: var(--delete-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0; /* Important: Prevents button from shrinking */
+}
+
+.unassign-task-btn:hover {
+  background-color: var(--delete-color-dark);
 }
 
 .popover-header {
@@ -1215,4 +1261,20 @@ body {
 .team-table tr.active-team-row {
   background-color: #3b4150 !important;
   transform: scale(1.01);
+}
+
+/* --- Unassign Task Button Styles --- */
+.unassign-task-btn {
+  background-color: var(--delete-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+
+.unassign-task-btn:hover {
+  background-color: var(--delete-color-dark);
 }
