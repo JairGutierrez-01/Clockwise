@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from backend.models import Project, UserTeam, Task, Category
 from backend.models.task import TaskStatus
 from backend.database import db
-from backend.services.notifications import notify_task_assigned
+import backend.services.notifications as notifications
 from backend.services.task_service import (
     create_task,
     get_task_by_id,
@@ -241,6 +241,7 @@ def get_tasks_by_user(user_id):
 
 
 @task_bp.route("/tasks/<int:task_id>/assign", methods=["PATCH"])
+@login_required
 def assign_task_to_user_api(task_id):
     """
     Assign or unassign a task to a user.
@@ -255,12 +256,9 @@ def assign_task_to_user_api(task_id):
     Returns:
         JSON: Success or error message.
     """
-    if not current_user.is_authenticated:
-        return jsonify({"error": "Not authenticated"}), 401
-
     data = request.get_json()
     user_id = data.get("user_id")
-    print("PATCH /assign_task_to_user_api -> data:", data)
+
     if user_id is not None and not isinstance(user_id, int):
         return jsonify({"error": "Invalid user_id provided. Must be integer or null."}), 400
 
@@ -273,7 +271,6 @@ def assign_task_to_user_api(task_id):
         return jsonify({"error": "Project not found"}), 404
 
     team_id = project.team_id
-
     is_admin = UserTeam.query.filter_by(
         user_id=current_user.user_id,
         team_id=team_id,
@@ -282,14 +279,24 @@ def assign_task_to_user_api(task_id):
 
     if not is_admin:
         return jsonify({"error": "Only team admins can assign tasks"}), 403
+
+    old_member_id = task.member_id
     result = update_task(task_id, member_id=user_id)
 
     if result.get("success"):
         message = "Task assigned successfully." if user_id is not None else "Task unassigned successfully."
 
-        if user_id is not None:
-            notify_task_assigned(
+        if user_id is not None and user_id != old_member_id:
+            # Neue Zuweisung → Benachrichtige neue verantwortliche Person
+            notifications.notify_task_assigned(
                 user_id=user_id,
+                task_name=task.title,
+                project_name=project.name
+            )
+        elif user_id is None and old_member_id:
+            # Zuweisung aufgehoben → Benachrichtige alte verantwortliche Person
+            notifications.notify_task_unassigned(
+                user_id=old_member_id,
                 task_name=task.title,
                 project_name=project.name
             )

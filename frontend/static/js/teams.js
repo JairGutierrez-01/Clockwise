@@ -970,7 +970,7 @@ document.addEventListener("click", async function (event) {
         allTasks = allTasks.concat(projectTasks);
       }
 
-      const availableTasks = allTasks.filter(task => task.user_id === null || task.user_id === undefined);
+      const availableTasks = allTasks.filter(task => task.member_id=== null || task.member_id === undefined);
 
       if (availableTasks.length === 0) {
         showCustomAlert("Info", "No available tasks to assign for this user.", "alert");
