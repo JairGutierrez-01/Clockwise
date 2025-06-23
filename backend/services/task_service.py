@@ -263,17 +263,17 @@ def delete_task(task_id):
 
 
 def get_tasks_without_time_entries(user_id):
-    """Retrieve all tasks that do not have any associated time entries.
+    """Retrieve all tasks that do not have any associated time entries and belongs to the user
 
     Returns:
         list: A list of Task objects without time entries.
     """
     subquery = db.session.query(TimeEntry.task_id).distinct()
 
-    tasks = (
-        Task.query.filter(~Task.task_id.in_(subquery))
-        .filter((Task.member_id == None) | (Task.member_id == user_id))
-        .all()
+    tasks = (Task.query.filter(
+        ~Task.task_id.in_(subquery))
+        .filter((Task.user_id == user_id) | (Task.member_id == user_id)
+        ).all()
     )
 
     return tasks
