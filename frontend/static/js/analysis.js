@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   async function renderChart(weekStart = null) {
     const ctx = document.getElementById("timeChart").getContext("2d");
-    if (chartInstance) chartInstance.destroy();
+    if (chartInstance) chartInstance.destroy(); // Vorherige Chart-Instanz entfernen, um Speicherlecks und Überlagerungen zu vermeiden
 
     try {
       const url = weekStart
@@ -34,13 +34,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const groupedByProject = {};
 
       datasets.forEach((d) => {
-        const [project, task] = d.label.split(":").map((s) => s.trim());
+        const [project, task] = d.label.split(":").map((s) => s.trim()); // Erwartet Format "Projekt: Task", trennt zur späteren Gruppierung und Farbgebung
         if (!groupedByProject[project]) groupedByProject[project] = [];
         groupedByProject[project].push({ ...d, project, task });
       });
 
       // Tasks pro Projekt sortieren und abgestufte Farben nutzen
-      const coloredDatasets = Object.values(groupedByProject).flatMap(
+      const coloredDatasets = Object.values(groupedByProject).flatMap(  // Sortiert Tasks pro Projekt alphabetisch und erstellt daraus eine flache Liste mit Farbinfos (getTaskColor(project, task, i, total) vergibt Farben// basierend auf Indexreihenfolge der Tasks innerhalb eines Projekts => Wenn Reihenfolge zufällig bei jedem Aufruf => Farben inkonsistent)
         (entries) => {
           entries.sort((a, b) => a.task.localeCompare(b.task));
           const total = entries.length;
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
             legend: {
               labels: { color: "#fff" },
             },
-            tooltip: {
+            tooltip: {  // Tooltip zeigt Zeit in Stunden, Minuten und Sekunden an (Konvertierung von Dezimalstunden)
               callbacks: {
                 label: function (context) {
                   const sec = context.raw * 3600;
@@ -114,15 +114,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * Gibt das Datum des Montags einer Woche mit gegebenem Offset zurück.
-   * @param {number} offset - Wochen-Offset relativ zur aktuellen Woche (z. B. -1 für letzte Woche, 0 für diese).
+   * @param {number} offset - Wochen-Offset relativ zur aktuellen Woche (z.B. -1 für letzte Woche, 0 für diese).
    * @returns {Date} - Das Datum des Montags der Zielwoche.
    */
   function getStartOfWeekWithOffset(offset) {
     const now = new Date();
-    const day = now.getDay(); // 0=So, 1=Mo
+    const day = now.getDay(); // 0=So, 1=Mo, ..., 6 = Sa
     const monday = new Date(now);
+    // Differenz zum aktuellen Montag berechnen (wenn heute Sonntag, dann -6)
     const diff = day === 0 ? -6 : 1 - day;
+    // Ziel-Montag berechnen, inkl. Wochenoffset
     monday.setDate(monday.getDate() + diff + offset * 7);
+    // Uhrzeit auf 00:00:00 setzen
     monday.setHours(0, 0, 0, 0);
     return monday;
   }
@@ -132,18 +135,22 @@ document.addEventListener("DOMContentLoaded", () => {
    * Nutzt das aktuelle weekOffset, um Start- und Enddatum zu berechnen und das Diagramm zu laden.
    */
   function updateChartForWeek() {
-    const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset);
+    const startOfWeek = getStartOfWeekWithOffset(currentWeekOffset); // Montag der aktuellen Woche (mit Offset)
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sonntag derselben Woche
 
-    // Formatieren für Label
+    // Wochenzeitraum formatiert als Anzeige (z.B. „3.– 9. Juni 2025“)
     const weekLabel = `${startOfWeek.toLocaleDateString("de-DE", {
       day: "numeric",
       month: "short",
-    })} – ${endOfWeek.toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" })}`;
+    })} – ${endOfWeek.toLocaleDateString("de-DE", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })}`;
     document.getElementById("week-label").textContent = weekLabel;
 
-    //
+    // Diagramm neu laden mit ISO-Startdatum
     const isoStart = startOfWeek.toISOString().split("T")[0];
     renderChart(isoStart);
   }
@@ -243,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
         /**
-         * Setzt die aktive Ansicht im Kalender (z. B. „month“ oder „year“) und aktualisiert die Button-UI.
+         * Setzt die aktive Ansicht im Kalender (z.B. „month“ oder „year“) und aktualisiert die Button-UI.
          * @param {string} view - Der anzuzeigende Modus: "month" oder "year".
          */
         function setActiveView(view) {
