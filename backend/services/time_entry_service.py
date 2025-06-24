@@ -7,6 +7,7 @@ from backend.services.project_service import update_total_duration_for_project
 from backend.services.task_service import update_total_duration_for_task
 
 
+
 def create_time_entry(
     user_id,
     task_id,
@@ -30,16 +31,11 @@ def create_time_entry(
         dict: Success message or error if task already has an entry.
     """
     # Parse provided date/time strings into datetime objects
-    if isinstance(start_time, str):
-        try:
-            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
-    if isinstance(end_time, str):
-        try:
-            end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
-            end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M")
+    if start_time:
+        start_time = parse_datetime_flexibly(start_time)
+    if end_time:
+        end_time = parse_datetime_flexibly(end_time)
+
     task = Task.query.get(task_id)
 
     if task.member_id is not None and task.member_id != user_id:
@@ -90,6 +86,16 @@ def get_time_entries_by_task(task_id):
     """
     return TimeEntry.query.filter_by(task_id=task_id).all()
 
+def parse_datetime_flexibly(value):
+    if not isinstance(value, str):
+        return value
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M"):
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            continue
+    raise ValueError(f"Invalid datetime format: {value}")
+
 
 def update_time_entry(time_entry_id, **kwargs):
     """
@@ -107,11 +113,9 @@ def update_time_entry(time_entry_id, **kwargs):
         return {"error": "Time entry not found"}
 
     if "start_time" in kwargs and kwargs["start_time"]:
-        kwargs["start_time"] = datetime.strptime(
-            kwargs["start_time"], "%Y-%m-%d %H:%M:%S"
-        )
+        kwargs["start_time"] = parse_datetime_flexibly(kwargs["start_time"])
     if "end_time" in kwargs and kwargs["end_time"]:
-        kwargs["end_time"] = datetime.strptime(kwargs["end_time"], "%Y-%m-%d %H:%M:%S")
+        kwargs["end_time"] = parse_datetime_flexibly(kwargs["end_time"])
 
     ALLOWED_TIME_ENTRY_FIELDS = [
         "start_time",

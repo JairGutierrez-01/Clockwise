@@ -77,10 +77,12 @@ class Task(db.Model):
 
     @property
     def total_duration(self):
-        """Returns total duration in HH:MM:SS format."""
-        from datetime import timedelta
-
-        return str(timedelta(seconds=self.total_duration_seconds))
+        """Returns total duration in format 'xh ymin zs'."""
+        total_seconds = self.total_duration_seconds or 0
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        return f"{hours}h {minutes}min {seconds}s"
 
     def __repr__(self):
         """

@@ -321,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       tasks.forEach((task) => {
+        console.log("Task bei Rendern:", task);
         const card = document.createElement("div");
         card.className = "project-card unassigned-task-card";
         card.innerHTML = `
@@ -687,16 +688,13 @@ document.addEventListener("DOMContentLoaded", () => {
         : "kein Datum";
 
       const textSpan = document.createElement("span");
-      let durationText = "0h 0min 0s";
-      if (task.total_duration) {
-        const [hours, minutes, seconds] = task.total_duration.split(":");
-        durationText = `${parseInt(hours)}h ${parseInt(minutes)}min ${parseInt(seconds)}s`;
-      }
+      const durationText = task.total_duration || "0h 0min 0s";
+
       textSpan.innerHTML = `
-  <span class="task-title">${task.title}</span>
-  <span class="task-duration">${durationText}</span>
-  <span class="task-date">Due: ${formattedDate}</span>
-`;
+        <span class="task-title">${task.title}</span>
+        <span class="task-duration">${durationText}</span>
+        <span class="task-date">Due: ${formattedDate}</span>
+      `;
       textSpan.classList.add("task-meta-row");
 
       // Delete-Button
