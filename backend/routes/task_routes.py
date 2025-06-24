@@ -41,15 +41,15 @@ def get_tasks():
     elif project_id:
         project = Project.query.get(int(project_id))
         if project and project.team_id:
-            is_admin = UserTeam.query.filter_by(
-                user_id=current_user.user_id, team_id=project.team_id, role="admin"
+            # Prüfe, ob Nutzer irgendein Teammitglied ist (admin oder member)
+            is_member = UserTeam.query.filter_by(
+                user_id=current_user.user_id, team_id=project.team_id
             ).first()
-            if is_admin:
+            if is_member:
                 tasks = get_tasks_by_project(int(project_id))
             else:
-                tasks = get_tasks_by_project_for_user(
-                    int(project_id), current_user.user_id
-                )
+                # Nicht im Team → keine Tasks
+                tasks = []
         else:
             # Solo-Projekt → nur eigene Tasks
             tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
