@@ -174,7 +174,6 @@ def update_task(task_id, **kwargs):
         and task.user_id is None
     ):
         task.user_id = current_user.user_id
-        db.session.commit()
 
     if "project_id" in kwargs:
         if old_project_id and old_project_id != task.project_id:
@@ -199,6 +198,14 @@ def update_task(task_id, **kwargs):
                 task_name=task.title,
                 project_name=project.name,
             )
+    # Wenn ein Task unassigned wird → zugehörige TimeEntries löschen
+    if "member_id" in kwargs and old_member_id and new_member_id is None:
+        TimeEntry.query.filter_by(task_id=task_id).delete()
+        task.total_duration_seconds = 0
+        if task.project_id:
+            update_total_duration_for_project(task.project_id)
+
+    db.session.commit()
 
     return {
         "success": True,
