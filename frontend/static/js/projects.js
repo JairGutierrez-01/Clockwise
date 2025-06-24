@@ -321,7 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       tasks.forEach((task) => {
-        console.log("Task bei Rendern:", task);
         const card = document.createElement("div");
         card.className = "project-card unassigned-task-card";
         card.innerHTML = `
