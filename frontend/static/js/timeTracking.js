@@ -6,7 +6,6 @@
  * - Persists sessions in localStorage
  * - Hydrates previous sessions on load
  */
-// static/timeTracking.js
 
 // ============================================================================
 //                          API CALLS
@@ -23,7 +22,7 @@
 async function fetchTasks() {
   const res = await fetch("/api/time_entries/available-tasks");
   if (!res.ok) throw new Error("Failed to fetch tasks");
-  return res.json(); // [{ task_id, title, … }, …]
+  return res.json();
 }
 
 /**
@@ -129,8 +128,11 @@ async function fetchEntryAPI(entryId) {
 }
 
 /**
- * Fetch tasks that have at least one time entry (latest sessions).
- * @returns {Promise<Array>} Array of tasks
+ * Fetches tasks that have at least one time entry (latest sessions).
+ * @async
+ * @function fetchLatestSessions
+ * @returns {Promise<Array>} Resolves to an array of session objects.
+ * @throws {Error} If the fetch request fails
  */
 async function fetchLatestSessions() {
   const res = await fetch("/api/time_entries/latest_sessions");
@@ -188,8 +190,11 @@ function formatTime(ms) {
   return [h, m, s].map((v) => String(v).padStart(2, "0")).join(":");
 }
 
-// --- persistent entry ID storage ---
+// --- persistent entry ID storage for duplication ---
 const ENTRY_IDS_KEY = "clockwise_entry_ids";
+
+// --- logic to load, add, delete entry ID ---
+
 
 /**
  * Loads persisted entry IDs from localStorage.
@@ -260,31 +265,46 @@ document.addEventListener("DOMContentLoaded", () => {
   /** @type {HTMLButtonElement} */
   const stopBtn = document.getElementById("tracker-stop");
   /** @type {HTMLInputElement} */
-  const input = document.getElementById("project-name-input");
+  const input = document.getElementById("task-name-input");
   /** @type {HTMLElement} */
   const suggList = document.getElementById("task-suggestions");
   /** @type {HTMLElement} */
-  const list = document.getElementById("project-list");
+  const list = document.getElementById("entry-list");
   /** @type {HTMLElement} */
   const emptyMessage = document.getElementById("empty-message");
   /** @type {HTMLTemplateElement} */
   const tpl = document.getElementById("entry-template");
 
   // Restore active entry if found in localStorage
+  // to prevent the timer from restarting if the user reloaded or changed pages
   const active = JSON.parse(localStorage.getItem("clockwise_active_entry"));
   // state
+
   /** @type {Array<Object>} */
+  //Used for suggestions when typing a task name
   let allTasks = [];
+
   /** @type {number|null} */
+  //Lets the app stop or clear the timer properly
   let timerInterval = null;
+
   /** @type {number|null} */
+  //Used to calculate how much time has passed
   let startTime = null;
+
   /** @type {number} */
+  //Continuously updated every second to show the live timer
   let elapsedTime = 0;
+
   /** @type {number|null} */
+  //which entry to pause, resume, or stop
   let currentEntryId = null;
+
   /** @type {string} */
+  //Used to show the user when the timer started in a format
   let startDisplay = "";
+
+  //if statemennt to check if there is smth saved in the localstorage and contains a valid startTime
   if (active && active.startTime && !isNaN(active.startTime)) {
     const now = Date.now();
     startTime = active.startTime;
@@ -295,6 +315,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (active.taskTitle) {
       input.value = active.taskTitle;
     }
+
+    // Set the taskId
     if (active.taskId) {
       input.dataset.taskId = active.taskId;
       input.disabled = true;
@@ -312,21 +334,27 @@ document.addEventListener("DOMContentLoaded", () => {
     resumeBtn.hidden = true;
     trackerEl.classList.add("animate-controls");
   }
-
+// a IIAFE (define and run immediately)
   (async () => {
     try {
       const latestSessions = await fetchLatestSessions();
       if (latestSessions.length > 0) {
+        //remove the empty message
         emptyMessage.style.display = "none";
         latestSessions.forEach((session) => {
           let formattedDuration = "00:00:00";
+          //check if the session has a valid time
           if (session.start_time && session.end_time) {
+            //convert the time
             const startMs = new Date(session.start_time).getTime();
             const endMs = new Date(session.end_time).getTime();
+            //set the duration in a readable way
             formattedDuration = formatTime(endMs - startMs);
+            //not necessary but use duration_seconds if timestamps are missing
           } else if (session.duration_seconds != null) {
             formattedDuration = formatTime(session.duration_seconds * 1000);
           }
+          //call renderEntry with the needed attributes
           renderEntry({
             time_entry_id: session.time_entry_id,
             task_id: session.task_id,
@@ -366,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEntryId = time_entry_id;
     startDisplay = new Date().toLocaleTimeString();
 
-    // Save active entry to localStorage, including task title and id
+    // Save active entry to localStorage
     localStorage.setItem(
       "clockwise_active_entry",
       JSON.stringify({
@@ -389,6 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
     emptyMessage.style.display = list.children.length ? "none" : "block";
   }
 
+  // Animate the .time-tracking container after the page is ready
   const container = document.querySelector(".time-tracking");
   requestAnimationFrame(() => {
     container.classList.add("page-loaded");
@@ -401,31 +430,32 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {Object} e - The entry object with properties including time_entry_id, name, duration
    */
   function renderEntry(e) {
-    // remove any existing entry cards for this ID
+    // remove any existing entry cards for this ID, to keep up with updates
     const existingCards = list.querySelectorAll(
-      `.project-wrapper[data-id="${e.time_entry_id}"]`,
+      `.entry-wrapper[data-id="${e.time_entry_id}"]`,
     );
+
     existingCards.forEach((card) => card.remove());
     // also remove from storage to prevent stale duplicates
     removeEntryId(e.time_entry_id);
 
+    // clone the template to fill up later with data
     const clone = tpl.content.cloneNode(true);
-    const w = clone.querySelector(".project-wrapper");
+    // clone the wrpper to give it an ID
+    const w = clone.querySelector(".entry-wrapper");
     w.dataset.id = e.time_entry_id;
-    clone.querySelector(".project-name").innerHTML = `
+    //give the html the task title and project
+    clone.querySelector(".entry-name").innerHTML = `
       <span class="task-title">${e.name}</span>
-      <span class="project-title"> – ${e.project_name || ""}</span>
+      <span class="entry-project"> – ${e.project_name || ""}</span>
     `;
-    // Removed time-range population
+    //give the clone a duration
     clone.querySelector(".duration").textContent = e.duration;
-    const resumeBtn = clone.querySelector(".resume-btn");
-    const deleteBtn = clone.querySelector(".delete-btn");
-    if (resumeBtn) resumeBtn.remove();
-    if (deleteBtn) deleteBtn.remove();
 
     // Setze Edit-Button
     const editBtn = clone.querySelector(".edit-btn");
     if (editBtn) {
+      //give the edit button the task id
       editBtn.setAttribute("data-task-id", e.task_id);
     }
 
@@ -446,33 +476,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
       await startTrackingForTask(e.task_id, e.name);
     });
-
-    clone.querySelector(".project").appendChild(trackBtn);
+    clone.querySelector(".entry").appendChild(trackBtn);
 
     list.appendChild(clone);
+    //animate the entry
     w.classList.add("new-entry");
+    //add an event listner who listens to the end of the animation and remove the animation css class
     w.addEventListener("animationend", () => w.classList.remove("new-entry"));
     updateEmptyState();
   }
 
   /**
    * Filters and shows task suggestions based on input.
-   * @listens input#project-name-input input
+   * @listens input#task-name-input input
    */
   input.addEventListener("input", () => {
     const q = input.value.trim().toLowerCase();
+    //clear the list
     suggList.innerHTML = "";
+    // if empty --> stop
     if (!q) return;
     allTasks
-      .filter((t) => t.title.toLowerCase().includes(q))
+      .filter((t) => t.title.toLowerCase().includes(q)) //tasks that include q
       .forEach((t) => {
         const li = document.createElement("li");
         li.innerHTML = `
           <span class="suggestion-task">${t.title}</span>
           <span class="suggestion-project">(${t.project_name})</span>
         `;
-        li.dataset.taskId = t.task_id;
-        suggList.appendChild(li);
+        li.dataset.taskId = t.task_id; //give the task id
+        suggList.appendChild(li); //add the element
       });
   });
 
@@ -482,10 +515,13 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {MouseEvent} e - Click event
    */
   suggList.addEventListener("click", (e) => {
+    //fined the closed li element and choose it
     const li = e.target.closest("li");
-    if (!li) return;
+    if (!li) return; //if nothing clicked --> exit
+    //update the input field values (text, id)
     input.value = li.querySelector(".suggestion-task").textContent;
     input.dataset.taskId = li.dataset.taskId;
+    //clear the list
     suggList.innerHTML = "";
   });
 
@@ -496,13 +532,15 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   startBtn.addEventListener("click", async () => {
     let taskId = input.dataset.taskId;
+    //ignore spaces
     const title = input.value.trim();
 
+    //create a task if only the id is empty
     if (!taskId && title) {
       const { task_id } = await createTaskAPI(title);
       taskId = task_id;
     }
-
+   // tell the backend to create untitled task
     if (!taskId && !title) {
       taskId = null;
     }
@@ -556,15 +594,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       await stopEntryAPI(currentEntryId);
+      //fetch the entry object
       const e = await fetchEntryAPI(currentEntryId);
+      //fetch the task and then give the object a name, start-. endtime and duration
       const task = await fetch(`/api/tasks/${e.task_id}`).then((r) => r.json());
 
       e.name = task.title;
       e.start_time = startDisplay;
       e.end_time = new Date(e.end_time).toLocaleTimeString();
       e.duration = formatTime(elapsedTime);
-
+      //show the new entry in the latest session
       renderEntry(e);
+      //add entry id to the localstorage
       addEntryId(currentEntryId);
     } catch (err) {
       console.error("Failed to stop or fetch entry:", err);
@@ -588,12 +629,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * Handles click events on the project list for delete, resume, and edit actions.
-   * @listens #project-list click
+   * @listens #entry-list click
    * @param {MouseEvent} e - Click event
    * @async
    */
   list.addEventListener("click", async (e) => {
-    const w = e.target.closest(".project-wrapper");
+    const w = e.target.closest(".entry-wrapper");
     if (!w) return;
     const id = w.dataset.id;
 

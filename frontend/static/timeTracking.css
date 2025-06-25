@@ -1,6 +1,7 @@
 /*--------------------------------------------
   Design Tokens
 --------------------------------------------*/
+/* Defines global CSS variables for colors, spacing, radii, and font sizes */
 :root {
   --color-bg: #f5f5f5;
   --color-fg: #333333;
@@ -26,6 +27,7 @@
 /*--------------------------------------------
   Dark Mode Overrides
 --------------------------------------------*/
+/* Overrides color and background */
 body.dark-mode {
   --color-bg: #081520;
   --color-fg: #e0e0e0;
@@ -62,6 +64,7 @@ body {
 /*--------------------------------------------
   Tracker Component Layout
 --------------------------------------------*/
+/* Styles the main tracker bar */
 .tracker {
   border-radius: var(--radius);
   width: 100%;
@@ -75,6 +78,7 @@ body {
 /*--------------------------------------------
   Time Tracking Container Wrapper
 --------------------------------------------*/
+/* the page content container */
 .time-tracking {
   width: 100%;
   max-width: 1300px;
@@ -83,8 +87,9 @@ body {
 }
 
 /*--------------------------------------------
-  Tracker Panel Styling
+  Tracker Card Styling
 --------------------------------------------*/
+/* Styles the Fard containing tracking controls */
 .tracker-wrapper {
   background-color: var(--color-tracker-bg);
   border-radius: var(--radius);
@@ -154,7 +159,7 @@ body {
   Button Base Styling
 --------------------------------------------*/
 .tracker button,
-.project button {
+.entry button {
   background-color: var(--color-accent);
   color: var(--color-fg);
   border: none;
@@ -167,11 +172,11 @@ body {
     transform 0.1s ease;
 }
 .tracker button:hover,
-.project button:hover {
+.entry button:hover {
   transform: translateY(-2px);
 }
 .tracker button:active,
-.project button:active {
+.entry button:active {
   transform: translateY(0);
 }
 
@@ -184,9 +189,9 @@ h2 {
 }
 
 /*--------------------------------------------
-  Project List Layout
+  entry List Layout
 --------------------------------------------*/
-.project-list {
+.entry-list {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -196,9 +201,9 @@ h2 {
 }
 
 /*--------------------------------------------
-  Project Card Entry Layout
+  entry Card Entry Layout
 --------------------------------------------*/
-.project-wrapper {
+.entry-wrapper {
   background-color: var(--color-project-bg);
   border-radius: var(--radius);
   padding: var(--space-md);
@@ -207,16 +212,16 @@ h2 {
   max-width: 1200px;
   margin-bottom: var(--space-md);
 }
-.project {
+.entry {
   position: relative;
   display: flex;
   align-items: center;
 }
 
 /*--------------------------------------------
-  Project Name Text Styling
+  entry Name Text Styling
 --------------------------------------------*/
-.project-name {
+.entry-name {
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -237,9 +242,7 @@ h2 {
 /*--------------------------------------------
   Action Buttons Spacing
 --------------------------------------------*/
-.project .resume-btn,
-.project .edit-btn,
-.project .delete-btn {
+.entry .edit-btn{
   margin-left: var(--space-sm);
   flex-shrink: 0;
 }
@@ -276,6 +279,7 @@ h2 {
 /*--------------------------------------------
   New Entry & Page Load Animations
 --------------------------------------------*/
+/* Animations for new entry cards and initial page load */
 @keyframes slideInFromLeft {
   0% {
     opacity: 0;
@@ -290,7 +294,7 @@ h2 {
     transform: translateX(0) scale(1);
   }
 }
-.project-wrapper.new-entry {
+.entry-wrapper.new-entry {
   animation: slideInFromLeft 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 @keyframes fadeInDown {
@@ -313,6 +317,9 @@ h2 {
   animation: fadeInDown 0.6s ease-out forwards;
 }
 
+/*--------------------------------------------
+  Track-Button Styling
+--------------------------------------------*/
 .track-btn {
   margin-left: 10px;
   background-color: #4caf50;
@@ -323,6 +330,9 @@ h2 {
   cursor: pointer;
 }
 
+/*--------------------------------------------
+  Modal & Utility Classes
+--------------------------------------------*/
 .modal {
   position: fixed;
   top: 0;
@@ -339,6 +349,9 @@ h2 {
   display: none;
 }
 
+/*--------------------------------------------
+  Edit Form Styling
+--------------------------------------------*/
 .edit-form {
   background-color: var(--color-project-bg);
   border-radius: var(--radius);
@@ -369,6 +382,9 @@ h2 {
   color: var(--color-fg);
 }
 
+/*--------------------------------------------
+  Manual Duration & Form-Actions
+--------------------------------------------*/
 #manual-duration {
   margin-top: var(--space-sm);
   font-size: var(--font-base);

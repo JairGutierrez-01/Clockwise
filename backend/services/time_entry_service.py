@@ -340,6 +340,8 @@ def get_latest_time_entries_for_user(user_id, limit=10):
     """
     return (
         TimeEntry.query.filter_by(user_id=user_id)
+        #did this so when the time entry page does not crash
+        #when opened and a new entry is still tracking with no end time
         .filter(TimeEntry.end_time.isnot(None))
         .order_by(TimeEntry.start_time.desc())
         .limit(limit)
