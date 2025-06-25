@@ -1,3 +1,5 @@
+// GLOBAL CONFIGURATION AND STATE
+// Define shared HTTP headers and global state variables used across Teams view.
 const headers = {
   "Content-Type": "application/json",
 };
@@ -6,13 +8,16 @@ const headers = {
 let cardWidth = 0;
 let gap = 0;
 let cardWidthWithGap = 0;
-let currentCardIndex = 0; // Keep track of the current card index
+let currentCardIndex = 0; // Tracks carousel position to highlight the currently visible team card
 let currentDisplayedTeamId = null; // To store the ID of the currently displayed team
+
+// Used throughout the file to store team data including member lists
 let allTeamsData = []; // Global storage of all team data, needed for task assignment lookup
 let allProjectsData = []; // Store all projects to map team project_id
 
 // Global variables to store the logged-in user's ID and username
 let currentLoggedInUserId = null;
+// If user data hasn't been fetched yet, show 'Guest' in UI as fallback
 let currentLoggedInUsername = "Guest"; // Default to Guest until fetched
 
 // Carousel elements
@@ -28,6 +33,11 @@ let currentTranslateXAtDragStart = 0;
 const DRAG_SENSITIVITY = 2.5; // sensibility
 const SNAP_THRESHOLD_PERCENTAGE = 0.2;
 
+// CUSTOM MODAL: ELEMENTS AND FUNCTIONS
+let isDeleteMode = false;// When true, enables delete mode for team members (e.g., shake animation + delete click)
+let deleteMemberButton = null; // Reference to the delete member button
+
+// CUSTOM MODAL: SETUP AND MANAGEMENT
 // Custom Modal Elements (get references once DOM is loaded)
 let customModal,
   customModalTitle,
@@ -42,11 +52,7 @@ let customModalResolve; // To store the resolve function for promises
 // Global variable for the dynamic content area inside the modal
 let dynamicContentArea;
 
-// New global variable for delete mode
-let isDeleteMode = false;
-let deleteMemberButton = null; // Reference to the delete member button
-
-// Custom Modal Functions
+// Custom Modal Functions !!!!!!!!
 function initializeModalElements() {
   customModal = document.getElementById("customModal");
   customModalTitle = document.getElementById("customModalTitle");
@@ -85,6 +91,7 @@ function showCustomModal({
       dynamicContentArea.innerHTML = customContentHtml;
     }
 
+    // If custom HTML is provided, hide default input/message buttons and title
     // Manage visibility of standard modal elements based on whether custom content is provided
     if (customContentHtml) {
       customModalInput.style.display = "none";
@@ -118,6 +125,7 @@ function showCustomModal({
       }
     }
 
+    // Keyboard support for Enter (confirm) and Escape (cancel), only when using default modal
     // Define handlers for default buttons (used when customContentHtml is NOT present)
     const handleConfirmDefault = () => {
       hideCustomModal();
@@ -148,7 +156,7 @@ function showCustomModal({
       }
     };
 
-    // Function to remove default event listeners to prevent memory leaks
+    // Remove previously attached event listeners to prevent duplicates/memory leaks
     const removeDefaultListeners = () => {
       customModalConfirmBtn.removeEventListener("click", handleConfirmDefault);
       customModalCancelBtn.removeEventListener("click", handleCancelDefault);
@@ -168,6 +176,7 @@ function showCustomModal({
     customModal.classList.add("active");
     document.body.style.overflow = "hidden"; // Disable scrolling
 
+    // Try to focus first interactive element inside modal (for accessibility / UX)
     // Focus management
     if (customContentHtml) {
       // For custom content, attempt to focus the first focusable element inside dynamicContentArea
@@ -192,7 +201,7 @@ function showCustomModal({
   });
 }
 
-// hideCustomModal to clear dynamic content
+// Closes modal and resets all content and visibility state (standard and custom)
 function hideCustomModal() {
   customModal.classList.remove("active");
   document.body.style.overflow = ""; // Re-enable scrolling
@@ -211,7 +220,7 @@ function hideCustomModal() {
   customModalCancelBtn.style.display = "inline-block"; // Default to visible
 }
 
-// Wrapper functions for convenience (remain unchanged)
+// Wrapper for quickly showing a modal prompt / alert / confirm without repeating full config
 function showCustomPrompt(title, message, placeholder) {
   return showCustomModal({
     title,
@@ -223,10 +232,12 @@ function showCustomPrompt(title, message, placeholder) {
   });
 }
 
+// Wrapper for quickly showing a modal prompt / alert / confirm without repeating full config
 function showCustomAlert(title, message, type = "alert") {
   return showCustomModal({ title, message, confirmText: "OK", type: "alert" });
 }
 
+// Wrapper for quickly showing a modal prompt / alert / confirm without repeating full config
 function showCustomConfirm(title, message) {
   return showCustomModal({
     title,
@@ -237,18 +248,24 @@ function showCustomConfirm(title, message) {
   });
 }
 
+// MAIN ENTRY POINT
+// All DOM elements and listeners are initialized here once the page has fully loaded.
 document.addEventListener("DOMContentLoaded", () => {
+  // Prepare modal references for later use (must run before any modal interactions)
   initializeModalElements(); // Initialize modal elements after DOM is loaded
+  // Load team data and trigger full UI rendering (carousel, members, task overview)
   fetchUserTeams(); // Initial team load and then carousel setup
+  // Preload all projects globally (used in multiple modals and task views)
   fetchAllProjects();
 
-  //Team Management Buttons
+  // TEAM MANAGEMENT BUTTON SETUP
   const createTeamBtn = document.querySelector(".create-team-btn");
   const addMemberBtn = document.querySelector(".add-member-btn");
   deleteMemberButton = document.querySelector(".delete-member-btn"); // Assign to global variable
   const deleteTeamBtn = document.querySelector(".delete-team-btn");
 
-  // Add event listener for team table rows to open the modal for project assignment
+  // PROJECT ASSIGNMENT MODAL LOGIC
+  // When clicking a team row, open a modal to assign a project
   let teamsTableBody = document.getElementById("teamsBody");
 
   if (teamsTableBody) {
@@ -259,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const teamId = row.dataset.teamId;
       const teamName = row.dataset.teamName;
 
-      // Show loading state initially within the modal
+      // Initial skeleton modal content while fetching projects
       const loadingHtml = `
               <div class="modal-header">
                   <h3 id="modalDynamicTitle">Assign Project to <strong>${teamName}</strong></h3>
@@ -285,6 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
+        // Fetch all projects and split into assigned vs available for assignment
         const response = await fetch("/api/projects");
         const result = await response.json();
         allProjectsData = result.projects || [];
@@ -302,9 +320,11 @@ document.addEventListener("DOMContentLoaded", () => {
           (p) => p.type === "TeamProject",
         );
 
+        // Filter projects already linked to this team
         const assignedProjects = allTeamProjects.filter(
           (p) => p.team_id == teamId,
         );
+        // Projects that can be assigned (not yet linked to any team)
         const availableProjects = allTeamProjects.filter((p) => !p.team_id);
 
         let html = `
@@ -315,6 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <div class="modal-content-area">
               `;
 
+        // Render already assigned projects inside modal
         if (assignedProjects.length > 0) {
           html +=
             "<p><strong>Already Assigned:</strong></p><ul class='modal-assign-members-list'>"; // Reusing list style
@@ -324,6 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
           html += "</ul>";
         }
 
+        // Render list of assignable projects with action buttons
         if (availableProjects.length > 0) {
           html +=
             "<p><strong>Available to Assign:</strong></p><ul class='modal-assign-members-list'>";
@@ -342,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         html += `</div>`; // Close modal-content-area div
 
-        // Update the modal's content with the fetched project data
+        // Inject final modal content with project options
         if (dynamicContentArea) {
           dynamicContentArea.innerHTML = html;
         }
@@ -354,7 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
           updatedModalCloseBtn.addEventListener("click", hideCustomModal);
         }
 
-        // Attach event listener for the new "Assign" buttons
+        // Attach listeners to "Assign" buttons in modal
         if (dynamicContentArea) {
           // Check if dynamicContentArea exists before querying
           dynamicContentArea
@@ -386,7 +408,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Separate function for handling project assignment (previously embedded in popover listener)
+  // PROJECT ASSIGNMENT HANDLER
+  // Handles POST request to assign a project to a team, triggered from modal Assign buttons
   async function handleAssignProject(e) {
     const projectId = e.target.dataset.projectId;
     const teamId = e.target.dataset.teamId;
@@ -396,6 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const teamName = teamRow ? teamRow.dataset.teamName : "";
 
     try {
+      // Send project assignment request to the backend API
       const response = await fetch(`/api/teams/${teamId}/assign_project`, {
         method: "POST",
         headers,
@@ -411,12 +435,15 @@ document.addEventListener("DOMContentLoaded", () => {
           "success",
         );
         hideCustomModal(); // Close the modal after successful assignment
+        // Refreshes the entire team list, carousel, and UI
         fetchUserTeams(); // This will refresh everything
       } else {
         const errorMessage = result.error || "Failed to assign project.";
+        // Show specific error message from backend if available
         showCustomAlert("Error", errorMessage, "error");
       }
     } catch (err) {
+      // Show generic network error if request fails entirely
       console.error("Error assigning project:", err);
       showCustomAlert(
         "Error",
@@ -554,19 +581,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Add member button listener to use customContentHtml
+  // ADD MEMBER TO TEAM
+  // Opens a modal to add a new member by username and optional role (default: member)
   if (addMemberBtn) {
     addMemberBtn.addEventListener("click", async () => {
+      // Ensure a team is selected before adding a member
       if (!currentDisplayedTeamId) {
         showCustomAlert("Error", "Please select a team first.", "error");
         return;
       }
 
-      // Exit delete mode if active before adding
+      // Automatically exit delete mode to prevent accidental member deletion when adding
       if (isDeleteMode) {
         toggleDeleteMode();
       }
 
+      // Construct the HTML content for the add member modal
       const addMemberFormHtml = `
           <div class="modal-header">
               <h3 id="modalDynamicTitle">Add New Member</h3>
@@ -583,13 +613,14 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
       `;
 
+      // Show the modal using custom content
       showCustomModal({
         title: "Add New Member",
         customContentHtml: addMemberFormHtml,
         type: "custom",
       });
 
-      // Attach listeners to dynamically created elements
+      // Bind form input fields and action buttons from the modal DOM
       const memberIdentifierInput = document.getElementById(
         "memberIdentifierInput",
       );
@@ -598,6 +629,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const addMemberCancel = document.getElementById("addMemberCancel");
       const modalCloseBtn = customModal.querySelector(".modal-close-btn");
 
+      // Focus cursor on the first input field for quick user interaction
       if (memberIdentifierInput) {
         setTimeout(() => memberIdentifierInput.focus(), 300);
       }
@@ -606,18 +638,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const newMemberIdentifier = memberIdentifierInput.value.trim();
         const role = memberRoleInput.value.trim() || "member"; // Default to 'member' if not specified
 
+        // Validate that username was provided
         if (!newMemberIdentifier) {
           showCustomAlert("Error", "Username is required.", "error");
           return;
         }
 
+        // Prevent numeric-only IDs (username expected)
         if (!isNaN(newMemberIdentifier)) {
           showCustomAlert("Error", "Only usernames are allowed.", "error");
           return;
         }
 
         try {
-          // Send newMemberIdentifier as user_id to the backend, which handles ID or username
+          // Send PATCH request to backend to add the member to the team
           const response = await fetch(
             `/api/teams/${currentDisplayedTeamId}/add-member`,
             {
@@ -633,6 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const data = await response.json();
 
+          // Handle success or display backend-provided error
           if (response.ok) {
             if (data.error) {
               showCustomAlert(
@@ -662,6 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
 
+      // Close modal on cancel or clicking the "X" button
       addMemberCancel.onclick = hideCustomModal;
       if (modalCloseBtn) {
         modalCloseBtn.onclick = hideCustomModal;
@@ -806,11 +842,15 @@ function toggleDeleteMode() {
   }
 }
 
-// Handler for clicking a member in delete mode (remains unchanged)
+// DELETE MEMBER FROM TEAM
+// This handler is triggered when a member item is clicked in delete mode.
+// It confirms the action with the user and sends a PATCH request to remove the user from the team.
 async function handleMemberDeleteClick(event) {
+  // Guard clause: do nothing unless delete mode is active
   if (!isDeleteMode) return; // Only proceed if in delete mode
 
   const memberItem = event.currentTarget;
+  // Extract user ID and username from the clicked member item
   const userIdToDelete = memberItem.dataset.userId;
   const usernameToDelete = memberItem.querySelector(".member-name").textContent; // Get username for confirmation
 
@@ -819,6 +859,7 @@ async function handleMemberDeleteClick(event) {
     return;
   }
 
+  // Ask the user to confirm deletion
   const confirmDelete = await showCustomConfirm(
     "Remove Member",
     `Are you sure you want to remove "${usernameToDelete}" from this team?`,
@@ -829,6 +870,7 @@ async function handleMemberDeleteClick(event) {
   }
 
   try {
+    // Send PATCH request to backend to remove user from the team
     const response = await fetch(
       `/api/teams/${currentDisplayedTeamId}/remove-member`,
       {
@@ -841,6 +883,7 @@ async function handleMemberDeleteClick(event) {
 
     const data = await response.json();
 
+    // Check if removal was successful or if the backend returned an error
     if (response.ok) {
       if (data.error) {
         showCustomAlert(
@@ -861,11 +904,16 @@ async function handleMemberDeleteClick(event) {
       );
     }
   } catch (err) {
+    // Handle unexpected errors such as network issues
     console.error("Error removing member:", err);
     showCustomAlert("Error", "Network error. Please try again.", "error");
   }
 }
 
+// FETCHING AND RENDERING USER TEAMS !!!!!
+// This function fetches all teams and their members from the backend.
+// It also enriches each member with their username (fetched individually if not the current user).
+// After loading, it triggers rendering of the team table, carousel, and task overview.
 async function fetchUserTeams() {
   try {
     const response = await fetch("/api/teams/", {
@@ -877,6 +925,7 @@ async function fetchUserTeams() {
     const responseData = await response.json();
 
     if (response.ok) {
+      // Store current user info for later role display and task filtering
       if (responseData.current_user) {
         currentLoggedInUserId = responseData.current_user.user_id;
         currentLoggedInUsername = responseData.current_user.username;
@@ -895,7 +944,7 @@ async function fetchUserTeams() {
 
       console.log("Teams received:", teamsData);
 
-      // Fetch members for each team and their usernames
+      // For each team, fetch the list of members and enrich with usernames
       const teamsWithMembersPromises = teamsData.map(async (team) => {
         try {
           const membersResponse = await fetch(
@@ -927,19 +976,18 @@ async function fetchUserTeams() {
           const membersWithUsernames = await Promise.all(
             membersData.map(async (member) => {
               let username = `${member.user_id}`; // Fallback: Use User ID if username can't be fetched
-              // Check if the member is the current logged-in user
+              // If the member is the current user, reuse already-known username
               if (
                 currentLoggedInUserId &&
                 member.user_id === currentLoggedInUserId
               ) {
                 username = currentLoggedInUsername;
               } else {
-                // Fetch actual username from the CORRECTED dedicated user endpoint
+                // Otherwise, fetch username via user lookup endpoint
                 try {
                   const userDetailsResponse = await fetch(
                     `/api/teams/users/${member.user_id}`,
                     {
-                      // <-- CHANGED THIS LINE
                       method: "GET",
                       headers: headers,
                       credentials: "include",
@@ -977,12 +1025,14 @@ async function fetchUserTeams() {
 
       const teamsWithMembers = await Promise.all(teamsWithMembersPromises);
       console.log("Final teamsWithMembers data:", teamsWithMembers);
+      // Save enriched teams globally and trigger full UI rendering
       allTeamsData = teamsWithMembers; // Store globally for task lookup later
       renderTeams(teamsData); // Render teams in the table
       renderMembersForTeams(teamsWithMembers); // Render members into carousel
       setupCarousel(); // Setup carousel *after* members are rendered
       renderTeamTasksOverview(); // Render the Tasks Overview card
     } else {
+      // Backend responded with error — show alert and log
       showCustomAlert(
         "Error",
         "Error fetching teams: " + (responseData.error || "Unknown error"),
@@ -991,11 +1041,13 @@ async function fetchUserTeams() {
       console.error("Error fetching teams:", responseData.error);
     }
   } catch (err) {
+    // Network error or other exception while fetching teams
     showCustomAlert("Error", "Network error. Could not load teams.", "error");
     console.error("Network error", err);
   }
 }
 
+// RENDER TEAM TABLE !!!!!!!!!!
 // Show teams
 function renderTeams(teams) {
   const tbody = document.getElementById("teamsBody");
@@ -1027,6 +1079,7 @@ function highlightActiveTeamRow(teamId) {
   });
 }
 
+// RENDER TEAM MEMBERS IN CAROUSEL !!!!!!!!!!!!!!
 // Show members of the Team
 function renderMembersForTeams(teams) {
   const trackElement = document.getElementById("carouselTrack");
@@ -1376,7 +1429,11 @@ function renderMembersForTeams(teams) {
     return allUserTasks.filter((t) => teamProjectIds.includes(t.project_id));
   }
 
+  //  TASK ASSIGNMENT POPOVER
+  // Renders a popover below the clicked button, displaying available tasks.
+  // Clicking a task will assign it to the selected user via backend PATCH request.
   function showAssignPopover(buttonElement, assignedTasks, userId) {
+    // Remove any existing popover before rendering a new one (only one popover at a time)
     document.querySelectorAll(".assign-popover").forEach((el) => el.remove());
 
     // let statusText = "";
@@ -1389,6 +1446,7 @@ function renderMembersForTeams(teams) {
 
     const popover = document.createElement("div");
     popover.className = "assign-popover";
+    // Generate HTML list of tasks with embedded task/user IDs
     popover.innerHTML = `
     <div class="popover-header">
       <button class="popover-close-btn">X</button>
@@ -1397,6 +1455,7 @@ function renderMembersForTeams(teams) {
     ${showViewTasksButton ? `<button class="view-assigned-tasks-btn" data-user-id="${userId}">View Tasks</button>` : ""}
   `;
 
+    // Inject final HTML into popover container and attach to DOM
     buttonElement.parentNode.appendChild(popover);
 
     const closeBtn = popover.querySelector(".popover-close-btn");
@@ -1416,6 +1475,7 @@ function renderMembersForTeams(teams) {
   }
 }
 
+// CAROUSEL UTILITY FUNCTIONS !!!!!!!!!!!!!!
 // Carousel helper functions (remain unchanged)
 function setupCarousel() {
   if (!track || track.children.length === 0) {
@@ -1493,6 +1553,8 @@ function updateCarouselArrows() {
     rightArrow.classList.remove("visible");
   }
 }
+
+// FETCH ALL PROJECTS !!!!!!!!!!!
 // Fetch all projects and store globally
 async function fetchAllProjects() {
   try {
@@ -1505,6 +1567,7 @@ async function fetchAllProjects() {
   }
 }
 
+// RENDER TASK OVERVIEW DASHBOARD !!!!!!!!!!!
 //tasks container!!
 async function renderTeamTasksOverview() {
   const container = document.getElementById("tasksOverviewContainer");
