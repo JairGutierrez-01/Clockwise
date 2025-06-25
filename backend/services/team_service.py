@@ -2,10 +2,8 @@ from backend.database import db
 from backend.models.team import Team
 from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
-from backend.models.user import User
 from backend.models.project import Project
 from backend.models.task import Task
-from backend.services.notifications import notify_user_added_to_team
 from backend.services.task_service import unassign_tasks_for_user_in_team
 
 

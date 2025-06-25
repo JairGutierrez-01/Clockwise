@@ -13,7 +13,14 @@ notification_bp = Blueprint("notifications", __name__)
 @login_required
 @jwt_required()
 def get_notifications():
-    """Returns a list of notifications for the authenticated user."""
+    """
+    Retrieve notifications for the authenticated user.
+
+    Returns:
+        JSON: List of notification objects:
+            (id (int), message (str), type (str), is_read (bool), created_at (str, ISO format)
+        or an error message.
+    """
     try:
         user_id = get_jwt_identity()
 
@@ -55,7 +62,10 @@ def mark_notification_as_read(notification_id):
         notification_id (int): ID of the notification to mark as read.
 
     Returns:
-        Response: JSON with success or error message and HTTP status code.
+        Response: JSON with success or error message and HTTP status code:
+        200: Successfully marked as read or already read,
+        403 if unauthorized,
+        404 if notification not found or unauthorized.
     """
     print(">>> REACHED")
     if not current_user.is_authenticated:

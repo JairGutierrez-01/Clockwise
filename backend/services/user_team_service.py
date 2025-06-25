@@ -1,6 +1,6 @@
 from backend.database import db
 from backend.models import User, Team, UserTeam, Notification
-from backend.services.notifications import notify_user_added_to_team
+from backend.services.notification_service import notify_user_added_to_team
 
 
 def add_member(username, teamname, role):

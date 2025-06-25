@@ -1,7 +1,7 @@
 import pytest
 
 from backend.models import Notification, User
-from backend.services.notifications import (
+from backend.services.notification_service import (
     create_notification,
     notify_task_assigned,
     notify_task_reassigned,

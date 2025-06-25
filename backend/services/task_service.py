@@ -7,7 +7,11 @@ from backend.models.category import Category
 from backend.models.project import Project
 from backend.models.task import Task, TaskStatus
 from backend.models.time_entry import TimeEntry
-from backend.services import notifications
+from backend.services.notification_service import (
+    notify_task_assigned,
+    notify_task_unassigned,
+    notify_task_deleted
+)
 from backend.services.project_service import update_total_duration_for_project
 
 
@@ -186,14 +190,14 @@ def update_task(task_id, **kwargs):
         project = task.project
         if new_member_id and new_member_id != old_member_id:
             # Reassigned oder neu assigned
-            notifications.notify_task_assigned(
+            notify_task_assigned(
                 user_id=new_member_id,
                 task_name=task.title,
                 project_name=project.name,
             )
         elif new_member_id is None and old_member_id:
             # Zuweisung aufgehoben
-            notifications.notify_task_unassigned(
+            notify_task_unassigned(
                 user_id=old_member_id,
                 task_name=task.title,
                 project_name=project.name,
@@ -241,7 +245,7 @@ def delete_task(task_id):
 
     if task.project and task.project.team_id and task.member_id:
         project = task.project
-        notifications.notify_task_deleted(
+        notify_task_deleted(
             user_id=task.member_id,
             task_name=task.title,
             project_name=project.name,

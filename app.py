@@ -391,31 +391,6 @@ def notifications():
     return render_template("notifications.html", notifications=user_notifications)
 
 
-# Test notification erstellen
-@app.route("/notifications/trigger-test-notification")
-@login_required
-def trigger_test_notification():
-    """
-    Create a test notification for the current user.
-
-    Useful for testing notification system.
-
-    Returns:
-        Response: Redirect to notifications page.
-    """
-    if not current_user.is_authenticated:
-        return "Not logged in", 403
-
-    from backend.services.notifications import create_notification
-
-    create_notification(
-        user_id=current_user.user_id,
-        message="🎉 Testbenachrichtigung erfolgreich erstellt!",
-        notif_type="info",
-    )
-    return redirect(url_for("notifications"))
-
-
 @app.route("/time_entries")
 @login_required
 def time_entry_page():

@@ -25,9 +25,6 @@ from backend.services.project_service import (
     export_project_info_pdf,
 )
 
-# import the service function with a new name
-from backend.services.project_service import create_project as service_create_project
-
 project_bp = Blueprint("project", __name__)
 
 
@@ -237,7 +234,7 @@ def api_projects():
         except KeyError:
             return {"error": "Invalid status"}, 400
 
-        result = service_create_project(
+        result = create_project(
             name=name,
             description=description,
             user_id=current_user.user_id,
@@ -362,6 +359,12 @@ def api_project_detail(project_id):
 @project_bp.route("/api/projects/export/projects/pdf", methods=["GET"])
 @login_required
 def export_projects_pdf():
+    """
+    Export all project data as a downloadable PDF.
+
+    Returns:
+        Response: PDF file containing exported project data.
+    """
     projects_data = get_info()
     print("Exported project info:", projects_data)
     pdf_bytes = export_project_info_pdf(projects_data)
@@ -377,6 +380,12 @@ def export_projects_pdf():
 @project_bp.route("/api/projects/export/projects/csv", methods=["GET"])
 @login_required
 def export_projects_csv():
+    """
+    Export all project data as a downloadable CSV.
+
+    Returns:
+        Response: CSV file containing exported project data.
+    """
     projects_data = get_info()
     print("Exported project info:", projects_data)
     csv_text = export_project_info_csv(projects_data)

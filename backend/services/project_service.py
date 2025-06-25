@@ -10,6 +10,7 @@ from reportlab.pdfgen import canvas
 from backend.database import db
 from backend.models import Project, Task, Notification, UserTeam
 from backend.models.project import ProjectStatus, ProjectType
+from backend.services.notification_service import notify_project_created
 
 
 def calculate_time_limit_from_credits(credit_points):
@@ -80,14 +81,7 @@ def create_project(
     db.session.add(new_project)
     db.session.commit()
 
-    notification = Notification(
-        user_id=user_id,
-        project_id=new_project.project_id,
-        message=f"Project created '{new_project.name}'.",
-        type="project",
-    )
-    db.session.add(notification)
-    db.session.commit()
+    notify_project_created(user_id, name)
 
     return {"success": True, "project_id": new_project.project_id}
 
@@ -188,6 +182,15 @@ def update_total_duration_for_project(project_id):
 
 
 def serialize_projects(projects):
+    """
+    Serialize a list of Project objects to dicts with nested tasks and time entries.
+
+    Args:
+        projects (list): List of Project model instances.
+
+    Returns:
+        list: List of serialized project dicts.
+    """
     serialized = []
     for p in projects:
         serialized.append(
@@ -227,6 +230,12 @@ def serialize_projects(projects):
 
 
 def get_info():
+    """
+    Get serialized project data for current user and their team projects.
+
+    Returns:
+        dict: Dict with 'own_projects' and 'team_projects'.
+    """
     own_projects = Project.query.filter_by(user_id=current_user.user_id).all()
 
     team_ids = [
@@ -245,6 +254,15 @@ def get_info():
 
 
 def export_project_info_pdf(data):
+    """
+    Generate a PDF summary of projects, tasks, and time entries.
+
+    Args:
+        data (dict): Dictionary with 'own_projects' and 'team_projects'.
+
+    Returns:
+        bytes: PDF file content as byte string.
+    """
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     y = 750
@@ -347,13 +365,13 @@ def export_project_info_pdf(data):
 
 def export_project_info_csv(data):
     """
-    Export detailed project time entry info as CSV.
+    Export project, task, and time entry info as CSV.
 
     Args:
-        data (list of dict): Entries with 'start', 'end', 'task', 'project'
+        data (dict): Contains 'own_projects' and 'team_projects'.
 
     Returns:
-        str: CSV formatted text
+        str: CSV content as string.
     """
     buffer = StringIO()
     writer = csv.writer(buffer)
