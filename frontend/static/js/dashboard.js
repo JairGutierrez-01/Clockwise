@@ -130,15 +130,25 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+/**
+ * Ensures the presence of the team activity box in the dashboard.
+ * If it doesn't exist, it creates and appends one dynamically.
+ *
+ * Returns:
+ *   - The DOM element for the team box (new or existing)
+ *   - null if no valid parent container is found
+ */
 function ensureTeamBoxExists() {
   let teamBox = document.getElementById("team-activity-box");
 
   if (!teamBox) {
+    // Look for the main dashboard container to attach the box
     const targetParent =
       document.querySelector(".dashboard-grid") ||
       document.querySelector("#dashboard");
-    if (!targetParent) return null;
+    if (!targetParent) return null; // No valid container found
 
+    // Create the container box dynamically
     teamBox = document.createElement("div");
     teamBox.className = "card project-details";
     teamBox.id = "team-activity-box";
@@ -151,6 +161,8 @@ function ensureTeamBoxExists() {
     `;
     targetParent.appendChild(teamBox);
 
+    // Allow redirect to analysis view when the box is clicked,
+    // but ignore inner elements like charts or spans
     teamBox.style.cursor = "pointer";
     teamBox.addEventListener("click", function (event) {
       const ignoredElements = ["SPAN", "SVG", "CIRCLE", "TEXT"];
@@ -163,21 +175,49 @@ function ensureTeamBoxExists() {
   return teamBox;
 }
 
+/**
+ * Calculates the completion percentage of a project based on task statuses.
+ *
+ * Params:
+ *   - projectId: ID of the project whose progress is being calculated
+ *
+ * Returns:
+ *   - Number between 0 and 100 representing the percentage of completed tasks
+ *   - Returns 0 if the project has no tasks or an error occurs
+ */
 async function calculateProjectProgress(projectId) {
   try {
     const tasks = await fetchTasksByProjectId(projectId);
     const totalTasks = tasks.length;
     const doneTasks = tasks.filter((t) => t.status === "done").length;
+
+    // Avoid division by zero and return percentage
     return totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
   } catch (error) {
     console.error(
       `Error calculating progress for project ${projectId}:`,
       error,
     );
-    return 0; // Default to 0% on error
+
+    // On error, treat progress as 0%
+    return 0;
   }
 }
 
+/**
+ * Finds the project with the highest progress value from a list of unified projects.
+ *
+ * Params:
+ *   - unifiedProjects: Array of objects containing `project` keys (e.g. { project, team })
+ *
+ * Returns:
+ *   - The project object with the highest calculatedProgress value
+ *   - Returns null if the list is empty
+ *
+ * Note:
+ *   - Each project's progress is calculated via `calculateProjectProgress`
+ *   - Adds a `calculatedProgress` field to the returned project for downstream use
+ */
 async function findMostAdvancedProjectUnified(unifiedProjects) {
   let mostAdvancedProject = null;
   let maxProgress = -1;
@@ -195,26 +235,31 @@ async function findMostAdvancedProjectUnified(unifiedProjects) {
   return mostAdvancedProject;
 }
 
+/**
+ * Loads and renders the Team Activity Box on the dashboard.
+ * Merges team and solo projects into a unified list, selects the most advanced project,
+ * and displays its progress, duration, and assigned members in the UI.
+ */
 async function loadTeamActivityBox() {
   const teamBox = ensureTeamBoxExists();
-  if (!teamBox) return;
+  if (!teamBox) return; // Exit if container is missing
 
   try {
+    // Fetch full team data including associated projects and members
     const res = await fetch("/api/teams/full");
     const data = await res.json();
 
-    //Fetch solo projects and prepare unifiedProjects
+    // Fetch all projects including solo (non-team) projects
     const projectsRes = await fetch("/api/projects", {
       method: "GET",
       credentials: "include",
     });
     const projectsData = await projectsRes.json();
-    // Fetch solo projects
 
-    // Build unifiedProjects array (team + solo)
+    // Build unifiedProjects array containing both team and solo projects
     const unifiedProjects = [];
 
-    // Team projects
+    // Team projects (with team context and members)
     for (const team of data) {
       if (team.projects && Array.isArray(team.projects)) {
         for (const project of team.projects) {
@@ -232,10 +277,13 @@ async function loadTeamActivityBox() {
       projectsData.projects && Array.isArray(projectsData.projects)
         ? projectsData.projects.filter((p) => p.team_id === null)
         : [];
+
+    // Current user info used as pseudo-member for solo projects
     const currentUser = {
       username: projectsData.username || "You",
       initials: projectsData.initials || "Me",
     };
+
     for (const project of soloProjects) {
       unifiedProjects.push({
         project: project,
@@ -244,9 +292,10 @@ async function loadTeamActivityBox() {
       });
     }
 
-    // For now, just log the unified list
+    // [DEV DEBUG] Full unified project list for inspection
     console.log("All projects(solo + team):", unifiedProjects);
 
+    // Select project with highest task progress
     const project = await findMostAdvancedProjectUnified(unifiedProjects);
 
     if (!project) {
@@ -256,6 +305,7 @@ async function loadTeamActivityBox() {
 
     const finalProgress = Math.round(project.calculatedProgress);
 
+    // Find the matching unified entry (to get member list)
     const matchingEntry = unifiedProjects.find(
       (entry) => entry.project.project_id === project.project_id,
     );
@@ -270,23 +320,23 @@ async function loadTeamActivityBox() {
 
     const members = matchingEntry.members;
 
+    // Update UI elements with project details
     document.getElementById("team-project-name").textContent = project.name;
+    document.getElementById("total-time").textContent = project.duration_readable;
 
-    document.getElementById("total-time").textContent =
-      project.duration_readable;
-
+    // Display team members (or solo user) as styled initials
     const memberList = document.getElementById("team-member-list");
     memberList.innerHTML = "";
     members.forEach((member) => {
       const span = document.createElement("span");
       span.className = "member";
-
       span.textContent =
         member.initials || member.username.substring(0, 2).toUpperCase();
       span.style.backgroundColor = "#888";
       memberList.appendChild(span);
     });
 
+    // Draw circular progress based on % of completed tasks
     drawProgressCircle("team-progress", finalProgress);
   } catch (error) {
     console.error("Error loading Team activities:", error);
@@ -294,6 +344,18 @@ async function loadTeamActivityBox() {
   }
 }
 
+/**
+ * Draws an animated circular progress indicator using SVG.
+ *
+ * Params:
+ *   - containerId: ID of the DOM element where the SVG should be rendered
+ *   - percent: number (0–100) representing completion percentage
+ *
+ * Renders:
+ *   - A static background circle
+ *   - A second circle whose stroke animates to represent progress
+ *   - A text label showing the percentage
+ */
 function drawProgressCircle(containerId, percent) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -303,6 +365,7 @@ function drawProgressCircle(containerId, percent) {
   const circumference = 2 * Math.PI * radius;
   const initialOffset = circumference;
 
+  // Inject SVG structure: two circles and centered percentage text
   container.innerHTML = `
         <svg width="${size}" height="${size}">
             <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#444" stroke-width="10" fill="none"/>
@@ -313,6 +376,7 @@ function drawProgressCircle(containerId, percent) {
         </svg>
     `;
 
+  // Animate the stroke to reflect actual progress after short delay
   setTimeout(() => {
     const fillCircle = container.querySelector(".progress-circle-fill");
     if (fillCircle) {
@@ -323,12 +387,26 @@ function drawProgressCircle(containerId, percent) {
   }, 50);
 }
 
+/**
+ * Load the team activity box with a slight delay after page load.
+ * This ensures layout and DOM are ready before execution.
+ */
 window.addEventListener("load", () => {
   setTimeout(() => {
     loadTeamActivityBox();
   }, 100);
 });
 
+/**
+ * Fetches all tasks associated with a specific project ID.
+ *
+ * Params:
+ *   - projectId: numeric ID of the project
+ *
+ * Returns:
+ *   - Array of task objects if successful
+ *   - Empty array on error
+ */
 async function fetchTasksByProjectId(projectId) {
   try {
     const res = await fetch(`/api/tasks?project_id=${projectId}`, {
