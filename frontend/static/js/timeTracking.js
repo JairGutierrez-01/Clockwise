@@ -653,7 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (taskId) {
         window.location.href = `/time_entries?id=${taskId}`;
       } else {
-        console.log("Task-ID nicht gefunden!");
+        console.log("Task-ID couldn't be found!");
       }
     }
   });
