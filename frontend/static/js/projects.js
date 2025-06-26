@@ -476,6 +476,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * Fetch and display all tasks across all projects and unassigned.
+   * Lädt und zeigt alle Aufgaben des aktuellen Nutzers an – projektübergreifend und inklusive nicht zugewiesener Aufgaben.
+   * @returns {Promise<void>}
    */
   async function renderAllTasks() {
     projectListEl.innerHTML = "";
@@ -484,6 +486,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //Fetch only tasks assigned to current user
     const res = await fetch(`/api/users/${window.CURRENT_USER_ID}/tasks`);
+
     if (!res.ok) {
       console.error("Failed to fetch user-specific tasks");
       return;
@@ -496,33 +499,37 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "project-card";
       card.dataset.id = String(task.task_id);
       card.innerHTML = `
-      <h2 class="project-card__name">${task.title}</h2>
-      <div class="project-card__meta">
-        <p>Project: ${task.project_name || "Unassigned"}</p>
-        <p>Due: ${task.due_date || "–"}</p>
-        <p>Duration: ${task.total_duration || "0h 0min 0s"}</p>
-      </div>
-      <button class="project-card__view">View</button>
-    `;
+        <h2 class="project-card__name">${task.title}</h2>
+        <div class="project-card__meta">
+          <p>Project: ${task.project_name || "Unassigned"}</p>
+          <p>Due: ${task.due_date || "–"}</p>
+          <p>Duration: ${task.total_duration || "0h 0min 0s"}</p>
+        </div>
+        <button class="project-card__view">View</button>
+      `;
+
       card.addEventListener("click", () => openTaskEditModal(task.task_id));
       projectListEl.appendChild(card);
     });
   }
+
   /**
    * Displays the details of a selected project.
-   *
-   * @param {number} id - The unique identifier of the project to display.
+   * Zeigt die Detailansicht eines ausgewählten Projekts im UI an.
+   * @param {number} id - Die eindeutige Projekt-ID.
+   * @returns {Promise<void>}
    */
   async function showProjectDetail(id) {
     try {
-      // 1. Projekt aus local state holen
+      // 1. Projekt aus lokalem Zustand ermitteln
       const proj = projects.find((p) => p.project_id === id);
+
       if (!proj) {
-        console.error("Projekt nicht gefunden für ID:", id);
+        console.error("No project found for that ID:", id);
         return;
       }
 
-      // 2. Projektdetails ins UI einfügen
+      // 2. Projektdetails in die UI einfügen
       detailName.textContent = proj.name;
       detailDesc.textContent = proj.description || "-";
       detailType.textContent = proj.type;
@@ -537,43 +544,67 @@ document.addEventListener("DOMContentLoaded", () => {
       detailSection.classList.remove("hidden");
       editingProjectId = id;
 
-      // 3.1. Show/hide admin controls based on user rights
+      // 3.1. Admin-Buttons nur bei Berechtigung anzeigen (Show/hide admin controls based on user rights)
       const isAdmin = userHasProjectAdminRights(proj);
       editProjBtn.style.display = isAdmin ? "inline-block" : "none";
       deleteProjBtn.style.display = isAdmin ? "inline-block" : "none";
       createTaskBtn.style.display = isAdmin ? "inline-block" : "none";
 
-      // 4. Tasks vom Backend laden
+      // 4. Tasks des Projekts laden
       const tasks = await fetchTasks(id);
 
-      // 5. UI aktualisieren
+      // 5. Aufgabenliste in der UI rendern
       renderTaskList(tasks);
     } catch (error) {
-      console.error("Fehler beim Laden der Projektdetails:", error);
+      console.error("Error occured while loading the project details:", error);
     }
   }
 
-  /* ───────────── Filter logic ───────────── */
+  // ============================================================================
+  //                             Filterlogik
+  // ============================================================================
+
+  /**
+   * Setzt den aktiven Projektfilter und aktualisiert die UI.
+   * @param {string} filter - Der auszuwählende Filtertyp (z.B. "all", "SoloProject", "TeamProject", "alltasks", "unassigned").
+   * @returns {void}
+   */
   function setActiveFilter(filter) {
     activeFilter = filter;
+
     document
       .querySelector("#filter-controls .active")
       ?.classList.remove("active");
+
     [...filterBtns]
       .find((b) => b.dataset.filter === filter)
       ?.classList.add("active");
+
     renderProjectList();
   }
+
+  // Filter-Buttons aktivieren
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", () => setActiveFilter(btn.dataset.filter));
   });
 
-  /* ───────────── Event listeners Projects ───────────── */
+  // ============================================================================
+  //                          Event-Listener: Projekte
+  // ============================================================================
+
+  // Neues Projekt anlegen
   createBtn.addEventListener("click", () => openModal(false));
+
+  // Formular abbrechen
   cancelBtn.addEventListener("click", closeModal);
 
+  /**
+   * Event-Handler für das Projektformular (Absenden).
+   * Erstellt oder aktualisiert ein Projekt je nach Zustand von `editingProjectId`.
+   */
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+
     const payload = {
       name: nameInput.value.trim(),
       description: descInput.value.trim(),
@@ -596,6 +627,9 @@ document.addEventListener("DOMContentLoaded", () => {
     closeModal();
   });
 
+  /**
+   * Klick auf ein Projekt in der Liste → öffnet Detailansicht.
+   */
   projectListEl.addEventListener("click", (event) => {
     const card = event.target.closest(".project-card");
     if (!card) return;
@@ -607,9 +641,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  /**
+   * Klick auf „Bearbeiten“-Button in der Detailansicht.
+   */
   editProjBtn.addEventListener("click", () => openModal(true));
+
+  /**
+   * Klick auf „Löschen“-Button in der Detailansicht. Löscht das aktuelle Projekt.
+   */
   deleteProjBtn.addEventListener("click", async () => {
-    console.log("Deleting project:", editingProjectId); // Debug
     if (!editingProjectId) return;
 
     await deleteProject(editingProjectId);
@@ -617,11 +657,20 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadProjects();
   });
 
-  /* ───────────── Event listeners Tasks ───────────── */
+  // ============================================================================
+  //                         Event-Listener: Tasks
+  // ============================================================================
+
+  /**
+   * Öffnet das Task-Modal zur Erstellung einer neuen Aufgabe.
+   */
   createTaskBtn.addEventListener("click", () => {
     openTaskModal(null, editingProjectId);
   });
 
+  /**
+   * Schließt das Task-Modal und setzt das Formular zurück.
+   */
   cancelTaskBtn.addEventListener("click", () => {
     taskModal.classList.add("hidden");
     delete taskForm.dataset.editingTaskId;
@@ -629,6 +678,9 @@ document.addEventListener("DOMContentLoaded", () => {
     projectSelect.disabled = false;
   });
 
+  /**
+   * Öffnet das Bearbeitungsformular für eine existierende Aufgabe, wenn diese angeklickt wird.
+   */
   taskListEl.addEventListener("click", (event) => {
     const li = event.target.closest(".task-item");
     if (!li) return;
@@ -638,30 +690,34 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Invalid task ID (NaN)", li.dataset);
       return;
     }
+
     openTaskEditModal(taskId);
   });
+
+  /**
+   * Verarbeitet das Absenden des Task-Formulars – erstellt oder aktualisiert eine Aufgabe.
+   */
   taskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    // Kategorie-ID bestimmen
+    // Kategorie-Name bereinigen und formatieren
     const catInputEl = document.getElementById("task-category");
     let enteredCatName = catInputEl.value.trim();
-
-    enteredCatName = enteredCatName.replace("ß", "ss");
-
-    enteredCatName = enteredCatName.replace(/[^\p{L}\s]/gu, "").trim();
-
-    enteredCatName = enteredCatName
-      .split(/\s+/)
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+      enteredCatName = enteredCatName.replace("ß", "ss");
+      enteredCatName = enteredCatName.replace(/[^\p{L}\s]/gu, "").trim();
+      enteredCatName = enteredCatName
+        .split(/\s+/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
 
     let categoryId = null;
 
+    // Prüfen, ob Kategorie bereits existiert oder neu angelegt werden muss
     if (enteredCatName) {
       const existing = window.ALL_CATEGORIES?.find(
-        (c) => c.name.toLowerCase() === enteredCatName.toLowerCase(),
+        (c) => c.name.toLowerCase() === enteredCatName.toLowerCase()
       );
+
       if (existing) {
         categoryId = existing.category_id;
       } else {
@@ -672,20 +728,23 @@ document.addEventListener("DOMContentLoaded", () => {
             body: JSON.stringify({ name: enteredCatName }),
             credentials: "include",
           });
+
           if (!res.ok) throw new Error("Fehler beim Erstellen der Kategorie");
+
           const newCat = await res.json();
           categoryId = newCat.category_id;
-          await loadCategories(); // neue Kategorie direkt laden
+          await loadCategories(); // Neue Kategorie nachladen
         } catch (err) {
           console.error("Kategorie konnte nicht erstellt werden:", err);
         }
       }
     }
 
+    // Payload für Aufgabe erstellen
     const taskPayload = {
       title: taskNameInput.value.trim(),
       description: taskDescInput.value.trim(),
-      category_id: categoryId, // <-- Jetzt korrekt gesetzt!
+      category_id: categoryId,
       category_name: enteredCatName,
       due_date: taskDueDateInput.value || null,
       status: taskStatusSelect.value,
@@ -693,6 +752,7 @@ document.addEventListener("DOMContentLoaded", () => {
       created_from_tracking: false,
     };
 
+    // SoloProject → Task automatisch dem aktuellen User zuweisen
     const projectEntryId = taskPayload.project_id;
     if (projectEntryId) {
       const proj = projects.find((p) => p.project_id === projectEntryId);
@@ -702,8 +762,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const editingTaskId = taskForm.dataset.editingTaskId;
+
     try {
       if (editingTaskId) {
+        // Aufgabe aktualisieren
         await fetch(`/api/tasks/${editingTaskId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -711,9 +773,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         delete taskForm.dataset.editingTaskId;
       } else {
+        // Neue Aufgabe erstellen
         await createTask(taskPayload);
       }
 
+      // Modal schließen und Ansicht aktualisieren
       taskModal.classList.add("hidden");
 
       if (activeFilter === "unassigned") {
@@ -723,7 +787,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderTaskList(tasks);
       }
     } catch (error) {
-      console.error("Fehler beim Speichern der Task:", error);
+      console.error("Error occured while saving task:", error);
     }
   });
 
