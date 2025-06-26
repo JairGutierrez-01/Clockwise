@@ -791,15 +791,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Initialization ---
+  // ============================================================================
+  //                          Aufgaben: Laden, Bearbeiten, Anzeigen
+  // ============================================================================
+
   /**
    * Loads projects from the backend and renders them.
-   *
+   * Öffnet das Task-Modal zur Bearbeitung einer existierenden Aufgabe.
+   * @param {number} taskId - Die ID der zu bearbeitenden Aufgabe.
    */
   async function openTaskEditModal(taskId) {
     try {
       const res = await fetch(`/api/tasks/${taskId}`);
-      if (!res.ok) throw new Error("Task konnte nicht geladen werden");
+      if (!res.ok) throw new Error("Task didn't load properly");
 
       const task = await res.json();
       document.getElementById("task-form-title").textContent = "Edit Task";
@@ -811,9 +815,9 @@ document.addEventListener("DOMContentLoaded", () => {
       taskDueDateInput.value = task.due_date || "";
       taskStatusSelect.value = task.status;
 
+      // Projekt-Auswahl befüllen
       const projectSelect = document.getElementById("task-project");
-      projectSelect.innerHTML =
-        '<option value="">-- Select Project --</option>';
+      projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
       projects.forEach((proj) => {
         const option = document.createElement("option");
         option.value = proj.project_id;
@@ -822,12 +826,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       projectSelect.value = task.project_id || "";
 
-      // Rechte prüfen
-      const currentProject = projects.find(
-        (p) => p.project_id === task.project_id,
-      );
-      const isAdmin =
-        !task.project_id || userHasProjectAdminRights(currentProject);
+      // Adminrechte prüfen
+      const currentProject = projects.find((p) => p.project_id === task.project_id);
+      const isAdmin = !task.project_id || userHasProjectAdminRights(currentProject);
 
       const titleInput = document.getElementById("task-name");
       const descInput = document.getElementById("task-description");
@@ -847,7 +848,8 @@ document.addEventListener("DOMContentLoaded", () => {
           el.style.opacity = "0.6";
           el.style.cursor = "not-allowed";
         });
-        if (deleteBtn) deleteBtn.style.display = "none";
+
+      if (deleteBtn) deleteBtn.style.display = "none";
       } else {
         [
           titleInput,
@@ -866,12 +868,17 @@ document.addEventListener("DOMContentLoaded", () => {
       taskModal.classList.remove("hidden");
       taskForm.dataset.editingTaskId = taskId;
     } catch (error) {
-      console.error("Fehler beim Laden der Task:", error);
+      console.error("Error occured while loading the task:", error);
     }
   }
 
+  /**
+   * Rendert eine Liste von Aufgaben als HTML-Listelemente im UI.
+   * @param {Object[]} tasks - Liste der Aufgabenobjekte.
+   */
   function renderTaskList(tasks) {
     taskListEl.innerHTML = "";
+
     tasks.forEach((task) => {
       const li = document.createElement("li");
       li.className = "task-item";
@@ -893,38 +900,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Delete-Button
       li.appendChild(textSpan);
+
       // Adminrechte prüfen
-      const projectOfTask = projects.find(
-        (p) => p.project_id === task.project_id,
-      );
+      const projectOfTask = projects.find((p) => p.project_id === task.project_id);
       const isAdminOrOwner =
         userHasProjectAdminRights(projectOfTask) ||
         (projectOfTask?.type === "SoloProject" &&
           task.user_id === window.CURRENT_USER_ID);
+
       if (isAdminOrOwner) {
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Delete";
         deleteBtn.className = "task-delete-btn";
         deleteBtn.addEventListener("click", async () => {
-          if (!confirm("Möchtest du diese Aufgabe wirklich löschen?")) return;
+          if (!confirm("Do you really want to delete this task?")) return;
 
           try {
             const res = await fetch(`/api/tasks/${task.task_id}`, {
               method: "DELETE",
             });
-            if (!res.ok) throw new Error("Löschen fehlgeschlagen");
+            if (!res.ok) throw new Error("Deletion wasn't successfull");
+
             const updatedTasks = await fetchTasks(editingProjectId);
             renderTaskList(updatedTasks);
           } catch (err) {
-            console.error("Fehler beim Löschen:", err);
+            console.error("Error occured while deleting:", err);
           }
         });
         li.appendChild(deleteBtn);
       }
+
       taskListEl.appendChild(li);
     });
   }
 
+  /**
+   * Öffnet das Modal zum Erstellen oder Bearbeiten einer Aufgabe.
+   * @param {Object|null} task - Das Aufgabenobjekt, falls vorhanden.
+   * @param {number|null} defaultProjectId - Die ID eines Standardprojekts, falls gegeben.
+   */
   function openTaskModal(task = null, defaultProjectId = null) {
     // Reset
     taskForm.reset();
@@ -933,7 +947,6 @@ document.addEventListener("DOMContentLoaded", () => {
       : "New Task";
 
     const projectSelect = document.getElementById("task-project");
-
     // Projektliste neu befüllen (falls sie dynamisch ist)
     projectSelect.innerHTML = '<option value="">-- Select Project --</option>';
     projects.forEach((proj) => {
@@ -966,12 +979,16 @@ document.addEventListener("DOMContentLoaded", () => {
     taskModal.classList.remove("hidden");
   }
 
+  // ============================================================================
+  //                      Initialisierung und Export-Handling
+  // ============================================================================
+
   (async () => {
     await loadUserTeams();
     await loadProjects();
   })();
 
-  // EXPORT Dropdown-Logik
+  // Export-Button und Dropdown-Logik
   const projectExportBtn = document.getElementById("project-download-button");
   const projectDropdown = document.getElementById("project-download-dropdown");
 
