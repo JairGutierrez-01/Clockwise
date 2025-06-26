@@ -1,6 +1,7 @@
 /**
  * Initialisiert die Filterfunktion für Benachrichtigungskarten.
  * Reagiert auf Button-Klicks und blendet Karten je nach Typ dynamisch ein/aus.
+ * @returns {void}
  */
 document.addEventListener("DOMContentLoaded", () => {
   const filterButtons = document.querySelectorAll("#filter-controls button");
@@ -35,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 /**
  * Markiert eine Benachrichtigung auf dem Server als gelesen.
  * @param {string} id - Die ID der Benachrichtigung.
+ * @returns {Promise<void>}
  */
 function markAsRead(id) {
   fetch(`/notifications/read/${id}`, {
@@ -60,6 +62,7 @@ function markAsRead(id) {
 /**
  * Löscht eine Benachrichtigung auf dem Server.
  * @param {string} id - Die ID der Benachrichtigung.
+ * @returns {Promise<void>}
  */
 function deleteNotification(id) {
   fetch(`/notifications/delete/${id}`, {
