@@ -1,35 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - ClockWise</title>
+
     <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='dashboard.css') }}"
-    />
-    <!-- FullCalendar CSS & JS -->
-    <link
       href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
-      rel="stylesheet"
     />
+
+    <!-- JavaScript Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
+
   <body class="dark-mode">
     <!-- Include existing navbar -->
     {% include 'navbar.html' %}
 
     <div class="dashboard-wrapper">
+
       <!-- Main Content -->
       <main class="dashboard-content">
         <div class="dashboard-columns">
           <div class="left-column">
+
             <!-- Projects Table -->
             <div class="card projects-table" id="dashboard-project-card">
               <h3>Projects</h3>
@@ -38,12 +37,11 @@
                 class="project-list-scrollable"
               ></div>
             </div>
+
             <!-- Project Details & Progress -->
             <div class="card project-details" id="team-activity-box">
               <h3 id="team-project-name">...</h3>
-
               <p>Total Time: <span id="total-time">--:--:--</span></p>
-
               <p>Team Members:</p>
               <div id="team-member-list" class="team-members"></div>
               <div id="team-progress" class="progress-chart"></div>
@@ -51,11 +49,13 @@
           </div>
 
           <div class="right-column">
+
             <!-- Calendar -->
             <div class="card calendar">
               <h3>Calendar</h3>
               <div id="calendar"></div>
             </div>
+
             <!-- Reports Chart -->
             <div class="card reports">
               <h3>Weekly Report</h3>
@@ -66,11 +66,13 @@
       </main>
     </div>
 
-    <!-- Toggle function JavaScript -->
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
+
   </body>
 </html>
