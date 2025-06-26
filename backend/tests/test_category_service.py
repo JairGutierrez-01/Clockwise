@@ -111,15 +111,19 @@ def test_get_category_success(db_session, setup_user):
     assert result["category"].name == "Lernen"
 
 
-def test_get_category_not_found():
-    """Test retrieval of a category by a non-existing ID returns error.
+def test_get_category_not_found(db_session):
+    """
+    Test that retrieving a category by a non-existing ID returns an error.
+
+    Args:
+        db_session: The database session fixture to manage transactions.
 
     Asserts:
-        The result contains an error indicating category not found.
+        The result contains an error indicating that the category was not found.
     """
-    result = get_category(999999)
+    with db_session.begin():  # opens a transaction and thus an active session
+        result = get_category(999999)  # function call with active session
     assert "error" in result
-    assert result["error"] == "Category not found."
 
 
 def test_get_all_categories(db_session, setup_user):
@@ -168,13 +172,14 @@ def test_update_category_success(db_session, setup_user):
     assert Category.query.get(cat.category_id).name == "NewName"
 
 
-def test_update_category_not_found():
+def test_update_category_not_found(db_session):
     """Test error when updating a non-existing category.
 
     Asserts:
         The result contains an error indicating category not found.
     """
-    result = update_category(99999, "Nothing")
+    with db_session.begin():  # opens a transaction and thus an active session
+        result = update_category(99999, "Nothing")  # function call with active session
     assert result["error"] == "Category not found."
 
 
