@@ -9,7 +9,6 @@
 
 // ============================================================================
 //                          API CALLS
-// Functions to interact with backend endpoints for tasks and time entries
 // ============================================================================
 
 /**
@@ -156,7 +155,6 @@ async function deleteEntryAPI(entryId) {
 
 // ============================================================================
 //                          UTILITIES
-// Helper functions for formatting and storage operations
 // ============================================================================
 
 /**
@@ -226,7 +224,6 @@ function removeEntryId(id) {
 
 // ============================================================================
 //                          MAIN LOGIC
-// Sets up event listeners, state variables, and UI rendering on page load
 // ============================================================================
 
 /**
@@ -643,14 +640,14 @@ document.addEventListener("DOMContentLoaded", () => {
       pauseBtn.hidden = false;
       resumeBtn.hidden = true;
       stopBtn.hidden = false;
-      elapsedTime = (entry.duration_minutes || 0) * 60 * 1000;
+      elapsedTime = (entry.duration_seconds || 0) * 1000;
       display.textContent = formatTime(elapsedTime);
       startTime = Date.now() - elapsedTime;
       timerInterval = setInterval(() => {
         elapsedTime = Date.now() - startTime;
         display.textContent = formatTime(elapsedTime);
       }, 1000);
-      currentEntryId = entryId;
+      currentEntryId = Number(entryId);
     } else if (e.target.classList.contains("edit-btn")) {
       const taskId = e.target.dataset.taskId;
       if (taskId) {
