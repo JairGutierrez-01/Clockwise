@@ -2,20 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Notifications - ClockWise</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='dashboard.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='notifications.css') }}"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifications – ClockWise</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}" />
   </head>
+
   <body class="dark-mode">
     {% include 'navbar.html' %}
 

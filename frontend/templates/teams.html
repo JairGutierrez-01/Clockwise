@@ -2,21 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Teams - ClockWise</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teams – ClockWise</title>
 
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='dashboard.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='teams.css') }}"
-    />
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='teams.css') }}" />
   </head>
+
   <body class="dark-mode">
     {% include 'navbar.html' %}
 
