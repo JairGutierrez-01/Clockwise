@@ -247,121 +247,153 @@
 
     <!-- SCRIPT -->
     <script>
-      let timerInterval;
-      let seconds = 0;
-      let running = false;
-      let paused = false;
+        // ============================
+        //       Timer-Funktionalität
+        // ============================
 
-      const timeDisplay = document.getElementById("time");
-      const secondHand = document.getElementById("secondHand");
-      const minuteHand = document.getElementById("minuteHand");
-      const pauseButton = document.querySelector(".button-row").children[1];
+        let timerInterval;
+        let seconds = 0;
+        let running = false;
+        let paused = false;
 
-      function updateDisplay() {
-        const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
-        const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-        const secs = String(seconds % 60).padStart(2, "0");
-        timeDisplay.textContent = `${hrs}:${mins}:${secs}`;
-      }
+        const timeDisplay = document.getElementById("time");
+        const secondHand = document.getElementById("secondHand");
+        const minuteHand = document.getElementById("minuteHand");
+        const pauseButton = document.querySelector(".button-row").children[1];
 
-      function updateClock() {
-        const secDeg = (seconds % 60) * 6;
-        const minDeg = (seconds / 60) * 6;
-        secondHand.style.transform = `rotate(${secDeg}deg)`;
-        minuteHand.style.transform = `rotate(${minDeg}deg)`;
-      }
+        /**
+         * Aktualisiert die numerische Anzeige der gestoppten Zeit im Format HH:MM:SS.
+         */
+        function updateDisplay() {
+          const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
+          const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+          const secs = String(seconds % 60).padStart(2, "0");
+          timeDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }
 
-      function startTimer() {
-        if (running && paused) {
+        /**
+         * Aktualisiert die Positionen der Sekunden- und Minutenzeiger im UI.
+         */
+        function updateClock() {
+          const secDeg = (seconds % 60) * 6;
+          const minDeg = (seconds / 60) * 6;
+          secondHand.style.transform = `rotate(${secDeg}deg)`;
+          minuteHand.style.transform = `rotate(${minDeg}deg)`;
+        }
+
+        /**
+         * Startet den Timer oder setzt ihn fort, wenn er pausiert war.
+         */
+        function startTimer() {
+          if (running && paused) {
+            paused = false;
+            pauseButton.textContent = "Pause";
+            timeDisplay.classList.remove("blink");
+            return;
+          }
+
+          if (running) return;
+          running = true;
           paused = false;
+
+          timerInterval = setInterval(() => {
+            if (!paused) {
+              seconds++;
+              updateDisplay();
+              updateClock();
+            }
+          }, 1000);
+        }
+
+        /**
+         * Pausiert oder setzt den Timer fort. Ändert den Button-Text und visuelles Feedback.
+         */
+        function pauseTimer() {
+          if (!running) return;
+          paused = !paused;
+          pauseButton.textContent = paused ? "Weiter" : "Pause";
+          timeDisplay.classList.toggle("blink", paused);
+        }
+
+        /**
+         * Stoppt und setzt den Timer vollständig zurück. Entfernt alle visuelle Markierungen.
+         */
+        function stopTimer() {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          seconds = 0;
+          running = false;
+          paused = false;
+          updateDisplay();
+          updateClock();
           pauseButton.textContent = "Pause";
           timeDisplay.classList.remove("blink");
-          return;
         }
 
-        if (running) return;
-        running = true;
-        paused = false;
-
-        timerInterval = setInterval(() => {
-          if (!paused) {
-            seconds++;
-            updateDisplay();
-            updateClock();
-          }
-        }, 1000);
-      }
-
-      function pauseTimer() {
-        if (!running) return;
-        paused = !paused;
-        pauseButton.textContent = paused ? "Weiter" : "Pause";
-        timeDisplay.classList.toggle("blink", paused);
-      }
-
-      function stopTimer() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        seconds = 0;
-        running = false;
-        paused = false;
+        // Initialer Anzeigeaufbau beim Laden
         updateDisplay();
         updateClock();
-        pauseButton.textContent = "Pause";
-        timeDisplay.classList.remove("blink");
-      }
 
-      updateDisplay();
-      updateClock();
+        // ============================
+        //       Scrollanimation
+        // ============================
 
-      // Scrollanimation
-      const sections = document.querySelectorAll(".section");
-      let lastScrollY = window.scrollY;
-      let scrollDirection = "down";
+        const sections = document.querySelectorAll(".section");
+        let lastScrollY = window.scrollY;
+        let scrollDirection = "down";
 
-      window.addEventListener("scroll", () => {
-        const currentScrollY = window.scrollY;
-        scrollDirection = currentScrollY > lastScrollY ? "down" : "up";
-        lastScrollY = currentScrollY;
-      });
+        // Bestimmt die Scrollrichtung
+        window.addEventListener("scroll", () => {
+          const currentScrollY = window.scrollY;
+          scrollDirection = currentScrollY > lastScrollY ? "down" : "up";
+          lastScrollY = currentScrollY;
+        });
 
-      const fadeObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const section = entry.target;
+        /**
+         * IntersectionObserver, um Scrollanimationen auszulösen,
+         * abhängig davon, ob ein Element im Viewport ist.
+         */
+        const fadeObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const section = entry.target;
 
-            if (entry.isIntersecting) {
-              section.classList.add("animate-in");
-              section.classList.remove("animate-out-up", "animate-out-down");
-            } else {
-              section.classList.remove("animate-in");
-              section.classList.add(
-                scrollDirection === "down"
-                  ? "animate-out-up"
-                  : "animate-out-down",
-              );
-            }
-          });
-        },
-        { threshold: 0.4 },
-      );
+              if (entry.isIntersecting) {
+                section.classList.add("animate-in");
+                section.classList.remove("animate-out-up", "animate-out-down");
+              } else {
+                section.classList.remove("animate-in");
+                section.classList.add(
+                  scrollDirection === "down"
+                    ? "animate-out-up"
+                    : "animate-out-down"
+                );
+              }
+            });
+          },
+          { threshold: 0.4 }
+        );
 
-      sections.forEach((section) => fadeObserver.observe(section));
+        sections.forEach((section) => fadeObserver.observe(section));
 
-      /* Bilder Switchen je nach Light/Dark Modus*/
-      function updateAnalyzeImage() {
-        const img = document.getElementById("analyze-img");
-        if (document.body.classList.contains("light-mode")) {
-          img.src =
-            "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
-        } else {
-          img.src =
-            "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+        // ============================
+        //       Bildwechsel bei Modus
+        // ============================
+
+        /**
+         * Wechselt das Bild basierend auf dem aktiven Farbschema (Light/Dark Mode).
+         */
+        function updateAnalyzeImage() {
+          const img = document.getElementById("analyze-img");
+          if (document.body.classList.contains("light-mode")) {
+            img.src = "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
+          } else {
+            img.src = "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+          }
         }
-      }
 
-      // Beim Seitenstart prüfen
-      updateAnalyzeImage();
+        // Beim Seitenstart prüfen und Bild anpassen
+        updateAnalyzeImage();
     </script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     {% if user_logged_in %}
