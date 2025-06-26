@@ -154,23 +154,6 @@ async function deleteEntryAPI(entryId) {
   return res.json();
 }
 
-/**
- * Creates a manual time entry via API.
- * @async
- * @function createManualEntryAPI
- * @param {Object} data - {task_id, start_time, end_time, duration_seconds, comment?}
- * @returns {Promise<Object>}
- */
-async function createManualEntryAPI(data) {
-  const res = await fetch("/api/time_entries", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Failed to create manual entry");
-  return res.json();
-}
-
 // ============================================================================
 //                          UTILITIES
 // Helper functions for formatting and storage operations
