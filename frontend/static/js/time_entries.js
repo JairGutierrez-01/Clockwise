@@ -1,4 +1,7 @@
-//                          API CALLS
+// ============================================================================
+//                             API CALLS
+// ============================================================================
+
 /**
  * Deletes the time entry with the given entry ID.
  * @async
@@ -69,7 +72,10 @@ async function createEntryAPI(data) {
   return res.json();
 }
 
-//                          UTILITIES
+// ============================================================================
+//                             UTILITIES
+// ============================================================================
+
 /**
  * Formats a duration in seconds into "HH:MM:SS".
  * @function formatDuration
@@ -111,7 +117,10 @@ function parseInputDateTime(inputVal) {
   return new Date(inputVal);
 }
 
-//                          MAIN LOGIC
+// ============================================================================
+//                             Main Logic
+// ============================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
   const taskId = window.taskId;
   const table = document.getElementById("entries-table");
