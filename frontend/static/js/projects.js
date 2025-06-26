@@ -136,26 +136,47 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialzustand setzen beim ersten Laden
   toggleTeamPicker();
 
-  // Check if user has admin rights for a project
+  /**
+   * Prüft, ob der aktuelle Nutzer Adminrechte für das angegebene Projekt besitzt.
+   * Adminrechte gelten für Solo-Projekte generell und bei Team-Projekten, wenn der Nutzer Admin im zugehörigen Team ist.
+   * @param {Object} project - Das Projektobjekt mit Typ und Team-Zuordnung.
+   * @param {string} project.type - Der Projekttyp ("SoloProject" oder "TeamProject").
+   * @param {number} [project.team_id] - Die Team-ID bei Team-Projekten.
+   * @returns {boolean} Ob der Nutzer Adminrechte für das Projekt besitzt.
+   */
   function userHasProjectAdminRights(project) {
     // damit Admins unabhängig vom Task-Owner Bearbeitungsrechte haben
     if (project.type === "SoloProject") return true;
+
     if (project.type === "TeamProject" && project.team_id) {
       const team = allTeamsData.find((t) => t.team_id === project.team_id);
       return team && team.role === "admin";
     }
+
     return false;
   }
 
-  // Load user's teams and roles
+  /**
+   * Lädt alle Teams und Rollen des aktuellen Nutzers vom Server und speichert sie in `allTeamsData`.
+   * @returns {Promise<void>}
+   * @throws {Error} Wenn die Serveranfrage fehlschlägt.
+   */
   async function loadUserTeams() {
     const res = await fetch("/api/teams");
-    if (!res.ok) throw new Error("Failed to fetch teams");
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch teams");
+    }
+
     const data = await res.json();
     allTeamsData = data.teams;
   }
+
+  // --- Projektzustände und UI-Referenzen ---
   let editingProjectId = null;
   let activeFilter = "all";
+
+  // --- DOM-Elemente für das Projektformular und Detailansicht ---
   const projectListEl = document.getElementById("project-list");
   const createBtn = document.getElementById("create-project-btn");
   const modal = document.getElementById("project-form-modal");
@@ -166,6 +187,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const descInput = document.getElementById("project-description");
   const timeLimitInput = document.getElementById("project-time-limit");
   const dueDateInput = document.getElementById("project-due-date");
+
+  // --- DOM-Elemente für die Detailansicht eines Projekts ---
   const detailSection = document.getElementById("project-detail");
   const detailName = document.getElementById("detail-name");
   const detailDesc = document.getElementById("detail-description");
@@ -174,63 +197,113 @@ document.addEventListener("DOMContentLoaded", () => {
   const detailTimeLimit = document.getElementById("detail-time-limit");
   const detailCurrentHours = document.getElementById("detail-current-hours");
   const detailDueDate = document.getElementById("detail-due-date");
+
+  // --- Buttons zur Projektbearbeitung ---
   const editProjBtn = document.getElementById("edit-project-btn");
   const deleteProjBtn = document.getElementById("delete-project-btn");
   const createTaskBtn = document.getElementById("create-task-btn");
+
+  // --- Aufgabenliste und Filtersteuerung ---
   const taskListEl = document.getElementById("task-list");
   const filterBtns = document.querySelectorAll("#filter-controls button");
+
 
   // ============================================================================
   //                          API Calls Section
   // Defines functions to interact with the backend
   // ============================================================================
 
-  //API Calls Projects
+  /**
+   * Ruft alle Projekte des aktuellen Nutzers vom Server ab.
+   * @returns {Promise<Object[]>} Eine Liste von Projektobjekten.
+   * @throws {Error} Wenn der Fetch-Request fehlschlägt.
+   */
   async function fetchProjects() {
     const res = await fetch("/api/projects");
-    if (!res.ok) throw new Error("Failed to fetch projects");
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch projects");
+    }
+
     const json = await res.json();
     return json.projects;
   }
 
+  /**
+   * Lädt die Projektliste in die globale Variable und rendert sie im UI.
+   * @returns {Promise<void>}
+   */
   async function loadProjects() {
     try {
       projects = await fetchProjects();
       renderProjectList();
     } catch (err) {
-      console.error("Fehler beim Laden der Projekte:", err);
+      console.error("Error occured while loading the projects:", err);
     }
   }
 
+  /**
+   * Erstellt ein neues Projekt im Backend.
+   * @param {Object} data - Die Projektdaten im JSON-Format.
+   * @returns {Promise<Object>} Das erstellte Projektobjekt.
+   * @throws {Error} Wenn der Request fehlschlägt.
+   */
   async function createProject(data) {
     const res = await fetch("/api/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Failed to create project");
+
+    if (!res.ok) {
+      throw new Error("Failed to create project");
+    }
+
     return res.json();
   }
 
+  /**
+   * Aktualisiert ein bestehendes Projekt im Backend.
+   * @param {number} id - Die ID des zu aktualisierenden Projekts.
+   * @param {Object} data - Die neuen Projektdaten.
+   * @returns {Promise<Object>} Das aktualisierte Projektobjekt.
+   * @throws {Error} Wenn der Request fehlschlägt.
+   */
   async function updateProject(id, data) {
     const res = await fetch(`/api/projects/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Failed to update project");
+
+    if (!res.ok) {
+      throw new Error("Failed to update project");
+    }
+
     return res.json();
   }
 
+  /**
+   * Löscht ein Projekt im Backend.
+   * @param {number} id - Die ID des Projekts, das gelöscht werden soll.
+   * @returns {Promise<void>}
+   * @throws {Error} Wenn der Request fehlschlägt.
+   */
   async function deleteProject(id) {
     const res = await fetch(`/api/projects/${id}`, {
       method: "DELETE",
     });
-    if (!res.ok) throw new Error("Failed to delete project");
+
+    if (!res.ok) {
+      throw new Error("Failed to delete project");
+    }
   }
 
   /**
-   * Update a task's status.
+   * Aktualisiert den Status eines Task.
+   * @param {number} taskId - Die ID der Aufgabe.
+   * @param {string} status - Der neue Status (z.B. "open", "in_progress", "done").
+   * @returns {Promise<void>}
    */
   async function updateTaskStatus(taskId, status) {
     await fetch(`/api/tasks/${taskId}`, {
@@ -240,27 +313,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  //API Calls Tasks
+  /**
+   * Erstellt eine neue Aufgabe im Backend.
+   * @param {Object} data - Die Aufgabendaten im JSON-Format.
+   * @returns {Promise<Object>} Das erstellte Aufgabenobjekt.
+   * @throws {Error} Wenn der Request fehlschlägt.
+   */
   async function createTask(data) {
     const res = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Failed to create task");
+
+    if (!res.ok) {
+      throw new Error("Failed to create task");
+    }
+
     return res.json();
   }
 
   /**
    * Opens the project form modal.
-   *
    * @param {boolean} isEdit - Whether the modal is for editing an existing project.
+   */
+  /**
+   * Öffnet das Projektformular-Modalfenster.
+   * @param {boolean} [isEdit=false] - Gibt an, ob ein bestehendes Projekt bearbeitet wird.
+   * @returns {void}
    */
   function openModal(isEdit = false) {
     form.reset();
     modal.classList.remove("hidden");
+
     if (isEdit) {
       formTitle.textContent = "Edit Project";
+
       const proj = projects.find((p) => p.project_id === editingProjectId);
       nameInput.value = proj.name;
       descInput.value = proj.description || "";
@@ -275,7 +363,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Closes the project form modal.
+   * Renders the list of project cards in the UI.
+   * Schließt das Projektformular-Modalfenster.
+   * @returns {void}
    */
   function closeModal() {
     modal.classList.add("hidden");
@@ -283,6 +373,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * Renders the list of project cards in the UI.
+   * Rendert die Projektliste im UI. Berücksichtigt aktive Filteroptionen.
+   * @returns {void}
    */
   function renderProjectList() {
     projectListEl.innerHTML = "";
@@ -295,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderAllTasks();
       return;
     }
+
     if (activeFilter === "unassigned") {
       renderUnassignedTasks();
       return;
@@ -308,14 +401,15 @@ document.addEventListener("DOMContentLoaded", () => {
       card.dataset.id = String(proj.project_id);
       card.dataset.type = proj.type;
       card.innerHTML = `
-      <h2 class="project-card__name">${proj.name}</h2>
-      <div class="project-card__meta">
-        <p>Type: ${proj.type}</p>
-        <p>Limit: ${proj.time_limit_hours} h</p>
-        <p>Spent Time: ${proj.duration_readable || "0h 0min 0s"}</p>
-      </div>
-      <button class="project-card__view">View</button>
-    `;
+        <h2 class="project-card__name">${proj.name}</h2>
+        <div class="project-card__meta">
+          <p>Type: ${proj.type}</p>
+          <p>Limit: ${proj.time_limit_hours} h</p>
+          <p>Spent Time: ${proj.duration_readable || "0h 0min 0s"}</p>
+        </div>
+        <button class="project-card__view">View</button>
+      `;
+
       projectListEl.appendChild(card);
     });
 
@@ -327,8 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!detailPanel || detailPanel.classList.contains("hidden")) return;
 
       const isInsideDetail = detailPanel.contains(event.target);
-      const clickedViewButton =
-        event.target.classList.contains("project-card__view");
+      const clickedViewButton = event.target.classList.contains("project-card__view");
 
       // Wenn außerhalb geklickt und nicht auf View-Button → Panel schließen
       if (!isInsideDetail && !clickedViewButton) {
@@ -337,11 +430,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /**
+   * Lädt alle nicht zugewiesenen Aufgaben vom Server und zeigt sie im UI an.
+   * @returns {Promise<void>}
+   */
   async function renderUnassignedTasks() {
     projectListEl.innerHTML = "";
+
     try {
       const res = await fetch("/api/tasks?unassigned=true");
-      if (!res.ok) throw new Error("Failed to fetch unassigned tasks");
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch unassigned tasks");
+      }
+
       const tasks = await res.json();
 
       if (tasks.length === 0) {
@@ -353,12 +455,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const card = document.createElement("div");
         card.className = "project-card unassigned-task-card";
         card.innerHTML = `
-        <h2 class="project-card__name">${task.title}</h2>
-        <div class="project-card__meta">
-          <p>Description: ${task.description || "-"}</p>
-          <p>Due: ${task.due_date || "N/A"}</p>
-        </div>
-      `;
+          <h2 class="project-card__name">${task.title}</h2>
+          <div class="project-card__meta">
+            <p>Description: ${task.description || "-"}</p>
+            <p>Due: ${task.due_date || "N/A"}</p>
+          </div>
+        `;
 
         card.addEventListener("click", () => {
           openTaskEditModal(task.task_id);
