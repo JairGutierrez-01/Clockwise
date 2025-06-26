@@ -2,14 +2,13 @@ from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 
 from backend.database import db
-from backend.models import Project, Team, UserTeam, Task, Notification, User
+from backend.models import Project, Team, UserTeam, Notification, User
 from backend.services.team_service import (
     create_new_team,
     delete_team_and_related,
     check_admin,
     remove_member_from_team,
 )
-
 # import the service function with a new name
 from backend.services.team_service import get_team_members as get_team_members_service
 from backend.services.team_service import get_user_teams as get_user_teams_service
@@ -24,13 +23,12 @@ def get_user_teams():
     """
     Returns all teams the authenticated user is a member of.
 
-    Args:
-        None
-
     Returns:
         Response: JSON with teams and current user info or error.
     """
-    teams = get_user_teams_service(current_user.user_id)        # Fetch all teams where current user is member
+    teams = get_user_teams_service(
+        current_user.user_id
+    )  # Fetch all teams where current user is member
     return jsonify(
         {
             "current_user": {
@@ -47,9 +45,6 @@ def get_user_teams():
 def create_team():
     """
     Create a new team and assign the current user as admin.
-
-    Args:
-        None
 
     Returns:
         Response: JSON with new team ID or error message.
@@ -303,6 +298,7 @@ def api_assign_project_to_team(team_id):
 
     return jsonify({"success": True, "message": "Project assigned to team"}), 200
 
+
 @team_bp.route("/full", methods=["GET"])
 @login_required
 def get_full_teams():
@@ -330,36 +326,43 @@ def get_full_teams():
     for team in user_teams:
         members = []
         for userteam in team.members:
-            members.append({
-                "user_id": userteam.user.user_id,
-                "username": userteam.user.username,
-                "first_name": userteam.user.first_name,
-                "last_name": userteam.user.last_name,
-                "role": userteam.role,
-            })
+            members.append(
+                {
+                    "user_id": userteam.user.user_id,
+                    "username": userteam.user.username,
+                    "first_name": userteam.user.first_name,
+                    "last_name": userteam.user.last_name,
+                    "role": userteam.role,
+                }
+            )
 
         projects = []
         for project in team.project:
-            projects.append({
-                "project_id": project.project_id,
-                "name": project.name,
-                "description": project.description,
-                "type": project.type.name if project.type else None,
-                "status": project.status.name if project.status else None,
-                "time_limit_hours": project.time_limit_hours,
-                "current_hours": project.current_hours or 0,
-                "duration_readable": project.duration_readable,
-                "due_date": project.due_date.isoformat() if project.due_date else None,
-            })
+            projects.append(
+                {
+                    "project_id": project.project_id,
+                    "name": project.name,
+                    "description": project.description,
+                    "type": project.type.name if project.type else None,
+                    "status": project.status.name if project.status else None,
+                    "time_limit_hours": project.time_limit_hours,
+                    "current_hours": project.current_hours or 0,
+                    "duration_readable": project.duration_readable,
+                    "due_date": (
+                        project.due_date.isoformat() if project.due_date else None
+                    ),
+                }
+            )
 
-        result.append({
-            "team_id": team.team_id,
-            "name": team.name,
-            "description": team.description,
-            "created_at": team.created_at.isoformat() if team.created_at else None,
-            "members": members,
-            "projects": projects,
-        })
+        result.append(
+            {
+                "team_id": team.team_id,
+                "name": team.name,
+                "description": team.description,
+                "created_at": team.created_at.isoformat() if team.created_at else None,
+                "members": members,
+                "projects": projects,
+            }
+        )
 
     return jsonify(result)
-

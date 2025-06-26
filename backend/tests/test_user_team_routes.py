@@ -45,7 +45,8 @@ def test_add_member_with_team_id_filter(db_session, setup_test_data, monkeypatch
 
     # Mock the notification function to avoid side effects
     monkeypatch.setattr(
-        "backend.services.notifications.notify_user_added_to_team", lambda *a, **k: None
+        "backend.services.notification_service.notify_user_added_to_team",
+        lambda *a, **k: None,
     )
 
     result = add_member(user.username, team.name, "member")

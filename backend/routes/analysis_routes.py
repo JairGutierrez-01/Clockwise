@@ -6,7 +6,6 @@ from flask_login import login_required
 
 from backend.services.analysis_service import aggregate_time_by_day_project_task
 from backend.services.analysis_service import (
-    aggregate_weekly_time,
     export_time_entries_pdf,
     export_time_entries_csv,
 )
@@ -14,9 +13,7 @@ from backend.services.analysis_service import (
     load_time_entries,
     load_target_times,
     load_tasks,
-    tasks_in_month,
     filter_time_entries_by_date,
-    worked_time_today,
 )
 from backend.services.analysis_service import (
     progress_per_project,
@@ -24,86 +21,6 @@ from backend.services.analysis_service import (
 )
 
 analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
-
-
-# For Testing: /time-entries?start_date=2025-06-01&end_date=2025-06-07
-@analysis_bp.route("/time-entries")
-@login_required
-def api_time_entries():
-    """
-    Get time entries filtered by a date range.
-
-    Query Parameters:
-        start_date (str): Start date in ISO8601 format (YYYY-MM-DDTHH:MM:SS).
-        end_date (str): End date in ISO8601 format (YYYY-MM-DDTHH:MM:SS).
-
-    Returns:
-        JSON response containing a list of time entries with keys:
-            - task (str): Task title.
-            - start (str): ISO8601 formatted start datetime.
-            - end (str): ISO8601 formatted end datetime.
-            - duration_hours (float): Duration of the time entry in hours.
-
-    Errors:
-        400 if parameters are missing or date formats are invalid.
-    """
-    start_str = request.args.get("start_date")
-    end_str = request.args.get("end_date")
-    if not start_str or not end_str:
-        return jsonify({"error": "start_date and end_date required"}), 400
-    try:
-        start_date = datetime.fromisoformat(start_str)
-        end_date = datetime.fromisoformat(end_str)
-    except ValueError:
-        return jsonify({"error": "Invalid date format"}), 400
-
-    entries = load_time_entries()
-    filtered = filter_time_entries_by_date(entries, start_date, end_date)
-    result = [
-        {
-            "task": entry["task"],
-            "start": entry["start"].isoformat(),
-            "end": entry["end"].isoformat(),
-            "duration_hours": (entry["end"] - entry["start"]).total_seconds() / 3600,
-        }
-        for entry in filtered
-    ]
-    return jsonify(result)
-
-
-# For Testing: /tasks-in-month?month=2025-05
-@analysis_bp.route("/tasks-in-month")
-@login_required
-def api_tasks_in_month():
-    """
-    Get all tasks for a specific month.
-
-    Query Parameters:
-        month (str): Month in format "YYYY-MM".
-
-    Returns:
-        JSON response containing a list of task names with the project prefix.
-
-    Errors:
-        400 if the month parameter is missing or formatted incorrectly.
-    """
-    month_str = request.args.get("month")  # Format: "YYYY-MM"
-    if not month_str:
-        return jsonify({"error": "month parameter required"}), 400
-    try:
-        year, month = map(int, month_str.split("-"))
-    except Exception:
-        return jsonify({"error": "Invalid month format"}), 400
-
-    tasks = load_tasks()
-    filtered_tasks = tasks_in_month(tasks, year, month)
-    task_names = list(
-        {
-            task["project"] + ": " + task.get("title", "Unknown Task")
-            for task in filtered_tasks
-        }
-    )
-    return jsonify(task_names)
 
 
 @analysis_bp.route("/project-progress")
@@ -137,44 +54,26 @@ def api_actual_vs_planned():
     return jsonify(comparison)
 
 
-@analysis_bp.route("/worked_time_today", methods=["GET"])
-@login_required
-def get_worked_time_today():
-    """
-    API endpoint that returns the total worked time for today.
-
-    Returns:
-        JSON response with total hours worked today.
-    """
-    hours_today = worked_time_today()
-    return jsonify({"worked_hours_today": hours_today})
-
-
-@analysis_bp.route("/weekly-time")
-@login_required
-def api_weekly_time():
-    """
-    API endpoint that returns the aggregated worked time per project for the current week (Monday to Sunday).
-
-    Returns:
-        JSON response with:
-            - labels (list of str): Weekday labels ["Mo", "Di", ..., "So"].
-            - projects (dict): Mapping of project names to a list of 7 floats,
-                               each representing the total hours worked on that day.
-    """
-    today = datetime.today()
-    monday = today - timedelta(days=today.weekday())
-    entries = load_time_entries()
-    aggregated = aggregate_weekly_time(entries, monday)
-
-    return jsonify(
-        {"labels": ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"], "projects": aggregated}
-    )
-
-
 @analysis_bp.route("/weekly-time-stacked")
 @login_required
 def api_weekly_time_stacked():
+    """
+    Retrieves weekly time entries grouped by project and task, stacked per day.
+
+    Query Parameters:
+        start (str, optional): Start date (Monday) in ISO format.
+
+    Returns:
+        Response: JSON object with:
+            - labels (list): Weekdays ["Mo", ..., "So"].
+            - datasets (list): ChartJS-style datasets with:
+                - label (str): Project and task.
+                - data (list): Hours per day.
+                - stack (str): Project name.
+
+    Raises:
+        400: If start date is invalid.
+    """
     start_param = request.args.get("start")
     if start_param:
         try:
@@ -200,19 +99,18 @@ def api_weekly_time_stacked():
 @analysis_bp.route("/export/pdf")
 @login_required
 def export_pdf():
-    """Exports time entries as a downloadable PDF file.
-
-    Retrieves all time entries for the currently authenticated user and
-    optionally filters them by a provided date range. The result is returned
-    as a downloadable PDF file.
+    """
+    Exports time entries to a downloadable PDF.
 
     Query Parameters:
-        start (str, optional): Start date in ISO format (YYYY-MM-DD). Required if `end` is provided.
-        end (str, optional): End date in ISO format (YYYY-MM-DD). Required if `start` is provided.
+        start (str, optional): Start date in ISO format (YYYY-MM-DD).
+        end (str, optional): End date in ISO format (YYYY-MM-DD).
 
     Returns:
-        flask.Response: A file download response containing the generated PDF.
-                        Returns HTTP 400 if the date parameters are invalid.
+        Response: PDF file as download.
+
+    Raises:
+        400: If date format is invalid.
     """
     start_str = request.args.get("start")
     end_str = request.args.get("end")
@@ -240,19 +138,18 @@ def export_pdf():
 
 @analysis_bp.route("/export/csv")
 def export_csv():
-    """Exports time entries as a downloadable CSV file.
-
-    Retrieves all time entries for the currently logged-in user and returns them
-    as a CSV file. Optionally, entries can be filtered by a start and end date
-    provided via query parameters.
+    """
+    Exports time entries to a downloadable CSV file.
 
     Query Parameters:
-        start (str, optional): ISO 8601 date string (YYYY-MM-DD) indicating the start date.
-        end (str, optional): ISO 8601 date string (YYYY-MM-DD) indicating the end date.
+        start (str, optional): Start date in ISO format (YYYY-MM-DD).
+        end (str, optional): End date in ISO format (YYYY-MM-DD).
 
     Returns:
-        flask.Response: A response object containing the CSV file as an attachment.
-                        Returns HTTP 400 if the date format is invalid.
+        Response: CSV file as download.
+
+    Raises:
+        400: If date format is invalid.
     """
     entries = load_time_entries()
     # optional time filter

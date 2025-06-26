@@ -1,8 +1,13 @@
+from datetime import datetime
+
 import pytest
 from sqlalchemy.orm import sessionmaker, scoped_session
+from werkzeug.security import generate_password_hash
 
 from app import app as flask_app
 from app import db
+from backend.models import User
+from backend.services.user_service import login_user as login_user_service
 
 
 @pytest.fixture(scope="session")
@@ -88,3 +93,28 @@ def runner(app):
         FlaskCliRunner: A test CLI runner.
     """
     return app.test_cli_runner()
+
+
+@pytest.fixture
+def login_user(db_session):
+    """Creates a test user with a hashed password and logs them in."""
+    username = "testuser"
+    password = "secret123"
+
+    user = User(
+        username=username,
+        email="test@example.com",
+        password_hash=generate_password_hash(password),
+        first_name="Test",
+        last_name="User",
+        created_at=datetime.utcnow(),
+        last_active=datetime.utcnow(),
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    # Call your service's login function to verify login works
+    result = login_user_service(username=username, password=password)
+    assert result["success"], "Login failed in fixture setup"
+
+    return result["user"]

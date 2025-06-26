@@ -8,7 +8,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from backend.database import db
-from backend.models import Project, Task, Notification, UserTeam
+from backend.models import Project, Task, UserTeam
 from backend.models.project import ProjectStatus, ProjectType
 from backend.services.notification_service import notify_project_created
 
@@ -268,7 +268,7 @@ def export_project_info_pdf(data):
     """
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
-    y = 750     # Position
+    y = 750  # Position
     x_indent = 30
     min_y = 50
 
@@ -277,7 +277,7 @@ def export_project_info_pdf(data):
     y -= 20
 
     for project in data.get("own_projects", []):
-        if y < min_y:       # New Site if full
+        if y < min_y:  # New Site if full
             c.showPage()
             y = 750
         c.drawString(

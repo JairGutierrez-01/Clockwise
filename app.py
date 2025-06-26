@@ -7,7 +7,7 @@ from flask import Flask, render_template, redirect, url_for, session
 from flask import jsonify
 from flask import request
 from flask_jwt_extended import JWTManager
-from flask_login import LoginManager, login_user, logout_user
+from flask_login import LoginManager, logout_user
 from flask_login import current_user
 from flask_login import login_required
 from flask_mail import Mail
@@ -77,7 +77,6 @@ Flask-Login User Loader:
 - Loads a user by user ID for session management
 
 Example routes:
-- `/login`: User login page and submission
 - `/dashboard`: Main user dashboard page
 - `/projects`: List of user and team projects
 - `/notifications`: List and management of user notifications
@@ -193,33 +192,6 @@ def get_calendar_due_dates():
     return jsonify(calendar_due_dates())
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    """
-    User login endpoint. Handles GET and POST requests.
-
-    GET: Render login page.
-    POST: Authenticate user with username and password.
-          On success, log in the user and redirect to dashboard.
-          On failure, show login page with error message.
-
-    Returns:
-        str or Response: Rendered template or redirect response.
-    """
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        user = User.query.filter_by(username=username).first()
-
-        if user and user.password == password:
-            login_user(user)
-            return redirect(url_for("dashboard"))
-        else:
-            return render_template("loginpage.html", error="Invalid credentials")
-
-    return render_template("loginpage.html")
-
-
 @app.route("/dashboard")
 def dashboard():
     """
@@ -319,14 +291,6 @@ def logout():
         return jsonify({"success": True}), 200
 
     return redirect(url_for("home"))
-
-
-"""
-@app.route("/logout", methods=["POST"])
-def logout():
-    logout_user()
-    return "", 204
-"""
 
 
 @app.context_processor
@@ -434,7 +398,7 @@ def get_calendar_worked_time():
 @app.before_request
 def update_last_active():
     if current_user.is_authenticated:
-        now = datetime.utcnow()
+        now = datetime.now()
         if not current_user.last_active or now - current_user.last_active > timedelta(
             minutes=1
         ):

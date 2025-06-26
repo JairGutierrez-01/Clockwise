@@ -31,13 +31,13 @@ class Project(db.Model):
         type (enum): Project Type (TeamProject, SoloProject).
         is_course (bool): Statement if Project is a Course or not.
         credit_points (int, optional): The credit points of the course, if it is a course.
-        is_active (bool): Statement if Project is active or not.
+        status (bool): Statement if project is active or not.
         user_id (int): Foreign key of the user the project belongs to.
         team_id (int): Foreign key of the team the project belongs to.
-        task (relationship): The tasks the project contains.
+        tasks (relationship): The tasks the project contains.
         team (relationship): The team the project belongs to.
         user (relationship): The user the project belongs to.
-        notification (relationship): The notification of the project.
+        notifications (relationship): The notification of the project.
     """
 
     __tablename__ = "projects"

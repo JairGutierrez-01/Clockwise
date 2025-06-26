@@ -1,5 +1,4 @@
 import csv
-import numbers
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -20,6 +19,11 @@ from backend.services.analysis_service import (
 
 @pytest.fixture
 def sample_time_entries():
+    """Returns a list of sample time entries.
+
+    Returns:
+        list[dict]: List of dictionaries each containing start, end, task, and project keys.
+    """
     now = datetime.now()
     return [
         {
@@ -39,6 +43,11 @@ def sample_time_entries():
 
 @pytest.fixture
 def sample_tasks():
+    """Returns a list of sample tasks.
+
+    Returns:
+        list[dict]: List of dictionaries each containing project, status, title, and due_date keys.
+    """
     return [
         {
             "project": "Test Project A",
@@ -58,16 +67,37 @@ def sample_tasks():
 
 @pytest.fixture
 def sample_target():
+    """Returns sample target hours per project.
+
+    Returns:
+        dict[str, float]: Mapping of project name to target hours.
+    """
     return {"Test Project A": 10.0, "Other Project": 5.0}
 
 
 def test_export_time_entries_pdf_returns_bytes(sample_time_entries):
+    """Test that export_time_entries_pdf returns valid PDF bytes.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+
+    Asserts:
+        The result is bytes and has a reasonable length (>100 bytes).
+    """
     pdf_data = export_time_entries_pdf(sample_time_entries)
     assert isinstance(pdf_data, bytes)
     assert len(pdf_data) > 100
 
 
 def test_export_time_entries_csv_contains_header_and_rows(sample_time_entries):
+    """Test that CSV export contains correct headers and rows.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+
+    Asserts:
+        CSV has correct header and includes all rows.
+    """
     csv_text = export_time_entries_csv(sample_time_entries)
     lines = csv_text.strip().splitlines()
     assert lines[0] == "Start,End,Task,Project"
@@ -79,6 +109,15 @@ def test_export_time_entries_csv_contains_header_and_rows(sample_time_entries):
 
 
 def test_filter_time_entries_by_date(sample_time_entries):
+    """Test filtering time entries by date range.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+
+    Asserts:
+        Entries within range are returned.
+        Entries outside range return empty list.
+    """
     start_date = datetime.now() - timedelta(days=2)
     end_date = datetime.now()
     filtered = filter_time_entries_by_date(sample_time_entries, start_date, end_date)
@@ -92,6 +131,16 @@ def test_filter_time_entries_by_date(sample_time_entries):
 
 
 def test_aggregate_weekly_time(sample_time_entries):
+    """Test weekly time aggregation returns correct structure and data.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+
+    Asserts:
+        Returns a defaultdict.
+        Each project has a list of 7 daily hour values.
+        All hours are numeric.
+    """
     week_start = datetime.now() - timedelta(days=datetime.now().weekday())
     result = aggregate_weekly_time(sample_time_entries, week_start)
     assert isinstance(result, defaultdict)
@@ -103,6 +152,15 @@ def test_aggregate_weekly_time(sample_time_entries):
 
 
 def test_calendar_events(sample_time_entries):
+    """Test that calendar events are correctly generated from time entries.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+
+    Asserts:
+        Returns a list of events.
+        Each event contains title, start, and end keys.
+    """
     events = calendar_events(sample_time_entries)
     assert isinstance(events, list)
     assert "title" in events[0]
@@ -111,6 +169,15 @@ def test_calendar_events(sample_time_entries):
 
 
 def test_progress_per_project(sample_tasks):
+    """Test that progress per project is calculated between 0 and 1.
+
+    Args:
+        sample_tasks (list[dict]): Sample tasks.
+
+    Asserts:
+        Returns a dict with project keys.
+        Progress values are within [0, 1].
+    """
     progress = progress_per_project(sample_tasks)
     assert isinstance(progress, dict)
     assert "Test Project A" in progress
@@ -118,6 +185,16 @@ def test_progress_per_project(sample_tasks):
 
 
 def test_actual_target_comparison(sample_time_entries, sample_target):
+    """Test that actual vs target data is correctly structured and typed.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+        sample_target (dict[str, float]): Target hours per project.
+
+    Asserts:
+        Returns dict with 'actual' and 'target' per project.
+        Values are numeric.
+    """
     comparison = actual_target_comparison(sample_time_entries, sample_target)
     assert isinstance(comparison, dict)
     for proj, vals in comparison.items():
@@ -128,6 +205,15 @@ def test_actual_target_comparison(sample_time_entries, sample_target):
 
 
 def test_tasks_in_month(sample_tasks):
+    """Test that task filtering by month returns correct subset.
+
+    Args:
+        sample_tasks (list[dict]): Sample tasks.
+
+    Asserts:
+        Tasks starting in specified month are returned.
+        Tasks outside month return empty list.
+    """
     now = datetime.now()
     sample_tasks[0]["start_date"] = now
     filtered = tasks_in_month(sample_tasks, now.year, now.month)
@@ -137,6 +223,16 @@ def test_tasks_in_month(sample_tasks):
 
 
 def test_aggregate_time_by_day_project_task(sample_time_entries):
+    """Test detailed aggregation by day, project, and task.
+
+    Args:
+        sample_time_entries (list[dict]): Sample time entries.
+
+    Asserts:
+        Returns a defaultdict keyed by (project, task).
+        Each entry is a list of 7 daily hour values.
+        All hours are numeric.
+    """
     week_start = datetime.now() - timedelta(days=datetime.now().weekday())
     agg = aggregate_time_by_day_project_task(sample_time_entries, week_start)
     assert isinstance(agg, defaultdict)
@@ -144,4 +240,6 @@ def test_aggregate_time_by_day_project_task(sample_time_entries):
         assert isinstance(project, str)
         assert isinstance(task, str)
         assert len(hours_list) == 7
+        import numbers
+
         assert all(isinstance(h, numbers.Real) for h in hours_list)

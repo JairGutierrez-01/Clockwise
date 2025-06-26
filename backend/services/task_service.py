@@ -10,7 +10,7 @@ from backend.models.time_entry import TimeEntry
 from backend.services.notification_service import (
     notify_task_assigned,
     notify_task_unassigned,
-    notify_task_deleted
+    notify_task_deleted,
 )
 from backend.services.project_service import update_total_duration_for_project
 
@@ -281,10 +281,10 @@ def get_tasks_without_time_entries(user_id):
     """
     subquery = db.session.query(TimeEntry.task_id).distinct()
 
-    tasks = (Task.query.filter(
-        ~Task.task_id.in_(subquery))
-        .filter((Task.user_id == user_id) | (Task.member_id == user_id)
-        ).all()
+    tasks = (
+        Task.query.filter(~Task.task_id.in_(subquery))
+        .filter((Task.user_id == user_id) | (Task.member_id == user_id))
+        .all()
     )
 
     return tasks
@@ -320,7 +320,7 @@ def get_unassigned_tasks(user_id):
     Returns:
         list: List of Task objects where project_id is None.
     """
-    return Task.query.filter(Task.project_id == None, Task.user_id == user_id).all()
+    return Task.query.filter(Task.project_id is None, Task.user_id == user_id).all()
 
 
 def update_total_duration_for_task(task_id):

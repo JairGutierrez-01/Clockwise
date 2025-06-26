@@ -1,6 +1,7 @@
 import pytest
 
-from backend.models import User, Team, Project, UserTeam, ProjectType, ProjectStatus
+from backend.models import User, Team, Project, UserTeam
+from backend.models.project import ProjectType, ProjectStatus
 
 
 @pytest.fixture

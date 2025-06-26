@@ -12,13 +12,13 @@
 
 body.dark-mode {
   background: linear-gradient(
-    to bottom,
-    #081520 0%,
-    #0b1c2c 30%,
-    #12395f 70%,
-    #1e4f85 100%
-  );
-  background-attachment: fixed;
+      to bottom,
+      #081520 0%,
+      #0b1c2c 30%,
+      #12395f 70%,
+      #1e4f85 100%
+    )
+    fixed;
   background-size: cover;
   color: #e0e0e0;
   --foreground-color: #e0e0e0;

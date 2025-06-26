@@ -5,13 +5,39 @@ from backend.models import Category, User
 
 @pytest.fixture
 def setup_category_data(db_session):
-    user = User(username="catuser", email="cat@example.com", password_hash="secret")
+    """Set up a test user for category-related tests.
+
+    Args:
+        db_session: SQLAlchemy database session fixture.
+
+    Returns:
+        User: A user instance added to the database.
+    """
+    user = User(
+        username="Joe",
+        email="joe@example.com",
+        password_hash="secret",
+        first_name="Joe",
+        last_name="Doe",
+    )
     db_session.add(user)
     db_session.commit()
     return user
 
 
 def test_api_get_categories(client, db_session, setup_category_data, login_user):
+    """Test retrieving categories via API endpoint.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code is 200.
+        - Response contains the created category.
+    """
     user = setup_category_data
     db_session.add(Category(user_id=user.user_id, name="Study"))
     db_session.commit()
@@ -25,6 +51,18 @@ def test_api_get_categories(client, db_session, setup_category_data, login_user)
 
 
 def test_api_create_category(client, db_session, setup_category_data, login_user):
+    """Test creating a new category via API POST.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Response status code is 201 (Created).
+        - Category is added to the database.
+    """
     user = setup_category_data
     login_user(user)
 
@@ -34,6 +72,17 @@ def test_api_create_category(client, db_session, setup_category_data, login_user
 
 
 def test_api_create_category_missing_name(client, setup_category_data, login_user):
+    """Test API category creation fails without a name.
+
+    Args:
+        client: Flask test client fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Response status code is 400 (Bad Request).
+        - Error message about missing category name is returned.
+    """
     user = setup_category_data
     login_user(user)
 
@@ -43,6 +92,18 @@ def test_api_create_category_missing_name(client, setup_category_data, login_use
 
 
 def test_list_categories(client, db_session, setup_category_data, login_user):
+    """Test that categories page lists user categories.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code 200.
+        - Category name appears in response data.
+    """
     user = setup_category_data
     login_user(user)
     db_session.add(Category(user_id=user.user_id, name="Uni"))
@@ -54,6 +115,18 @@ def test_list_categories(client, db_session, setup_category_data, login_user):
 
 
 def test_view_category_success(client, db_session, setup_category_data, login_user):
+    """Test viewing a specific category by ID.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code 200.
+        - Category name appears in response data.
+    """
     user = setup_category_data
     login_user(user)
     cat = Category(user_id=user.user_id, name="Books")
@@ -66,12 +139,33 @@ def test_view_category_success(client, db_session, setup_category_data, login_us
 
 
 def test_view_category_not_found(client, setup_category_data, login_user):
+    """Test requesting a non-existent category returns 404.
+
+    Args:
+        client: Flask test client fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code is 404.
+    """
     login_user(setup_category_data)
     res = client.get("/category/999999")
     assert res.status_code == 404
 
 
 def test_create_category_route_post(client, setup_category_data, login_user):
+    """Test category creation via form POST route.
+
+    Args:
+        client: Flask test client fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code 200 after redirect.
+        - New category exists in the database.
+    """
     user = setup_category_data
     login_user(user)
 
@@ -83,6 +177,18 @@ def test_create_category_route_post(client, setup_category_data, login_user):
 
 
 def test_edit_category_route_post(client, db_session, setup_category_data, login_user):
+    """Test editing a category via POST.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code 200 after redirect.
+        - Category name is updated in the database.
+    """
     user = setup_category_data
     login_user(user)
     category = Category(user_id=user.user_id, name="Old")
@@ -99,6 +205,18 @@ def test_edit_category_route_post(client, db_session, setup_category_data, login
 
 
 def test_edit_category_route_get(client, db_session, setup_category_data, login_user):
+    """Test accessing the edit category form via GET.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code 200.
+        - Category name appears in form.
+    """
     user = setup_category_data
     login_user(user)
     category = Category(user_id=user.user_id, name="EditMe")
@@ -111,6 +229,18 @@ def test_edit_category_route_get(client, db_session, setup_category_data, login_
 
 
 def test_delete_category_route(client, db_session, setup_category_data, login_user):
+    """Test deleting a category via POST.
+
+    Args:
+        client: Flask test client fixture.
+        db_session: Database session fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code 200 after redirect.
+        - Category no longer exists in the database.
+    """
     user = setup_category_data
     login_user(user)
     category = Category(user_id=user.user_id, name="DeleteMe")
@@ -123,6 +253,16 @@ def test_delete_category_route(client, db_session, setup_category_data, login_us
 
 
 def test_delete_category_not_found(client, setup_category_data, login_user):
+    """Test deleting a non-existent category returns 404.
+
+    Args:
+        client: Flask test client fixture.
+        setup_category_data: Fixture that provides a test user.
+        login_user: Helper to log in the user.
+
+    Asserts:
+        - Status code is 404.
+    """
     login_user(setup_category_data)
     res = client.post("/category/delete/999999")
     assert res.status_code == 404

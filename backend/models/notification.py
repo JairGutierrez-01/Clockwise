@@ -11,7 +11,7 @@ class Notification(db.Model):
         id (int): Identifier of the Notification, also primary key.
         user_id (int): Foreign key of the user the Notification belongs to.
         project_id (int): Foreign key of the project the Notification belongs to.
-        name (str): The message of the Notification.
+        message (str): The message of the Notification.
         created_at (datetime): The timestamp when the Notification was created.
         type (str): The type of the Notification.
         is_read (bool): Statement if Notification is read or not.

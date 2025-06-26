@@ -43,7 +43,7 @@ def export_time_entries_pdf(time_entries):
             y = height - 40
         c.drawString(30, y, entry["start"].strftime("%Y-%m-%d %H:%M"))
         c.drawString(150, y, entry["end"].strftime("%Y-%m-%d %H:%M"))
-        c.drawString(270, y, entry["task"][:25])  # Max 25 Zeichen
+        c.drawString(270, y, entry["task"][:25])  # Max. 25 Zeichen
         c.drawString(400, y, entry["project"] or "")
         y -= line_height
 
@@ -166,7 +166,7 @@ def filter_time_entries_by_date(time_entries, start_date, end_date):
     Filter time entries to those between start_date and end_date inclusive.
 
     Args:
-        time_entries (list of dict): List of time entry dicts with 'start' key.
+        time_entries (list of dict): List of time entry dicts with the 'start' key.
         start_date (datetime): Start datetime for filtering.
         end_date (datetime): End datetime for filtering.
 
@@ -396,28 +396,6 @@ def calendar_worked_time():
             )
 
     return events
-
-
-def worked_time_today():
-    """
-    Calculates the total worked time (in hours) for today.
-
-    Returns:
-        float: Total hours worked today.
-    """
-    time_entries = load_time_entries()
-    if not time_entries:
-        return 0.0
-
-    today = datetime.today().date()
-    total_seconds = 0
-
-    for entry in time_entries:
-        if entry["start"].date() == today:
-            duration = (entry["end"] - entry["start"]).total_seconds()
-            total_seconds += duration
-
-    return round(total_seconds / 3600, 2)
 
 
 def aggregate_time_by_day_project_task(entries, week_start):

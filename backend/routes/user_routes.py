@@ -189,8 +189,20 @@ def profile():
 @auth_bp.route("/resend-reset-email", methods=["POST"])
 def resend_reset_email():
     """
-    Handle AJAX resend reset email requests.
-    Returns a JSON response with success or error message.
+     Handles a POST request to resend the password reset email.
+
+    This route expects a JSON payload containing an email address.
+    If the email is valid and known, a reset email will be resent.
+
+    Returns:
+        Response: A JSON object with:
+            - success (bool): Indicates whether the resend was successful.
+            - message (str, optional): Success message.
+            - error (str, optional): Error message if something went wrong.
+
+    Raises:
+        400: If the email is missing from the request body.
+        500: If the resend fails for other reasons (e.g. unknown email).
     """
     data = request.get_json() or {}
     email = data.get("email")

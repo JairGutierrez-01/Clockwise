@@ -11,7 +11,7 @@ class Config:
     """
     Configuration class for Flask application settings.
 
-    Loads environment variables from a .env file and provides
+    Loads environment variables from an .env file and provides
     default values if not set.
 
     Attributes:

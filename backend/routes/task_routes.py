@@ -26,10 +26,6 @@ def get_tasks():
     """
     Return a list of tasks, optionally filtered by project_id or unassigned status.
 
-    Args:
-        project_id (int, optional): Filter tasks by project.
-        unassigned (bool, optional): Return only tasks without project.
-
     Returns:
         JSON: List of task objects.
     """

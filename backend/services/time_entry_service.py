@@ -7,7 +7,6 @@ from backend.services.project_service import update_total_duration_for_project
 from backend.services.task_service import update_total_duration_for_task
 
 
-
 def create_time_entry(
     user_id,
     task_id,
@@ -86,10 +85,16 @@ def get_time_entries_by_task(task_id):
     """
     return TimeEntry.query.filter_by(task_id=task_id).all()
 
+
 def parse_datetime_flexibly(value):
     if not isinstance(value, str):
         return value
-    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M"):
+    for fmt in (
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M",
+        "%d.%m.%Y %H:%M:%S",
+        "%d.%m.%Y %H:%M",
+    ):
         try:
             return datetime.strptime(value, fmt)
         except ValueError:
@@ -296,7 +301,7 @@ def get_tasks_with_time_entries():
     # Alle gültigen (nicht-null) Task-IDs mit TimeEntries
     task_ids_with_entries = (
         db.session.query(TimeEntry.task_id)
-        .filter(TimeEntry.task_id != None)
+        .filter(TimeEntry.task_id is not None)
         .distinct()
         .all()
     )
@@ -340,8 +345,8 @@ def get_latest_time_entries_for_user(user_id, limit=10):
     """
     return (
         TimeEntry.query.filter_by(user_id=user_id)
-        #did this so when the time entry page does not crash
-        #when opened and a new entry is still tracking with no end time
+        # did this so when the time entry page does not crash
+        # when opened and a new entry is still tracking with no end time
         .filter(TimeEntry.end_time.isnot(None))
         .order_by(TimeEntry.start_time.desc())
         .limit(limit)

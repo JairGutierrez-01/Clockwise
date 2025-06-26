@@ -26,6 +26,7 @@ class User(db.Model, UserMixin):
         member_tasks (relationship): Tasks assigned to the user as a team member.
         time_entries (relationship): The time entries related to the user.
         notifications (relationship): The notifications related to the user.
+        categories (relationship): The categories the user has created.
     """
 
     __tablename__ = "users"
@@ -56,6 +57,12 @@ class User(db.Model, UserMixin):
     categories = db.relationship("Category", back_populates="user")
 
     def get_id(self):
+        """
+        Gets the string representation of the user ID.
+
+        Returns:
+            str: The user ID as a string.
+        """
         return str(self.user_id)
 
     def __repr__(self) -> str:

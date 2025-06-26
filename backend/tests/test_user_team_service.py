@@ -33,7 +33,8 @@ def test_add_member_success(db_session, setup_test_data, monkeypatch):
     user, team = setup_test_data
 
     monkeypatch.setattr(
-        "backend.services.notifications.notify_user_added_to_team", lambda *a, **k: None
+        "backend.services.notification_service.notify_user_added_to_team",
+        lambda *a, **k: None,
     )
 
     result = add_member(user.username, team.name, "member")
@@ -67,7 +68,8 @@ def test_add_member_already_member(db_session, setup_test_data, monkeypatch):
     """Test adding a user who is already a member of the team."""
     user, team = setup_test_data
     monkeypatch.setattr(
-        "backend.services.notifications.notify_user_added_to_team", lambda *a, **k: None
+        "backend.services.notification_service.notify_user_added_to_team",
+        lambda *a, **k: None,
     )
 
     add_member(user.username, team.name, "member")

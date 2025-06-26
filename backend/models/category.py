@@ -3,12 +3,14 @@ from backend.database import db
 
 class Category(db.Model):
     """
-    Represents the categories the tasks could have.
+    Represents a task category in the system.
 
     Attributes:
-        category_id (int): Primary key identifying the category.
+        category_id (int): The unique identifier for the category (primary key).
         name (str): The name of the category.
-        task (relationship): Defines the category of a task.
+        user_id (int): Foreign key linking to the user who owns this category.
+        tasks (List[Task]): The list of tasks assigned to this category.
+        user (User): The user who owns this category.
     """
 
     __tablename__ = "categories"

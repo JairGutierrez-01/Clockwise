@@ -40,7 +40,7 @@ def test_create_team(db_session):
     db_session.commit()
 
     assert team.team_id is not None
-    assert team.name == ("SEP Team")
+    assert team.name == "SEP Team"
 
 
 def test_team_is_valid(db_session):

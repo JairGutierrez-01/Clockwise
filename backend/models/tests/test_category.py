@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from backend.database import Base
-from backend.models import Category
+from backend.models import Category, User
 
 
 @pytest.fixture(scope="function")
@@ -35,9 +35,19 @@ def test_create_category(db_session):
     Args:
         db_session (Session): The database session fixture.
     """
-    category = Category(name="Urgent")
+    user = User(
+        username="catuser",
+        email="cat@test.com",
+        password_hash="123",
+        first_name="Test",
+        last_name="User",
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    category = Category(name="Urgent", user_id=user.user_id)
     db_session.add(category)
     db_session.commit()
 
     assert category.category_id is not None
-    assert category.name == "Urgent"
+    assert category.user_id == user.user_id

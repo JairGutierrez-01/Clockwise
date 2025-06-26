@@ -186,9 +186,6 @@ def api_projects():
     """
     Handle project creation and listing.
 
-    Args:
-        None
-
     Returns:
         dict or tuple: List of user projects or response with project ID or error.
     """
@@ -395,6 +392,8 @@ def export_projects_csv():
     csv_text = export_project_info_csv(projects_data)
 
     response = make_response(csv_text)
-    response.headers["Content-Disposition"] = "attachment; filename=projects.csv"   # download of csv file
+    response.headers["Content-Disposition"] = (
+        "attachment; filename=projects.csv"  # download of csv file
+    )
     response.headers["Content-Type"] = "text/csv"
     return response

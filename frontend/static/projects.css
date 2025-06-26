@@ -38,13 +38,13 @@ body.dark-mode {
   --color-card-bg: #173044;
   --color-card-shadow: rgba(0, 0, 0, 0.5);
   background: linear-gradient(
-    to bottom,
-    #081520 0%,
-    #0b1c2c 30%,
-    #12395f 70%,
-    #1e4f85 100%
-  );
-  background-attachment: fixed;
+      to bottom,
+      #081520 0%,
+      #0b1c2c 30%,
+      #12395f 70%,
+      #1e4f85 100%
+    )
+    fixed;
   background-size: cover;
   color: var(--color-fg);
 }
@@ -474,7 +474,6 @@ select:disabled {
   color: #aaa;
   cursor: not-allowed;
 }
-
 
 .fc-event-title,
 .fc-event-time {

@@ -7,9 +7,8 @@ from backend.models import (
     Team,
     Project,
     Task,
-    ProjectStatus,
-    ProjectType,
 )
+from backend.models.project import ProjectType, ProjectStatus
 from backend.services.project_service import (
     calculate_time_limit_from_credits,
     create_project,

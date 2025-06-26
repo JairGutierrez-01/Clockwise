@@ -4,7 +4,7 @@ mail = Mail()
 
 
 def send_forgot_password(email, reset_url):
-    """Send a password reset email to the user.
+    """Send a password-reset email to the user.
 
     Args:
         email (str): The recipient's email address.

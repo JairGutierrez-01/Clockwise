@@ -18,13 +18,13 @@ body {
 /* dark mode */
 body.dark-mode {
   background: linear-gradient(
-    to bottom,
-    #081520 0%,
-    #0b1c2c 30%,
-    #12395f 70%,
-    #1e4f85 100%
-  );
-  background-attachment: fixed;
+      to bottom,
+      #081520 0%,
+      #0b1c2c 30%,
+      #12395f 70%,
+      #1e4f85 100%
+    )
+    fixed;
   background-size: cover;
   color: #ffffff;
 }
@@ -90,8 +90,8 @@ body.dark-mode {
 
 /* light mode */
 body.light-mode {
-  background: linear-gradient(to bottom, #f3f6f9 0%, #f8fafc 50%, #ffffff 100%);
-  background-attachment: fixed;
+  background: linear-gradient(to bottom, #f3f6f9 0%, #f8fafc 50%, #ffffff 100%)
+    fixed;
   background-size: cover;
   color: #0b1c2c;
 }
