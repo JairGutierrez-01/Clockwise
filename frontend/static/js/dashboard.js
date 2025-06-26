@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
 /**
  * Ensures the presence of the team activity box in the dashboard.
  * If it doesn't exist, it creates and appends one dynamically.
- *
+ * @returns {HTMLElement|null}
  * Returns:
  *   - The DOM element for the team box (new or existing)
  *   - null if no valid parent container is found
@@ -184,6 +184,11 @@ function ensureTeamBoxExists() {
  * Returns:
  *   - Number between 0 and 100 representing the percentage of completed tasks
  *   - Returns 0 if the project has no tasks or an error occurs
+ */
+/**
+ * Berechnet den Fortschritt eines Projekts anhand erledigter Aufgaben.
+ * @param {number} projectId - ID des Projekts
+ * @returns {Promise<number>} - Fortschritt in Prozent (0–100)
  */
 async function calculateProjectProgress(projectId) {
   try {

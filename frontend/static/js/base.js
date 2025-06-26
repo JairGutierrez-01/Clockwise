@@ -1,4 +1,10 @@
-// Ping alle 60 Sekunden an den Server senden, um last_active zu aktualisieren
+/**
+ * Sendet alle 60 Sekunden einen Ping an den Server, um den Benutzerstatus (last_active) aktuell zu halten.
+ * Verwendet `fetch()` mit POST-Methode und gleichen Origin-Credentials.
+ *
+ * @function
+ * @returns {void}
+ */
 setInterval(() => {
   fetch("/ping", {
     method: "POST",
