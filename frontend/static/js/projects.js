@@ -1,38 +1,61 @@
-// static/projects.js
-
-// Convert Date to match Frontend input with backend expectations*/
+/**
+ * Konvertiert ein ISO-Datum (yyyy-mm-dd) in das vom Backend erwartete Format (dd.mm.yyyy).
+ * @param {string} isoDateStr - Ein Datum im ISO-Format (z.B. "2025-06-26").
+ * @returns {string|null} Das Datum im Format "dd.mm.yyyy" oder null, wenn kein Datum übergeben wurde.
+ */
 function formatDateForBackend(isoDateStr) {
   if (!isoDateStr) return null;
+
   const [year, month, day] = isoDateStr.split("-");
   return `${day}.${month}.${year}`;
 }
 
+/**
+ * Formatiert ein Datum für ein HTML-Input-Feld vom Typ "date".
+ * @param {string|Date} dateString - Ein Datum im beliebigen gültigen Format.
+ * @returns {string} Ein String im Format "yyyy-mm-dd" zur Verwendung im Input-Feld.
+ */
 function formatDateForInputField(dateString) {
   const date = new Date(dateString);
-  return date.toISOString().split("T")[0]; // yyyy-mm-dd
+  return date.toISOString().split("T")[0];  // yyyy-mm-dd
 }
 
+/**
+ * Lädt alle Tasks zu einem bestimmten Projekt vom Server.
+ * @param {number} projectId - Die ID des Projekts, für das Tasks geladen werden sollen.
+ * @returns {Promise<Object[]>} Eine Liste von Task-Objekten oder ein leerer Array bei Fehler.
+ */
 async function fetchTasks(projectId) {
   try {
     const response = await fetch(`/api/tasks?project_id=${projectId}`);
+
     if (!response.ok) {
-      throw new Error("Fehler beim Laden der Aufgaben");
+      throw new Error("Error occured while loading tasks");
     }
+
     const tasks = await response.json();
     return tasks;
   } catch (error) {
-    console.error("fetchTasks Fehler:", error);
+    console.error("fetchtasks:", error);
     return [];
   }
 }
 
+/**
+ * Lädt alle Kategorien vom Server und füllt den Vorschlags-Dropdown (datalist).
+ * @returns {Promise<void>}
+ */
 async function loadCategories() {
   try {
     const res = await fetch("/api/categories");
-    if (!res.ok) throw new Error("Fehler beim Laden der Kategorien");
-    const data = await res.json();
 
+    if (!res.ok) {
+      throw new Error("Error occured while loading categories");
+    }
+
+    const data = await res.json();
     const datalist = document.getElementById("category-suggestions");
+
     datalist.innerHTML = "";
 
     data.categories.forEach((cat) => {
@@ -43,15 +66,16 @@ async function loadCategories() {
 
     window.ALL_CATEGORIES = data.categories;
   } catch (err) {
-    console.error("Kategorie-Ladevorgang fehlgeschlagen:", err);
+    console.error("Error occured while loading category:", err);
   }
 }
 
-// ============================================================================
-// Sets up event listeners, state management, and UI update routines after DOM load.
-// ============================================================================
+/**
+ * Initialisiert die Projekt- und Taskformulare sowie die Teamzuweisungslogik beim Laden des DOMs.
+ * Richtet Event Listener ein und aktualisiert die Sichtbarkeit des Team-Auswahlfelds basierend auf dem Projekttyp.
+ */
 document.addEventListener("DOMContentLoaded", () => {
-  // --- DOM Elements ---
+  // --- DOM-Elemente für das Task-Formular ---
   const taskModal = document.getElementById("task-form-modal");
   const taskForm = document.getElementById("task-form");
   const taskNameInput = document.getElementById("task-name");
@@ -61,18 +85,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelTaskBtn = document.getElementById("cancel-task-btn");
   const projectSelect = document.getElementById("task-project");
   const taskStatusSelect = document.getElementById("task-status");
+
+  // Projektbezogene globale Daten
   let projects = [];
   let allTeamsData = [];
+
+  // --- Projektformular: Auswahlfelder ---
   const typeSelect = document.getElementById("project-type");
   const statusSelect = document.getElementById("project-status");
 
-  //when selecting TeamProject
+  // --- Teamzuweisung bei TeamProject ---
   const teamSelectLabel = document.getElementById("team-select-label");
   const teamSelect = document.getElementById("project-team");
 
+  /**
+   * Füllt das Team-Dropdown mit allen verfügbaren Teams, bei denen der Nutzer Admin ist.
+   * @returns {void}
+   */
   function populateTeamOptions() {
     const adminTeams = allTeamsData.filter((t) => t.role === "admin");
     teamSelect.innerHTML = '<option value="">Select Team</option>';
+
     adminTeams.forEach((t) => {
       const opt = document.createElement("option");
       opt.value = t.team_id;
@@ -81,6 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  /**
+   * Zeigt oder versteckt das Team-Auswahlfeld je nach gewähltem Projekttyp.
+   * @returns {void}
+   */
   function toggleTeamPicker() {
     if (typeSelect.value === "TeamProject") {
       teamSelect.classList.remove("hidden");
@@ -93,8 +130,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Event Listener für die Auswahl des Projekttyps
   typeSelect.addEventListener("change", toggleTeamPicker);
+
+  // Initialzustand setzen beim ersten Laden
   toggleTeamPicker();
+
   // Check if user has admin rights for a project
   function userHasProjectAdminRights(project) {
     // damit Admins unabhängig vom Task-Owner Bearbeitungsrechte haben
