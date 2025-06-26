@@ -30,7 +30,7 @@ def get_user_teams():
     Returns:
         Response: JSON with teams and current user info or error.
     """
-    teams = get_user_teams_service(current_user.user_id)
+    teams = get_user_teams_service(current_user.user_id)        # Fetch all teams where current user is member
     return jsonify(
         {
             "current_user": {
@@ -127,6 +127,7 @@ def add_team_member(team_id):
         if not raw_user_input:
             return jsonify({"error": "No user_id or username provided"}), 400
 
+        # Resolve user_id via username
         if str(raw_user_input).isdigit():
             new_member_id = int(raw_user_input)
         else:
@@ -148,6 +149,7 @@ def add_team_member(team_id):
                 403,
             )
 
+        # Avoid duplicate memberships
         existing = UserTeam.query.filter_by(
             user_id=new_member_id, team_id=team_id
         ).first()

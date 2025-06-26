@@ -20,7 +20,7 @@ def get_user_teams(user_id):
         db.session.query(UserTeam)
         .filter_by(user_id=user_id)
         .join(Team)
-        .order_by(Team.created_at.desc())
+        .order_by(Team.created_at.desc())       # Most recently created teams first
         .all()
     )
 
@@ -45,7 +45,7 @@ def create_new_team(name, user_id):
     Returns:
         dict: Contains message and new team ID.
     """
-    new_team = Team(name=name.strip())
+    new_team = Team(name=name.strip())      # Trim whitespace to prevent duplicate-looking teams
     db.session.add(new_team)
     db.session.commit()
 
@@ -140,6 +140,7 @@ def delete_team_and_related(team_id):
     """
     projects = Project.query.filter_by(team_id=team_id).all()
     for project in projects:
+        # remove tasks before deleting project and team members
         Task.query.filter_by(project_id=project.project_id).delete()
 
     Project.query.filter_by(team_id=team_id).delete()

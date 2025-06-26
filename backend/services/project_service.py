@@ -57,8 +57,10 @@ def create_project(
     if is_course and credit_points:
         time_limit_hours = calculate_time_limit_from_credits(int(credit_points))
 
+    # import here, because otherwise error
     from backend.services.team_service import create_new_team
 
+    # Auto-create a team if project type is TeamProject and no team_id was given.
     if type == ProjectType.TeamProject and not team_id:
         team_payload = create_new_team(name=f"{name}", user_id=user_id)
         team_id = team_payload["team_id"]
@@ -140,6 +142,7 @@ def update_project(project_id, data):
                 project.time_limit_hours = calculate_time_limit_from_credits(int(value))
             elif key == "status":
                 project.status = ProjectStatus(value)
+            # Generic update for all other attributes
             setattr(project, key, value)
 
     db.session.commit()
@@ -265,7 +268,7 @@ def export_project_info_pdf(data):
     """
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
-    y = 750
+    y = 750     # Position
     x_indent = 30
     min_y = 50
 
@@ -274,7 +277,7 @@ def export_project_info_pdf(data):
     y -= 20
 
     for project in data.get("own_projects", []):
-        if y < min_y:
+        if y < min_y:       # New Site if full
             c.showPage()
             y = 750
         c.drawString(
@@ -391,6 +394,7 @@ def export_project_info_csv(data):
     )
 
     team_projects = data.get("team_projects") or []
+    # Prevent duplicate own projects if they appear also as team projects
     team_project_keys = {(p.get("name"), p.get("id")) for p in team_projects}
     own_projects = [
         p

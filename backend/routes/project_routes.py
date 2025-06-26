@@ -39,11 +39,13 @@ def create_project_route():
     if not current_user.is_authenticated:
         return redirect(url_for("login"))
 
+    # Only teams where the current user is admin
     admin_teams = (
         db.session.query(UserTeam)
         .filter_by(user_id=current_user.user_id, role="admin")
         .all()
     )
+    # dropdown of teams to select
     team_choices = [(ut.team.team_id, ut.team.name) for ut in admin_teams]
 
     if request.method == "POST":
@@ -217,6 +219,7 @@ def api_projects():
         except KeyError:
             return {"error": f"Unknown project type: {type_str}"}, 400
 
+        # prevent creating projects in unrelated teams
         if team_id:
             print(
                 f"Checking membership: user_id={current_user.user_id}, team_id={team_id}"
@@ -250,6 +253,7 @@ def api_projects():
             return {"project_id": result["project_id"]}, 200
         return {"error": result.get("error", "Project creation failed")}, 400
 
+    # fetch all team projects the user is involved in
     team_ids = [
         row.team_id
         for row in UserTeam.query.filter_by(user_id=current_user.user_id).all()
@@ -391,6 +395,6 @@ def export_projects_csv():
     csv_text = export_project_info_csv(projects_data)
 
     response = make_response(csv_text)
-    response.headers["Content-Disposition"] = "attachment; filename=projects.csv"
+    response.headers["Content-Disposition"] = "attachment; filename=projects.csv"   # download of csv file
     response.headers["Content-Type"] = "text/csv"
     return response
