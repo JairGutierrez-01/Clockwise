@@ -27,21 +27,20 @@ def create_time_entry(
         comment (str, optional): Optional comment.
 
     Returns:
-        dict: Success message or error if task already has an entry.
+        dict: Success message or error.
     """
-    # Parse provided date/time strings into datetime objects
+
     if start_time:
         start_time = parse_datetime_flexibly(start_time)
     if end_time:
         end_time = parse_datetime_flexibly(end_time)
 
     task = Task.query.get(task_id)
+    if not task:
+        return {"error": "Task not found"}
 
     if task.member_id is not None and task.member_id != user_id:
         return {"error": "You are not assigned to this task"}
-
-    if not task:
-        return {"error": "Task not found"}
 
     new_entry = TimeEntry(
         user_id=user_id,
@@ -51,8 +50,10 @@ def create_time_entry(
         duration_seconds=duration_seconds,
         comment=comment,
     )
+
     db.session.add(new_entry)
     db.session.commit()
+
     return {
         "success": True,
         "message": "Time entry created successfully",
@@ -60,58 +61,16 @@ def create_time_entry(
     }
 
 
-def get_time_entry_by_id(time_entry_id):
-    """
-    Retrieve a time entry by its ID.
-
-    Args:
-        time_entry_id (int): Time entry ID.
-
-    Returns:
-        TimeEntry or None: The found entry or None.
-    """
-    return TimeEntry.query.get(time_entry_id)
-
-
-def get_time_entries_by_task(task_id):
-    """
-    Retrieve all time entries assigned to a specific task.
-
-    Args:
-        task_id (int): ID of the task.
-
-    Returns:
-        list[TimeEntry]: All associated time entries.
-    """
-    return TimeEntry.query.filter_by(task_id=task_id).all()
-
-
-def parse_datetime_flexibly(value):
-    if not isinstance(value, str):
-        return value
-    for fmt in (
-        "%Y-%m-%d %H:%M:%S",
-        "%Y-%m-%d %H:%M",
-        "%d.%m.%Y %H:%M:%S",
-        "%d.%m.%Y %H:%M",
-    ):
-        try:
-            return datetime.strptime(value, fmt)
-        except ValueError:
-            continue
-    raise ValueError(f"Invalid datetime format: {value}")
-
-
 def update_time_entry(time_entry_id, **kwargs):
     """
-    Update fields of a time entry.
+    Update a time entry with provided fields.
 
     Args:
         time_entry_id (int): The ID of the time entry to update.
-        **kwargs: Fields to update (start_time, end_time, duration_seconds, comment).
+        **kwargs: Fields to update (e.g., start_time, end_time, duration_seconds, comment).
 
     Returns:
-        dict: Success or error.
+        dict: Success message or error.
     """
     entry = TimeEntry.query.get(time_entry_id)
     if not entry:
@@ -122,18 +81,13 @@ def update_time_entry(time_entry_id, **kwargs):
     if "end_time" in kwargs and kwargs["end_time"]:
         kwargs["end_time"] = parse_datetime_flexibly(kwargs["end_time"])
 
-    ALLOWED_TIME_ENTRY_FIELDS = [
-        "start_time",
-        "end_time",
-        "duration_seconds",
-        "comment",
-    ]
-
+    ALLOWED_TIME_ENTRY_FIELDS = ["start_time", "end_time", "duration_seconds", "comment"]
     for key, value in kwargs.items():
         if key in ALLOWED_TIME_ENTRY_FIELDS:
             setattr(entry, key, value)
 
     db.session.commit()
+
     return {
         "success": True,
         "message": "Time entry updated successfully",
@@ -149,23 +103,103 @@ def delete_time_entry(time_entry_id):
         time_entry_id (int): ID of the time entry to delete.
 
     Returns:
-        dict: Success or error message.
+        dict: Success message or error.
     """
     entry = TimeEntry.query.get(time_entry_id)
     if not entry:
         return {"error": "Time entry not found"}
 
-    task = entry.task  # Task merken, bevor der Entry gelöscht wird
+    related_task = entry.task
 
     db.session.delete(entry)
     db.session.commit()
 
-    # Wenn der Task leer und automatisch erstellt wurde → Task auch löschen
-    if task and task.created_from_tracking and not task.time_entries:
-        db.session.delete(task)
+    if related_task and related_task.created_from_tracking and not related_task.time_entries:
+        db.session.delete(related_task)
         db.session.commit()
 
-    return {"success": True, "message": "Time entry deleted successfully"}
+    return {
+        "success": True,
+        "message": "Time entry deleted successfully"}
+
+
+def get_time_entry_by_id(time_entry_id):
+    """
+    Retrieve a time entry by its ID.
+
+    Args:
+        time_entry_id (int): ID of the Time entry.
+
+    Returns:
+        TimeEntry or None: The corresponding entry or None.
+    """
+    return TimeEntry.query.get(time_entry_id)
+
+
+def get_time_entries_by_task(task_id):
+    """
+    Retrieve all time entries assigned to a specific task.
+
+    Args:
+        task_id (int): ID of the task.
+
+    Returns:
+        list[TimeEntry]: List of all associated time entries.
+    """
+    return TimeEntry.query.filter_by(task_id=task_id).all()
+
+
+def get_latest_time_entries_for_user(user_id, limit=10):
+    """
+    Retrieve the latest completed time entries for a given user.
+
+    Args:
+        user_id (int): ID of the user.
+        limit (int): Maximum number of entries to return.
+
+    Returns:
+        list[TimeEntry]: Sorted list of finished time entries sorted by start time descending.
+    """
+    return (
+        TimeEntry.query.filter_by(user_id=user_id)
+        .filter(TimeEntry.end_time.isnot(None))
+        .order_by(TimeEntry.start_time.desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def get_latest_project_time_entry_for_user(user_id):
+    """
+    Get the latest time entry for the user where the associated task is linked to a project.
+
+    Args:
+        user_id (int): The user's ID.
+
+    Returns:
+        dict or None: Dictionary containing time_entry, task, and project, or None if not found.
+    """
+
+    entry = (
+        TimeEntry.query.join(TimeEntry.task)
+        .filter(TimeEntry.user_id == user_id)
+        .filter(TimeEntry.end_time.isnot(None))
+        .filter(Task.project_id.isnot(None))
+        .order_by(TimeEntry.start_time.desc())
+        .first()
+    )
+
+    if not entry:
+        return None
+
+    task = entry.task
+    project = task.project if task else None
+
+    return {
+        "time_entry": entry,
+        "task": task,
+        "project": project,
+    }
 
 
 def start_time_entry(user_id, task_id, comment=None):
@@ -183,6 +217,8 @@ def start_time_entry(user_id, task_id, comment=None):
     task = Task.query.get(task_id)
     if not task:
         return {"error": "Task not found"}
+
+    # Check if there is already an active time entry for this task/user
     active_entry = TimeEntry.query.filter_by(
         task_id=task_id, user_id=user_id, end_time=None
     ).first()
@@ -197,6 +233,7 @@ def start_time_entry(user_id, task_id, comment=None):
     )
     db.session.add(new_entry)
     db.session.commit()
+
     return {
         "success": True,
         "message": "Time tracking started successfully",
@@ -225,7 +262,9 @@ def stop_time_entry(time_entry_id):
     if entry.start_time:
         current_duration = int((entry.end_time - entry.start_time).total_seconds())
         entry.duration_seconds = (entry.duration_seconds or 0) + current_duration
+
     db.session.commit()
+
     return {
         "success": True,
         "message": "Time tracking stopped successfully",
@@ -235,7 +274,7 @@ def stop_time_entry(time_entry_id):
 
 def pause_time_entry(time_entry_id):
     """
-    Pause a time entry by calculating current duration and clearing start_time.
+    Pause a time entry by calculating current duration and clearing start_time to indicate it is paused.
 
     Args:
         time_entry_id (int): ID of the time entry to pause.
@@ -255,7 +294,9 @@ def pause_time_entry(time_entry_id):
     current_duration = int((now - entry.start_time).total_seconds())
     entry.duration_seconds = (entry.duration_seconds or 0) + current_duration
     entry.start_time = None
+
     db.session.commit()
+
     return {
         "success": True,
         "message": "Time tracking paused successfully",
@@ -265,7 +306,7 @@ def pause_time_entry(time_entry_id):
 
 def resume_time_entry(time_entry_id):
     """
-    Resume a paused time entry by setting a new start time.
+    Resume a paused time entry by setting a new start_time.
 
     Args:
         time_entry_id (int): ID of the paused time entry.
@@ -280,38 +321,14 @@ def resume_time_entry(time_entry_id):
         return {"error": "Time entry is already running"}
 
     entry.start_time = datetime.now()
+
     db.session.commit()
+
     return {
         "success": True,
         "message": "Time tracking resumed successfully",
         "start_time": entry.start_time,
     }
-
-
-def get_tasks_with_time_entries():
-    """
-    Retrieve all tasks that have at least one time entry.
-
-    Returns:
-        list: A list of Task objects with time entries.
-    """
-    from backend.models.task import Task
-    from backend.models.time_entry import TimeEntry
-
-    # Alle gültigen (nicht-null) Task-IDs mit TimeEntries
-    task_ids_with_entries = (
-        db.session.query(TimeEntry.task_id)
-        .filter(TimeEntry.task_id is not None)
-        .distinct()
-        .all()
-    )
-
-    task_ids = [tid[0] for tid in task_ids_with_entries if tid[0] is not None]
-
-    if not task_ids:
-        return []
-
-    return Task.query.filter(Task.task_id.in_(task_ids)).all()
 
 
 def update_durations_for_task_and_project(task_id):
@@ -331,54 +348,30 @@ def update_durations_for_task_and_project(task_id):
     return task_result
 
 
-# New function from JUDE
-def get_latest_time_entries_for_user(user_id, limit=10):
+def parse_datetime_flexibly(value):
     """
-    Retrieve the most recent completed time entries for a given user.
+    Attempt to parse a datetime value in flexible formats.
 
     Args:
-        user_id (int): ID of the user.
-        limit (int): Maximum number of entries to return.
+        value (str or datetime): The datetime to parse.
 
     Returns:
-        list[TimeEntry]: List of TimeEntry objects ordered by start_time descending.
+        datetime or ValueError: Parsed datetime object or error, if no matching format is found.
     """
-    return (
-        TimeEntry.query.filter_by(user_id=user_id)
-        # did this so when the time entry page does not crash
-        # when opened and a new entry is still tracking with no end time
-        .filter(TimeEntry.end_time.isnot(None))
-        .order_by(TimeEntry.start_time.desc())
-        .limit(limit)
-        .all()
-    )
+    if not isinstance(value, str):
+        return value
+
+    for fmt in (
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M",
+        "%d.%m.%Y %H:%M:%S",
+        "%d.%m.%Y %H:%M",
+    ):
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            continue
+
+    raise ValueError(f"Invalid datetime format: {value}")
 
 
-def get_latest_project_time_entry_for_user(user_id):
-    """
-    Get the latest time entry for the user where the associated task is linked to a project.
-
-    Args:
-        user_id (int): The user's ID.
-
-    Returns:
-        dict | None: Dictionary with time_entry, task and project, or None if not found.
-    """
-
-    # Find latest time entry where its task has a project_id
-    entry = (
-        TimeEntry.query.join(TimeEntry.task)
-        .filter(TimeEntry.user_id == user_id)
-        .filter(TimeEntry.end_time.isnot(None))
-        .filter(Task.project_id.isnot(None))
-        .order_by(TimeEntry.start_time.desc())
-        .first()
-    )
-
-    if not entry:
-        return None
-
-    task = entry.task
-    project = task.project if task else None
-
-    return {"time_entry": entry, "task": task, "project": project}
