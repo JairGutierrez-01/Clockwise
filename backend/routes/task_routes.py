@@ -13,47 +13,11 @@ from backend.services.task_service import (
     get_tasks_by_project_for_user,
     update_task,
     delete_task,
-    get_unassigned_tasks as get_unassigned_tasks_from_service,
+    get_unassigned_tasks,
     get_tasks_assigned_to_user,
 )
 
 task_bp = Blueprint("tasks", __name__)
-
-
-@task_bp.route("/tasks", methods=["GET"])
-@login_required
-def get_tasks():
-    """
-    Return a list of tasks, optionally filtered by project_id or unassigned status.
-
-    Returns:
-        JSON: List of task objects.
-    """
-    project_id = request.args.get("project_id")
-    unassigned = request.args.get("unassigned")
-
-    if unassigned == "true":
-        tasks = get_unassigned_tasks_from_service(current_user.user_id)
-    elif project_id:
-        project = Project.query.get(int(project_id))
-        if project and project.team_id:
-            # Prüfe, ob Nutzer irgendein Teammitglied ist (admin oder member)
-            is_member = UserTeam.query.filter_by(
-                user_id=current_user.user_id, team_id=project.team_id
-            ).first()
-            if is_member:
-                tasks = get_tasks_by_project(int(project_id))
-            else:
-                # Nicht im Team → keine Tasks
-                tasks = []
-        else:
-            # Solo-Projekt → nur eigene Tasks
-            tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
-    else:
-        tasks = []
-
-    return jsonify([task.to_dict() for task in tasks])
-
 
 @task_bp.route("/tasks", methods=["POST"])
 @login_required
@@ -61,21 +25,19 @@ def create_task_api():
     """
     Create a new task.
 
-    Args:
-        JSON:
-            title (str): Title of the task (optional, defaults to 'Untitled Task').
-            description (str, optional): Description of the task.
-            category_id (int, optional): ID of the category.
-            due_date (str, optional): Due date in 'YYYY-MM-DD' format.
-            project_id (int, optional): Project to which the task belongs.
-            member_id (int, optional): Assigned team member (only for team projects).
-            created_from_tracking (bool, optional): True if created from time tracking.
+    JSON Payload:
+        title (str): Title of the task (optional, defaults to 'Untitled Task').
+        description (str, optional): Description of the task.
+        category_id (int, optional): ID of the category.
+        due_date (str, optional): Due date in 'YYYY-MM-DD' format.
+        project_id (int, optional): Project to which the task belongs.
+        member_id (int, optional): Assigned team member (only for team projects).
+        created_from_tracking (bool, optional): True if created from time tracking.
 
     Returns:
-        JSON: Success message with created task ID or error.
+        JSON with success or error message.
     """
     data = request.get_json()
-    print("POST /create_task_api -> data:", data)
 
     title = data.get("title", "").strip()
     if not title:
@@ -94,29 +56,25 @@ def create_task_api():
             db.session.add(new_category)
             db.session.commit()
             category_id = new_category.category_id
-    member_id = data.get("member_id")
-    status = "todo"
 
-    due_date_str = data.get("due_date")
     due_date = None
+    # try to get the due_date from the JSON payload (will be a string like "YYYY-MM-DD" or None)
+    due_date_str = data.get("due_date")
     if due_date_str:
         try:
             due_date = datetime.strptime(due_date_str, "%Y-%m-%d")
         except ValueError:
             return jsonify({"error": "Invalid date format"}), 400
 
-    project_id = data.get("project_id")
-    created_from_tracking = data.get("created_from_tracking", False)
-
     result = create_task(
         title=title,
         description=description,
-        status=status,
         due_date=due_date,
-        project_id=project_id,
-        member_id=member_id,
+        status="todo",
+        project_id=data.get("project_id"),
+        member_id=data.get("member_id"),
         category_id=category_id,
-        created_from_tracking=created_from_tracking,
+        created_from_tracking=data.get("created_from_tracking", False),
     )
 
     return jsonify(result), 201
@@ -128,21 +86,19 @@ def update_task_api(task_id):
     """
     Update an existing task.
 
-    Args:
-        task_id (int): ID of the task to update.
-        JSON:
-            title (str, optional): New title.
-            description (str, optional): New description.
-            category_id (int, optional): New category ID.
-            status (str, optional): New status (must be a valid TaskStatus).
-            due_date (str, optional): New due date in 'YYYY-MM-DD' format.
-            project_id (int, optional): New project assignment.
+    JSON Payload:
+        Any subset of:
+            - title
+            - description
+            - category_id
+            - status
+            - due_date
+            - project_id
 
     Returns:
-        JSON: Success message with updated task ID or error.
+        JSON with success or error message.
     """
     data = request.get_json()
-    print("POST /create_task_api -> data:", data)
 
     if "due_date" in data and data["due_date"]:
         try:
@@ -154,50 +110,79 @@ def update_task_api(task_id):
     return jsonify(result)
 
 
-@task_bp.route("/tasks/<int:task_id>", methods=["GET"])
-@login_required
-def get_task_by_id_api(task_id):
-    """
-    Retrieve a specific task by ID.
-
-    Args:
-        task_id (int): ID of the task to retrieve.
-
-    Returns:
-        JSON: Serialized task object or error message.
-    """
-    task = get_task_by_id(task_id)
-    if task:
-        return jsonify(task.to_dict())
-    return jsonify({"error": "Task not found"}), 404
-
-
 @task_bp.route("/tasks/<int:task_id>", methods=["DELETE"])
 @login_required
 def delete_task_api(task_id):
     """
     Delete a task by its ID.
 
-    Args:
-        task_id (int): ID of the task to delete.
-
     Returns:
-        JSON: Success or error message.
+        JSON with success or error message.
     """
     result = delete_task(task_id)
     return jsonify(result)
+
+
+@task_bp.route("/tasks", methods=["GET"])
+@login_required
+def get_tasks():
+    """
+    Retrieve a list of tasks, optionally filtered by project_id or unassigned status.
+
+    Returns:
+        JSON list of task objects.
+    """
+    project_id = request.args.get("project_id")
+    unassigned = request.args.get("unassigned")
+
+    if unassigned == "true":
+        tasks = get_unassigned_tasks(current_user.user_id)
+    elif project_id:
+        project = Project.query.get(int(project_id))
+        if project and project.team_id:
+            # Prüfe, ob Nutzer irgendein Teammitglied ist (admin oder member)
+            is_member = UserTeam.query.filter_by(
+                user_id=current_user.user_id, team_id=project.team_id
+            ).first()
+            if is_member:
+                tasks = get_tasks_by_project(int(project_id))
+            else:
+                # Nicht im Team: keine Tasks
+                tasks = []
+        else:
+            # Solo-Projekt: nur eigene Tasks
+            tasks = get_tasks_by_project_for_user(int(project_id), current_user.user_id)
+    else:
+        tasks = []
+
+    return jsonify([task.to_dict() for task in tasks])
+
+
+
+
+@task_bp.route("/tasks/<int:task_id>", methods=["GET"])
+@login_required
+def get_task_by_id_api(task_id):
+    """
+    Retrieve a single task by its ID.
+
+    Returns:
+        JSON with task data or error message.
+    """
+    task = get_task_by_id(task_id)
+    return jsonify(task.to_dict()) if task else (jsonify({"error": "Task not found"}), 404)
 
 
 @task_bp.route("/tasks/unassigned", methods=["GET"])
 @login_required
 def get_unassigned_tasks():
     """
-    Retrieve all tasks that are not assigned to any project.
+    Retrieve tasks not assigned to any project.
 
     Returns:
-        JSON: List of unassigned task objects.
+        JSON list of unassigned tasks with readable duration field.
     """
-    tasks = get_unassigned_tasks_from_service(current_user.user_id)
+    tasks = get_unassigned_tasks(current_user.user_id)
     task_list = []
 
     for task in tasks:
@@ -225,11 +210,8 @@ def get_tasks_by_user(user_id):
     """
     Retrieve all tasks assigned to a given user.
 
-    Args:
-        user_id (int): User ID to filter by.
-
     Returns:
-        JSON: List of task objects assigned to the user.
+        JSON list of tasks assigned to that user.
     """
     tasks = get_tasks_assigned_to_user(user_id)
     return jsonify([task.to_dict() for task in tasks])
@@ -239,17 +221,14 @@ def get_tasks_by_user(user_id):
 @login_required
 def assign_task_to_user_api(task_id):
     """
-    Assign or unassign a task to a user.
-    Only allowed for team admins.
+    Assign or unassign a task to a team member.
+    Only team admins can perform this action.
 
-    Args:
-        task_id (int): ID of the task to assign.
-
-    JSON:
+    JSON Payload:
         user_id (int or null): ID of the user to assign, or null to unassign.
 
     Returns:
-        JSON: Success or error message.
+        JSON with success or error message.
     """
     data = request.get_json()
     user_id = data.get("user_id")
@@ -268,11 +247,9 @@ def assign_task_to_user_api(task_id):
     if not project:
         return jsonify({"error": "Project not found"}), 404
 
-    team_id = project.team_id
     is_admin = UserTeam.query.filter_by(
-        user_id=current_user.user_id, team_id=team_id, role="admin"
+        user_id=current_user.user_id, team_id=project.team_id, role="admin"
     ).first()
-
     if not is_admin:
         return jsonify({"error": "Only team admins can assign tasks"}), 403
 
@@ -299,13 +276,11 @@ def update_task_status(task_id):
     Update the status of a task.
     Only allows values defined in TaskStatus enum.
 
-    JSON Input:
-        {
-            "status": "todo" | "in_progress" | "done"
-        }
+    JSON Payload:
+        "status": "todo" | "in_progress" | "done"
 
     Returns:
-        JSON: Success message or error.
+        JSON with success message or error.
     """
     if not current_user.is_authenticated:
         return jsonify({"error": "Not authenticated"}), 401
@@ -345,22 +320,12 @@ def update_task_status(task_id):
 @login_required
 def get_used_categories():
     """
-    Retrieve all categories that are currently used by at least one task.
-
-    This endpoint returns a list of unique category names that are assigned
-    to at least one existing task. Unused categories (i.e., those not assigned
-    to any tasks) are excluded.
+    Retrieve all categories currently used by at least one task.
 
     Returns:
-        JSON:
-            {
-                "categories": [
-                    {"name": "Hausarbeit"},
-                    {"name": "Prüfung"},
-                    ...
-                ]
-            }
+        JSON list of category names.
     """
+
     categories = (
         db.session.query(Category)
         .join(Task)

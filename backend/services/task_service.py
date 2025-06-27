@@ -64,7 +64,7 @@ def create_task(
             # Solo-projekt
             user_id = current_user.user_id
     else:
-        # Kein Projekt angegeben → Default-Task
+        # Kein Projekt angegeben: Default-Task
         user_id = current_user.user_id
 
     title = title.strip() if title and title.strip() else "Untitled Task"
@@ -82,6 +82,7 @@ def create_task(
     )
     db.session.add(new_task)
     db.session.commit()
+
     return {
         "success": True,
         "message": "Task created successfully",
@@ -89,42 +90,9 @@ def create_task(
     }
 
 
-def get_task_by_id(task_id):
-    """Retrieve a task by its ID.
-
-    Args:
-        task_id (int): ID of the task to retrieve.
-
-    Returns:
-        Task: The task object, or None if not found.
-    """
-    return Task.query.get(task_id)
-
-
-def get_tasks_by_project(project_id):
-    """Retrieve all tasks associated with a given project.
-
-    Args:
-        project_id (int): The ID of the project.
-
-    Returns:
-        list: A list of Task objects.
-    """
-    return Task.query.filter_by(project_id=project_id).all()
-
-
-def get_tasks_by_project_for_user(project_id, user_id):
-    """
-    Returns only the tasks of a project assigned to the given user.
-    """
-    return Task.query.filter(
-        Task.project_id == project_id,
-        ((Task.member_id == user_id) | (Task.user_id == user_id)),
-    ).all()
-
-
 def update_task(task_id, **kwargs):
-    """Update task attributes selectively, , including member changes with notifications.
+    """
+    Update task attributes selectively, including member changes with notifications.
 
     - Team projects: Only the admin or assigned member can update.
     - Solo/default tasks: Only the owner (user_id) can update.
@@ -149,16 +117,8 @@ def update_task(task_id, **kwargs):
         if task.user_id != current_user.user_id:
             return {"error": "You are not authorized to update this task."}
 
-    ALLOWED_TASK_FIELDS = [
-        "title",
-        "description",
-        "due_date",
-        "status",
-        "user_id",
-        "member_id",
-        "project_id",
-        "category_id",
-    ]
+    ALLOWED_TASK_FIELDS = ["title", "description", "due_date", "status", "user_id",
+        "member_id", "project_id", "category_id"]
 
     old_member_id = task.member_id
     new_member_id = kwargs.get("member_id", old_member_id)
@@ -170,7 +130,7 @@ def update_task(task_id, **kwargs):
 
     db.session.commit()
 
-    # Solo-Projekt-Zuweisung → setze user_id, falls noch nicht gesetzt
+    # assign user for solo projects if missing
     if (
         "project_id" in kwargs
         and task.project_id
@@ -185,24 +145,23 @@ def update_task(task_id, **kwargs):
         if task.project_id:
             update_total_duration_for_project(task.project_id)
 
-    # Benachrichtigung bei Assign / Reassign / Unassign
+    # notify about member changes
     if "member_id" in kwargs and task.project and task.project.team_id:
         project = task.project
         if new_member_id and new_member_id != old_member_id:
-            # Reassigned oder neu assigned
             notify_task_assigned(
                 user_id=new_member_id,
                 task_name=task.title,
                 project_name=project.name,
             )
         elif new_member_id is None and old_member_id:
-            # Zuweisung aufgehoben
             notify_task_unassigned(
                 user_id=old_member_id,
                 task_name=task.title,
                 project_name=project.name,
             )
-    # Wenn ein Task unassigned wird → zugehörige TimeEntries löschen
+
+    # clear time entries if unassigned
     if "member_id" in kwargs and old_member_id and new_member_id is None:
         TimeEntry.query.filter_by(task_id=task_id).delete()
         task.total_duration_seconds = 0
@@ -219,7 +178,8 @@ def update_task(task_id, **kwargs):
 
 
 def delete_task(task_id):
-    """Delete a task by its ID.
+    """
+    Delete a task by its ID.
 
     - Team projects: Only the admin or assigned member can delete.
     - Solo/default tasks: Only the owner (user_id) can delete.
@@ -273,64 +233,104 @@ def delete_task(task_id):
     }
 
 
-def get_tasks_without_time_entries(user_id):
-    """Retrieve all tasks that do not have any associated time entries and belongs to the user
-
-    Returns:
-        list: A list of Task objects without time entries.
+def get_task_by_id(task_id):
     """
-    subquery = db.session.query(TimeEntry.task_id).distinct()
-
-    tasks = (
-        Task.query.filter(~Task.task_id.in_(subquery))
-        .filter((Task.user_id == user_id) | (Task.member_id == user_id))
-        .all()
-    )
-
-    return tasks
-
-
-def get_task_with_time_entries(task_id):
-    """Retrieve a task along with all associated time entries.
+    Retrieve a task by its ID.
 
     Args:
         task_id (int): ID of the task to retrieve.
 
     Returns:
-        dict: Dictionary containing task details and all time entries (if exist),
-              or None if the task does not exist.
+        Task: The task object, or None if not found.
     """
-    task = Task.query.get(task_id)
-    if not task:
-        return None
+    return Task.query.get(task_id)
 
-    return {
-        "task": task.to_dict(),
-        "time_entries": (
-            [entry.to_dict() for entry in task.time_entries]
-            if task.time_entries
-            else []
-        ),
-    }
+
+def get_tasks_by_project(project_id):
+    """
+    Retrieve all tasks associated with a given project.
+
+    Args:
+        project_id (int): The ID of the project.
+
+    Returns:
+        list[Task]: A list of Task objects.
+    """
+    return Task.query.filter_by(project_id=project_id).all()
+
+
+def get_tasks_by_project_for_user(project_id, user_id):
+    """
+    Retrieve all tasks of a project assigned to the given user.
+
+    Args:
+        project_id (int): Project ID
+        user_id (int): User ID
+
+    Returns:
+        list[Task]: A list of Task objects.
+    """
+    return Task.query.filter(
+        Task.project_id == project_id,
+        ((Task.member_id == user_id) | (Task.user_id == user_id)),
+    ).all()
+
+
+def get_tasks_without_time_entries(user_id):
+    """
+    Retrieve tasks for the user without any time entries.
+
+    Args:
+        user_id (int): User ID
+
+    Returns:
+        list[Task]: A list of Task objects.
+    """
+    subquery = db.session.query(TimeEntry.task_id).distinct()
+
+    return Task.query.filter(
+        ~Task.task_id.in_(subquery),
+        (Task.user_id == user_id) | (Task.member_id == user_id),
+    ).all()
 
 
 def get_unassigned_tasks(user_id):
-    """Retrieve all tasks that are not assigned to any project.
+    """
+    Retrieve all tasks that are not assigned to any project.
+
+    Args:
+        user_id (int): User ID
 
     Returns:
-        list: List of Task objects where project_id is None.
+        list[Task]: List of Task objects where project_id is None.
     """
     return Task.query.filter(Task.project_id is None, Task.user_id == user_id).all()
 
 
+def get_tasks_assigned_to_user(user_id):
+    """
+    Retrieve all tasks assigned to a specific user.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        list[Task]: A list of Task objects where the user is either owner or assigned member.
+    """
+    return Task.query.filter(
+        (Task.user_id == user_id) | (Task.member_id == user_id)
+    ).all()
+
+
 def update_total_duration_for_task(task_id):
-    """Recalculate and update the total duration (in seconds) of a task based on all associated time entries.
+    """
+    Recalculate and update the total duration (in seconds) of a task based on all associated time entries.
 
     Args:
         task_id (int): ID of the task to update.
 
     Returns:
-        dict: Success message with updated duration, or error if task not found.
+        dict: Success message with updated duration, or error.
     """
     task = get_task_by_id(task_id)
     if not task:
@@ -350,23 +350,6 @@ def update_total_duration_for_task(task_id):
     }
 
 
-"""This function also for the new route users/user_id..."""
-
-
-def get_tasks_assigned_to_user(user_id):
-    """Retrieve all tasks assigned to a specific user.
-
-    Args:
-        user_id (int): The ID of the user.
-
-    Returns:
-        list: A list of Task objects where the user is either owner or assigned member.
-    """
-    return Task.query.filter(
-        (Task.user_id == user_id) | (Task.member_id == user_id)
-    ).all()
-
-
 def unassign_tasks_for_user_in_team(user_id, team_id):
     """
     Unassigns all tasks in the team project that are currently assigned to the specified user.
@@ -379,7 +362,6 @@ def unassign_tasks_for_user_in_team(user_id, team_id):
     if not team_project:
         return
 
-    # Unassign tasks where user is assigned as team member
     tasks_as_member = Task.query.filter_by(
         project_id=team_project.project_id, member_id=user_id
     ).all()
@@ -398,7 +380,7 @@ def unassign_tasks_for_user_in_team(user_id, team_id):
 
 def is_user_authorized_for_task(task, user_id):
     """
-    Helper function to check whether the given user is allowed to track time for the task.
+    Check if the user is allowed to track time for this task.
 
     Args:
         task (Task): The task object to check.

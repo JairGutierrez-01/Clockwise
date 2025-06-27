@@ -1,10 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_login import current_user, login_required
 
-import backend.models.task as task_model
-import backend.services.task_service as task_service
-from backend.models.time_entry import TimeEntry
+from backend.models import Task, TimeEntry
 from backend.services.task_service import (
+    create_task,
     get_tasks_without_time_entries,
     is_user_authorized_for_task,
 )
@@ -49,7 +48,7 @@ def create_time_entry_api():
 
     task_id = data.get("task_id")
     if task_id:
-        task = task_model.Task.query.get(task_id)
+        task = Task.query.get(task_id)
         if not is_user_authorized_for_task(task, user_id):
             return (
                 jsonify({"error": "You are not authorized to create time entries for this task"}),
@@ -237,16 +236,16 @@ def start_entry():
 
     # If no task_id is given, create a new 'Untitled Task'
     if not task_id or str(task_id).strip() == "":
-        count = task_model.Task.query.filter(
-            task_model.Task.user_id == user_id,
-            task_model.Task.title.like("Untitled Task%"),
+        count = Task.query.filter(
+            Task.user_id == user_id,
+            Task.title.like("Untitled Task%"),
         ).count()
 
         title = f"Untitled Task #{count + 1}"
-        task_result = task_service.create_task(title=title, created_from_tracking=True)
+        task_result = create_task(title=title, created_from_tracking=True)
         task_id = task_result["task_id"]
 
-    task = task_model.Task.query.get(task_id)
+    task = Task.query.get(task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
 
