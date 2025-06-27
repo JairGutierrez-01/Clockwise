@@ -73,8 +73,6 @@ function showCustomModal({
   confirmText = "OK",
   cancelText = "Cancel",
   type = "alert",
-  onConfirm = null,
-  onCancel = null,
   customContentHtml = "",
 }) {
   return new Promise((resolve) => {
@@ -221,19 +219,7 @@ function hideCustomModal() {
 }
 
 // Wrapper for quickly showing a modal prompt / alert / confirm without repeating full config
-function showCustomPrompt(title, message, placeholder) {
-  return showCustomModal({
-    title,
-    message,
-    inputPlaceholder: placeholder,
-    confirmText: "Submit",
-    cancelText: "Cancel",
-    type: "prompt",
-  });
-}
-
-// Wrapper for quickly showing a modal prompt / alert / confirm without repeating full config
-function showCustomAlert(title, message, type = "alert") {
+function showCustomAlert(title, message) {
   return showCustomModal({ title, message, confirmText: "OK", type: "alert" });
 }
 
@@ -322,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Filter projects already linked to this team
         const assignedProjects = allTeamProjects.filter(
-          (p) => p.team_id == teamId,
+          (p) => p.team_id === Number(teamId), //teamId is a string so it needs to be changed to a number
         );
         // Projects that can be assigned (not yet linked to any team)
         const availableProjects = allTeamProjects.filter((p) => !p.team_id);
@@ -413,10 +399,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function handleAssignProject(e) {
     const projectId = e.target.dataset.projectId;
     const teamId = e.target.dataset.teamId;
-
-    // Get teamName for re-rendering refreshed modal content if needed
-    const teamRow = document.querySelector(`tr[data-team-id="${teamId}"]`);
-    const teamName = teamRow ? teamRow.dataset.teamName : "";
 
     try {
       // Send project assignment request to the backend API
@@ -1399,7 +1381,6 @@ function renderMembersForTeams(teams) {
       return []; // Return an empty array if team is not found
     }
 
-    let projectId = team.project_id;
 
     const teamProjects = allProjectsData.filter(
       (p) => p.team_id === Number(teamId),
