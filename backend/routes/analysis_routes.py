@@ -137,6 +137,7 @@ def export_pdf():
 
 
 @analysis_bp.route("/export/csv")
+@login_required
 def export_csv():
     """
     Exports time entries to a downloadable CSV file.
