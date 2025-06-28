@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Time Tracking - ClockWise</title>
-              <!-- Link css files -->
+    <!-- Link css files -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='navbar.css') }}"
@@ -14,83 +14,82 @@
       href="{{ url_for('static', filename='timeTracking.css') }}"
     />
   </head>
-        <!-- For Js to get the Users ID -->
+  <!-- For Js to get the Users ID -->
   <script>
     window.CURRENT_USER_ID = {{ current_user.user_id }};
   </script>
 
-
   <body class="dark-mode">
-          <!-- Navbar -->
+    <!-- Navbar -->
     {% include 'navbar.html' %}
-          <!-- Container for the whole Tracking page  -->
+    <!-- Container for the whole Tracking page  -->
     <div class="time-tracking">
-        <!-- wrapper for the tracker  -->
+      <!-- wrapper for the tracker  -->
       <div class="tracker-wrapper">
-          <!-- the tracker  -->
+        <!-- the tracker  -->
         <div class="tracker">
-            <!-- wrapper for the input field  -->
+          <!-- wrapper for the input field  -->
           <div class="input-wrapper">
-              <!-- input field  -->
+            <!-- input field  -->
             <input
               type="text"
               id="task-name-input"
               placeholder="Task Name ..."
               autocomplete="off"
             />
-              <!-- suggestions  -->
+            <!-- suggestions  -->
             <ul id="task-suggestions" class="suggestions"></ul>
           </div>
-              <!-- Time tracked  -->
+          <!-- Time tracked  -->
           <div id="tracker-time" class="time-display">00:00:00</div>
-                          <!-- start button  -->
+          <!-- start button  -->
           <button id="tracker-start" class="btn-start" type="button">
             Start
           </button>
-                          <!-- pause button  -->
+          <!-- pause button  -->
           <button id="tracker-pause" class="btn-pause" type="button" hidden>
             Pause
           </button>
-                          <!-- resume button  -->
+          <!-- resume button  -->
           <button id="tracker-resume" class="btn-resume" type="button" hidden>
             Resume
           </button>
-                          <!-- stop button  -->
+          <!-- stop button  -->
           <button id="tracker-stop" class="btn-stop" type="button" hidden>
             Stop
           </button>
         </div>
       </div>
 
-        <!-- Latest Sessions Title  -->
+      <!-- Latest Sessions Title  -->
       <h2>Latest Sessions</h2>
-        <!-- Latest time entries list -->
+      <!-- Latest time entries list -->
       <div class="entry-list" id="entry-list"></div>
-        <!-- message when there is no time entries  -->
+      <!-- message when there is no time entries  -->
       <p id="empty-message">No sessions yet. Start one!</p>
 
-        <!-- template for time entries  -->
+      <!-- template for time entries  -->
       <template id="entry-template">
-          <!-- wrapper for time entries  -->
+        <!-- wrapper for time entries  -->
         <div class="entry-wrapper">
-            <!-- time entry  -->
+          <!-- time entry  -->
           <div class="entry">
-              <!-- time entry name -->
+            <!-- time entry name -->
             <div class="entry-name">
-                <!-- time entry title -->
+              <!-- time entry title -->
               <span class="task-title">Task Name</span>
-                <!-- time entry project -->
+              <!-- time entry project -->
               <span class="entry-project"> – Project Name</span>
             </div>
-              <!-- duration of the time entry  -->
+            <!-- duration of the time entry  -->
             <div class="duration">00:00:00</div>
-              <!-- edit button  -->
+            <!-- edit button  -->
             <button class="edit-btn" data-task-id="">Edit</button>
           </div>
         </div>
       </template>
 
-    <!-- linking of the Js codes  -->
+      <!-- linking of the Js codes  -->
       <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
       <script src="{{ url_for('static', filename='js/timeTracking.js') }}"></script>
       {% if user_logged_in %}

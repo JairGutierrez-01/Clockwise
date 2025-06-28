@@ -195,7 +195,6 @@ const ENTRY_IDS_KEY = "clockwise_entry_ids";
 
 // --- logic to load, add, delete entry ID ---
 
-
 /**
  * Loads persisted entry IDs from localStorage.
  * @function loadEntryIds
@@ -334,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resumeBtn.hidden = true;
     trackerEl.classList.add("animate-controls");
   }
-// a IIAFE (define and run immediately)
+  // a IIAFE (define and run immediately)
   (async () => {
     try {
       const latestSessions = await fetchLatestSessions();
@@ -540,7 +539,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const { task_id } = await createTaskAPI(title);
       taskId = task_id;
     }
-   // tell the backend to create untitled task
+    // tell the backend to create untitled task
     if (!taskId && !title) {
       taskId = null;
     }

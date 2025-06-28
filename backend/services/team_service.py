@@ -1,9 +1,9 @@
 from backend.database import db
-from backend.models.team import Team
-from backend.models.user_team import UserTeam
 from backend.models.notification import Notification
 from backend.models.project import Project
 from backend.models.task import Task
+from backend.models.team import Team
+from backend.models.user_team import UserTeam
 from backend.services.task_service import unassign_tasks_for_user_in_team
 
 
@@ -20,7 +20,7 @@ def get_user_teams(user_id):
         db.session.query(UserTeam)
         .filter_by(user_id=user_id)
         .join(Team)
-        .order_by(Team.created_at.desc())       # Most recently created teams first
+        .order_by(Team.created_at.desc())  # Most recently created teams first
         .all()
     )
 
@@ -45,7 +45,9 @@ def create_new_team(name, user_id):
     Returns:
         dict: Contains message and new team ID.
     """
-    new_team = Team(name=name.strip())      # Trim whitespace to prevent duplicate-looking teams
+    new_team = Team(
+        name=name.strip()
+    )  # Trim whitespace to prevent duplicate-looking teams
     db.session.add(new_team)
     db.session.commit()
 

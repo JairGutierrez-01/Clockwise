@@ -34,7 +34,7 @@ const DRAG_SENSITIVITY = 2.5; // sensibility
 const SNAP_THRESHOLD_PERCENTAGE = 0.2;
 
 // CUSTOM MODAL: ELEMENTS AND FUNCTIONS
-let isDeleteMode = false;// When true, enables delete mode for team members (e.g., shake animation + delete click)
+let isDeleteMode = false; // When true, enables delete mode for team members (e.g., shake animation + delete click)
 let deleteMemberButton = null; // Reference to the delete member button
 
 // CUSTOM MODAL: SETUP AND MANAGEMENT
@@ -1356,33 +1356,50 @@ function renderMembersForTeams(teams) {
                 const result = await res.json();
 
                 if (res.ok) {
-                  showCustomAlert("Success", "Task unassigned successfully!", "success");
+                  showCustomAlert(
+                    "Success",
+                    "Task unassigned successfully!",
+                    "success",
+                  );
                   hideCustomModal();
 
                   const memberOptionsButton = document.querySelector(
-                    `.assign-options-btn[data-user-id="${userId}"]`
+                    `.assign-options-btn[data-user-id="${userId}"]`,
                   );
 
                   if (memberOptionsButton) {
                     const updatedTaskInfo = await fetchAssignedTaskForUser(
                       userId,
-                      currentDisplayedTeamId
+                      currentDisplayedTeamId,
                     );
 
-                    document.querySelectorAll(".assign-popover").forEach((el) => el.remove());
+                    document
+                      .querySelectorAll(".assign-popover")
+                      .forEach((el) => el.remove());
 
-                    showAssignPopover(memberOptionsButton, updatedTaskInfo, userId);
+                    showAssignPopover(
+                      memberOptionsButton,
+                      updatedTaskInfo,
+                      userId,
+                    );
                   }
                 } else {
-                  showCustomAlert("Error", result.error || "Could not unassign task.", "error");
+                  showCustomAlert(
+                    "Error",
+                    result.error || "Could not unassign task.",
+                    "error",
+                  );
                 }
               } catch (err) {
                 console.error("Unassign error:", err);
-                showCustomAlert("Error", "Network error during unassign.", "error");
+                showCustomAlert(
+                  "Error",
+                  "Network error during unassign.",
+                  "error",
+                );
               }
             });
           });
-
       } catch (err) {
         console.error("Error fetching assigned tasks for view modal:", err);
         showCustomAlert("Error", "Could not fetch assigned tasks.", "error");

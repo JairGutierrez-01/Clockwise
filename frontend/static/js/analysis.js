@@ -1,4 +1,4 @@
-import {getTaskColor} from './color_utils.js';
+import { getTaskColor } from "./color_utils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll("#analysis-controls button");
@@ -40,7 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // Tasks pro Projekt sortieren und abgestufte Farben nutzen
-      const coloredDatasets = Object.values(groupedByProject).flatMap(  // Sortiert Tasks pro Projekt alphabetisch und erstellt daraus eine flache Liste mit Farbinfos (getTaskColor(project, task, i, total) vergibt Farben// basierend auf Indexreihenfolge der Tasks innerhalb eines Projekts => Wenn Reihenfolge zufällig bei jedem Aufruf => Farben inkonsistent)
+      const coloredDatasets = Object.values(groupedByProject).flatMap(
+        // Sortiert Tasks pro Projekt alphabetisch und erstellt daraus eine flache Liste mit Farbinfos (getTaskColor(project, task, i, total) vergibt Farben// basierend auf Indexreihenfolge der Tasks innerhalb eines Projekts => Wenn Reihenfolge zufällig bei jedem Aufruf => Farben inkonsistent)
         (entries) => {
           entries.sort((a, b) => a.task.localeCompare(b.task));
           const total = entries.length;
@@ -93,7 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
             legend: {
               labels: { color: "#fff" },
             },
-            tooltip: {  // Tooltip zeigt Zeit in Stunden, Minuten und Sekunden an (Konvertierung von Dezimalstunden)
+            tooltip: {
+              // Tooltip zeigt Zeit in Stunden, Minuten und Sekunden an (Konvertierung von Dezimalstunden)
               callbacks: {
                 label: function (context) {
                   const sec = context.raw * 3600;

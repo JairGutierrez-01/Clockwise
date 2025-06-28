@@ -1128,7 +1128,6 @@ body {
   border-radius: 6px;
 }
 
-
 .task-title {
   flex-grow: 1; /* Allows the title to take available space */
   margin-right: 10px; /* Space between title and status */
@@ -1145,7 +1144,6 @@ body {
   background-color: #4a4a4a;
   color: #ccc;
 }
-
 
 .unassign-task-btn {
   background-color: var(--delete-color);

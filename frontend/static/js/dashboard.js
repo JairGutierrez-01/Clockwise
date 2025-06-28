@@ -1,4 +1,4 @@
-import {getTaskColor} from './color_utils.js';
+import { getTaskColor } from "./color_utils.js";
 
 /**
  * Initialisiert die Projektübersicht in der Dashboard-Tabelle.
@@ -322,7 +322,8 @@ async function loadTeamActivityBox() {
 
     // Update UI elements with project details
     document.getElementById("team-project-name").textContent = project.name;
-    document.getElementById("total-time").textContent = project.duration_readable;
+    document.getElementById("total-time").textContent =
+      project.duration_readable;
 
     // Display team members (or solo user) as styled initials
     const memberList = document.getElementById("team-member-list");
