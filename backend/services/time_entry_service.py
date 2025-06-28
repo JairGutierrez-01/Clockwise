@@ -81,7 +81,12 @@ def update_time_entry(time_entry_id, **kwargs):
     if "end_time" in kwargs and kwargs["end_time"]:
         kwargs["end_time"] = parse_datetime_flexibly(kwargs["end_time"])
 
-    ALLOWED_TIME_ENTRY_FIELDS = ["start_time", "end_time", "duration_seconds", "comment"]
+    ALLOWED_TIME_ENTRY_FIELDS = [
+        "start_time",
+        "end_time",
+        "duration_seconds",
+        "comment",
+    ]
     for key, value in kwargs.items():
         if key in ALLOWED_TIME_ENTRY_FIELDS:
             setattr(entry, key, value)
@@ -114,13 +119,15 @@ def delete_time_entry(time_entry_id):
     db.session.delete(entry)
     db.session.commit()
 
-    if related_task and related_task.created_from_tracking and not related_task.time_entries:
+    if (
+        related_task
+        and related_task.created_from_tracking
+        and not related_task.time_entries
+    ):
         db.session.delete(related_task)
         db.session.commit()
 
-    return {
-        "success": True,
-        "message": "Time entry deleted successfully"}
+    return {"success": True, "message": "Time entry deleted successfully"}
 
 
 def get_time_entry_by_id(time_entry_id):
@@ -373,5 +380,3 @@ def parse_datetime_flexibly(value):
             continue
 
     raise ValueError(f"Invalid datetime format: {value}")
-
-

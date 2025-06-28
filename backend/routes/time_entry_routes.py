@@ -51,7 +51,11 @@ def create_time_entry_api():
         task = Task.query.get(task_id)
         if not is_user_authorized_for_task(task, user_id):
             return (
-                jsonify({"error": "You are not authorized to create time entries for this task"}),
+                jsonify(
+                    {
+                        "error": "You are not authorized to create time entries for this task"
+                    }
+                ),
                 403,
             )
 
@@ -327,6 +331,3 @@ def resume_entry(entry_id):
             )
 
     return jsonify(resume_time_entry(entry_id))
-
-
-

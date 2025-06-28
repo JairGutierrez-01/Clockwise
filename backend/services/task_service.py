@@ -117,8 +117,16 @@ def update_task(task_id, **kwargs):
         if task.user_id != current_user.user_id:
             return {"error": "You are not authorized to update this task."}
 
-    ALLOWED_TASK_FIELDS = ["title", "description", "due_date", "status", "user_id",
-        "member_id", "project_id", "category_id"]
+    ALLOWED_TASK_FIELDS = [
+        "title",
+        "description",
+        "due_date",
+        "status",
+        "user_id",
+        "member_id",
+        "project_id",
+        "category_id",
+    ]
 
     old_member_id = task.member_id
     new_member_id = kwargs.get("member_id", old_member_id)
