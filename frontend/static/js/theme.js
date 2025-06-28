@@ -1,9 +1,11 @@
-// static/js/theme.js
-
 /**
  * Toggles between light and dark mode by modifying body classes.
  * Switches the visibility of the sun and moon icon accordingly.
  * Saves the user's choice in localStorage.
+ *
+ * Wechselt zwischen hellem und dunklem Modus durch Klassenänderung am <body>.
+ * Zeigt passend dazu die Sonne- bzw. Mond-Icons an.
+ * Speichert die gewählte Einstellung im localStorage.
  */
 function toggleTheme() {
   const body = document.body;
@@ -27,6 +29,9 @@ function toggleTheme() {
 /**
  * Sets the initial state of the sun/moon icon when the page loads,
  * based on whether dark mode is activated.
+ *
+ * Setzt beim Laden der Seite den korrekten Initialzustand des Icons,
+ * basierend auf gespeichertem Theme oder Systempräferenz.
  */
 document.addEventListener("DOMContentLoaded", () => {
   const sunIcon = document.getElementById("sun-icon");

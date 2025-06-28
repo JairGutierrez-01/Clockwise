@@ -3,21 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Time Tracking - ClockWise</title>
-    <!-- Link css files -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='timeTracking.css') }}"
-    />
+    <title>Time Tracking – ClockWise</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='timeTracking.css') }}" />
   </head>
+
   <!-- For Js to get the Users ID -->
   <script>
     window.CURRENT_USER_ID = {{ current_user.user_id }};
   </script>
+
 
   <body class="dark-mode">
     <!-- Navbar -->
@@ -30,14 +27,14 @@
         <div class="tracker">
           <!-- wrapper for the input field  -->
           <div class="input-wrapper">
-            <!-- input field  -->
+              <!-- input field  -->
             <input
               type="text"
               id="task-name-input"
               placeholder="Task Name ..."
               autocomplete="off"
             />
-            <!-- suggestions  -->
+             <!-- suggestions  -->
             <ul id="task-suggestions" class="suggestions"></ul>
           </div>
           <!-- Time tracked  -->

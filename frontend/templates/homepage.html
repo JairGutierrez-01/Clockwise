@@ -4,14 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ClockWise</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='homepage.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
   </head>
 
   <body class="dark-mode">
@@ -53,53 +50,9 @@
         >
 
         <!-- Theme Toggle -->
-        <div class="theme-toggle" onclick="toggleTheme()">
-          <div class="sun-moon-icon">
-            <!-- Sun -->
-            <svg
-              id="sun-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="#fff"
-              stroke-width="1.25"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
+        {% include 'theme.html' %}
 
-            <!-- Moon -->
-            <svg
-              id="moon-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="#fff"
-              stroke-width="1.25"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              style="display: none"
-            >
-              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-            </svg>
-          </div>
-
-          <div class="toggle-button">
-            <div class="toggle-circle"></div>
-          </div>
-        </div>
-
+        <!-- Login-/Logout-Button wechsel -->
         {% if user_logged_in %}
         <a href="{{ url_for('logout') }}" class="login-btn">Log Out</a>
         {% else %}
@@ -247,121 +200,153 @@
 
     <!-- SCRIPT -->
     <script>
-      let timerInterval;
-      let seconds = 0;
-      let running = false;
-      let paused = false;
+        // ============================
+        //       Timer-Funktionalität
+        // ============================
 
-      const timeDisplay = document.getElementById("time");
-      const secondHand = document.getElementById("secondHand");
-      const minuteHand = document.getElementById("minuteHand");
-      const pauseButton = document.querySelector(".button-row").children[1];
+        let timerInterval;
+        let seconds = 0;
+        let running = false;
+        let paused = false;
 
-      function updateDisplay() {
-        const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
-        const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-        const secs = String(seconds % 60).padStart(2, "0");
-        timeDisplay.textContent = `${hrs}:${mins}:${secs}`;
-      }
+        const timeDisplay = document.getElementById("time");
+        const secondHand = document.getElementById("secondHand");
+        const minuteHand = document.getElementById("minuteHand");
+        const pauseButton = document.querySelector(".button-row").children[1];
 
-      function updateClock() {
-        const secDeg = (seconds % 60) * 6;
-        const minDeg = (seconds / 60) * 6;
-        secondHand.style.transform = `rotate(${secDeg}deg)`;
-        minuteHand.style.transform = `rotate(${minDeg}deg)`;
-      }
+        /**
+         * Aktualisiert die numerische Anzeige der gestoppten Zeit im Format HH:MM:SS.
+         */
+        function updateDisplay() {
+          const hrs = String(Math.floor(seconds / 3600)).padStart(2, "0");
+          const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+          const secs = String(seconds % 60).padStart(2, "0");
+          timeDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }
 
-      function startTimer() {
-        if (running && paused) {
+        /**
+         * Aktualisiert die Positionen der Sekunden- und Minutenzeiger im UI.
+         */
+        function updateClock() {
+          const secDeg = (seconds % 60) * 6;
+          const minDeg = (seconds / 60) * 6;
+          secondHand.style.transform = `rotate(${secDeg}deg)`;
+          minuteHand.style.transform = `rotate(${minDeg}deg)`;
+        }
+
+        /**
+         * Startet den Timer oder setzt ihn fort, wenn er pausiert war.
+         */
+        function startTimer() {
+          if (running && paused) {
+            paused = false;
+            pauseButton.textContent = "Pause";
+            timeDisplay.classList.remove("blink");
+            return;
+          }
+
+          if (running) return;
+          running = true;
           paused = false;
+
+          timerInterval = setInterval(() => {
+            if (!paused) {
+              seconds++;
+              updateDisplay();
+              updateClock();
+            }
+          }, 1000);
+        }
+
+        /**
+         * Pausiert oder setzt den Timer fort. Ändert den Button-Text und visuelles Feedback.
+         */
+        function pauseTimer() {
+          if (!running) return;
+          paused = !paused;
+          pauseButton.textContent = paused ? "Weiter" : "Pause";
+          timeDisplay.classList.toggle("blink", paused);
+        }
+
+        /**
+         * Stoppt und setzt den Timer vollständig zurück. Entfernt alle visuelle Markierungen.
+         */
+        function stopTimer() {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          seconds = 0;
+          running = false;
+          paused = false;
+          updateDisplay();
+          updateClock();
           pauseButton.textContent = "Pause";
           timeDisplay.classList.remove("blink");
-          return;
         }
 
-        if (running) return;
-        running = true;
-        paused = false;
-
-        timerInterval = setInterval(() => {
-          if (!paused) {
-            seconds++;
-            updateDisplay();
-            updateClock();
-          }
-        }, 1000);
-      }
-
-      function pauseTimer() {
-        if (!running) return;
-        paused = !paused;
-        pauseButton.textContent = paused ? "Weiter" : "Pause";
-        timeDisplay.classList.toggle("blink", paused);
-      }
-
-      function stopTimer() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        seconds = 0;
-        running = false;
-        paused = false;
+        // Initialer Anzeigeaufbau beim Laden
         updateDisplay();
         updateClock();
-        pauseButton.textContent = "Pause";
-        timeDisplay.classList.remove("blink");
-      }
 
-      updateDisplay();
-      updateClock();
+        // ============================
+        //       Scrollanimation
+        // ============================
 
-      // Scrollanimation
-      const sections = document.querySelectorAll(".section");
-      let lastScrollY = window.scrollY;
-      let scrollDirection = "down";
+        const sections = document.querySelectorAll(".section");
+        let lastScrollY = window.scrollY;
+        let scrollDirection = "down";
 
-      window.addEventListener("scroll", () => {
-        const currentScrollY = window.scrollY;
-        scrollDirection = currentScrollY > lastScrollY ? "down" : "up";
-        lastScrollY = currentScrollY;
-      });
+        // Bestimmt die Scrollrichtung
+        window.addEventListener("scroll", () => {
+          const currentScrollY = window.scrollY;
+          scrollDirection = currentScrollY > lastScrollY ? "down" : "up";
+          lastScrollY = currentScrollY;
+        });
 
-      const fadeObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const section = entry.target;
+        /**
+         * IntersectionObserver, um Scrollanimationen auszulösen,
+         * abhängig davon, ob ein Element im Viewport ist.
+         */
+        const fadeObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const section = entry.target;
 
-            if (entry.isIntersecting) {
-              section.classList.add("animate-in");
-              section.classList.remove("animate-out-up", "animate-out-down");
-            } else {
-              section.classList.remove("animate-in");
-              section.classList.add(
-                scrollDirection === "down"
-                  ? "animate-out-up"
-                  : "animate-out-down",
-              );
-            }
-          });
-        },
-        { threshold: 0.4 },
-      );
+              if (entry.isIntersecting) {
+                section.classList.add("animate-in");
+                section.classList.remove("animate-out-up", "animate-out-down");
+              } else {
+                section.classList.remove("animate-in");
+                section.classList.add(
+                  scrollDirection === "down"
+                    ? "animate-out-up"
+                    : "animate-out-down"
+                );
+              }
+            });
+          },
+          { threshold: 0.4 }
+        );
 
-      sections.forEach((section) => fadeObserver.observe(section));
+        sections.forEach((section) => fadeObserver.observe(section));
 
-      /* Bilder Switchen je nach Light/Dark Modus*/
-      function updateAnalyzeImage() {
-        const img = document.getElementById("analyze-img");
-        if (document.body.classList.contains("light-mode")) {
-          img.src =
-            "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
-        } else {
-          img.src =
-            "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+        // ============================
+        //       Bildwechsel bei Modus
+        // ============================
+
+        /**
+         * Wechselt das Bild basierend auf dem aktiven Farbschema (Light/Dark Mode).
+         */
+        function updateAnalyzeImage() {
+          const img = document.getElementById("analyze-img");
+          if (document.body.classList.contains("light-mode")) {
+            img.src = "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
+          } else {
+            img.src = "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+          }
         }
-      }
 
-      // Beim Seitenstart prüfen
-      updateAnalyzeImage();
+        // Beim Seitenstart prüfen und Bild anpassen
+        updateAnalyzeImage();
     </script>
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     {% if user_logged_in %}

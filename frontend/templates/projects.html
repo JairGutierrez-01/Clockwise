@@ -4,20 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Project Management – ClockWise</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
 
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='projects.css') }}"
-    />
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}" />
+
+    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- User Context -->
     <script>
       window.CURRENT_USER_ID = {{ current_user.user_id }};
     </script>
   </head>
+
   <body class="dark-mode">
     {% include 'navbar.html' %}
     <div class="project-page">

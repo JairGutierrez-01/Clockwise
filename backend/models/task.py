@@ -31,7 +31,6 @@ class Task(db.Model):
         status (enum): Task status (todo, in_progress, done).
         created_at (datetime): Timestamp when the task was created.
         created_from_tracking (bool): Indicates if the task was created via the time tracking interface.
-        category_id (int): Foreign key identifying the category of the tasks.
         time_entries (relationship):  All time entries associated with this task.
         assigned_user (relationship): The user assigned to the task in solo projects.
         admin (relationship): The user who created the task in a team project.
@@ -42,7 +41,7 @@ class Task(db.Model):
 
     __tablename__ = "tasks"
 
-    task_id = db.Column(db.Integer, primary_key=True, index=True)
+    task_id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(
         db.Integer, db.ForeignKey("projects.project_id"), nullable=True
     )
@@ -77,7 +76,9 @@ class Task(db.Model):
 
     @property
     def total_duration(self):
-        """Returns total duration in format 'xh ymin zs'."""
+        """
+        Returns the total duration of the task in the format 'xh ymin zs'.
+        """
         total_seconds = self.total_duration_seconds or 0
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
@@ -97,7 +98,9 @@ class Task(db.Model):
         )
 
     def to_dict(self):
-        """Convert task to dictionary format for JSON output."""
+        """
+        Convert the task instance to a dictionary suitable for JSON responses.
+        """
         return {
             "task_id": self.task_id,
             "title": self.title,

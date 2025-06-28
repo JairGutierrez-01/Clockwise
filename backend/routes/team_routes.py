@@ -9,6 +9,7 @@ from backend.services.team_service import (
     check_admin,
     remove_member_from_team,
 )
+
 # import the service function with a new name
 from backend.services.team_service import get_team_members as get_team_members_service
 from backend.services.team_service import get_user_teams as get_user_teams_service

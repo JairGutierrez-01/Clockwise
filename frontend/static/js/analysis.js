@@ -160,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * Initialisiert und rendert den FullCalendar mit Due-Dates und Arbeitszeit-Einträgen.
    * Bindet Event-Listener für Monats- und Jahresansicht.
+   * @returns {void}
    */
   function renderFullCalendar() {
     const calendarEl = document.getElementById("calendar");
@@ -251,10 +252,8 @@ document.addEventListener("DOMContentLoaded", () => {
             setActiveView("year");
           });
 
-        /**
-         * Setzt die aktive Ansicht im Kalender (z.B. „month“ oder „year“) und aktualisiert die Button-UI.
-         * @param {string} view - Der anzuzeigende Modus: "month" oder "year".
-         */
+        // Setzt die aktive Ansicht (z.B. "month" oder "year") und aktualisiert die UI.
+        //@param {string} view - Der anzuzeigende Modus: "month" oder "year".
         function setActiveView(view) {
           document
             .getElementById("month-view-btn")
@@ -273,6 +272,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /**
    * Renders the Progress view: project completion bars and actual vs planned charts.
+   */
+  /**
+   * Rendert die Fortschrittsansicht mit Projekt-Fortschrittsbalken und Soll-/Ist-Vergleich.
+   * @returns {Promise<void>}
    */
   async function renderProgress() {
     // Destroy existing charts if present
@@ -369,15 +372,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // View Switching
+  // View Switching (zwischen den Analyse-Ansichten wechseln)
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
+      // Aktiven Button visuell aktualisieren
       document
         .querySelector("#analysis-controls .active")
         ?.classList.remove("active");
       btn.classList.add("active");
 
-      const selected = btn.dataset.view;
+      const selected = btn.dataset.view; // z.B. "weekly", "calendar" oder "progress"
+
+      // Alle View-Container durchgehen und ein-/ausblenden
       Object.entries(views).forEach(([key, el]) => {
         if (key === selected) {
           el.classList.remove("hidden");
@@ -396,11 +402,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Navigation zur vorherigen Woche: Offset um -1 verringern und Diagramm aktualisieren
   document.getElementById("prev-week").addEventListener("click", () => {
     currentWeekOffset--;
     updateChartForWeek();
   });
 
+  // Navigation zur nächsten Woche: Offset um +1 erhöhen und Diagramm aktualisieren
   document.getElementById("next-week").addEventListener("click", () => {
     currentWeekOffset++;
     updateChartForWeek();

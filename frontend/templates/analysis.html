@@ -1,114 +1,119 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Analysis - ClockWise</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='analysis.css') }}" />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='projects.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='analysis.css') }}"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- FullCalendar CSS & JS -->
-    <link
       href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
-      rel="stylesheet"
     />
+
+    <!-- JavaScript Libraries (fullcalendar, chart.js & lucide (zum laden von Icons) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/multimonth@6.1.8/index.global.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
 
   <body class="dark-mode">
-    {% include 'navbar.html' %}
+      {% include 'navbar.html' %}
 
-    <!-- Hauptcontainer -->
-    <main class="analysis-container">
-      <div class="analysis-header">
-        <div class="analysis-header-left">
-          <h1>Analysis</h1>
-        </div>
+      <!-- Hauptcontainer -->
+      <main class="analysis-container">
 
-        <div class="analysis-header-right">
-          <div class="controls-wrapper">
-            <div id="analysis-controls" class="filter-style">
-              <button data-view="weekly" class="active">Weekly</button>
-              <button data-view="calendar">Calendar</button>
-              <button data-view="progress">Progress</button>
-            </div>
-            <button id="download-button" title="Exportieren">
-              <i data-lucide="download"></i>
-            </button>
-            <div id="download-dropdown" class="hidden">
-              <button data-format="pdf">Download as PDF</button>
-              <button data-format="csv">Download as CSV</button>
+        <!-- Kopfbereich -->
+        <div class="analysis-header">
+          <div class="analysis-header-left">
+            <h1>Analysis</h1>
+          </div>
+
+          <div class="analysis-header-right">
+            <div class="controls-wrapper">
+
+              <!-- Ansichtsschalter -->
+              <div id="analysis-controls" class="filter-style">
+                <button data-view="weekly" class="active">Weekly</button>
+                <button data-view="calendar">Calendar</button>
+                <button data-view="progress">Progress</button>
+              </div>
+
+              <!-- Export-Button -->
+              <button id="download-button" title="Exportieren">
+                <i data-lucide="download"></i>
+              </button>
+
+              <!-- Dropdown für Exportformate -->
+              <div id="download-dropdown" class="hidden">
+                <button data-format="pdf">Download as PDF</button>
+                <button data-format="csv">Download as CSV</button>
+              </div>
+
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Inhalt (Charts / Kalender / Progress) -->
-      <div class="dashboard-columns">
-        <!-- Weekly Chart -->
-        <div id="view-weekly" class="card reports">
-          <h3>Weekly Time per Project</h3>
-          <div class="week-controls">
-            <button id="prev-week" aria-label="Vorherige Woche">‹</button>
-            <span id="week-label">3.–9. Juni 2025</span>
-            <button id="next-week" aria-label="Nächste Woche">›</button>
-          </div>
-          <canvas id="timeChart"></canvas>
-        </div>
+        <!-- Hauptinhalt: Reports(bzw. Säulendiagramm) / Kalender / Fortschritt -->
+        <div class="dashboard-columns">
 
-        <!-- Calendar View -->
-        <div id="view-calendar" class="card calendar hidden">
-          <div class="calendar-header">
-            <h3>Calendar View</h3>
-            <div id="calendar-mode-switch">
-              <button id="month-view-btn" class="active">Month</button>
-              <button id="year-view-btn">Year</button>
+          <!-- Weekly Chart -->
+          <div id="view-weekly" class="card reports">
+            <h3>Weekly Time per Project</h3>
+            <div class="week-controls">
+              <button id="prev-week" aria-label="Vorherige Woche">‹</button>
+              <span id="week-label">3.–9. Juni 2025</span>
+              <button id="next-week" aria-label="Nächste Woche">›</button>
             </div>
+            <canvas id="timeChart"></canvas>
           </div>
-          <div id="calendar"></div>
-        </div>
 
-        <!-- Progress Overview -->
-        <div id="view-progress" class="card hidden">
-          <h3>Progress Overview</h3>
-          <div class="progress-container">
-            <div class="progress-panel project-completion">
-              <h4>Project Completion</h4>
-              <div id="project-completion-list"></div>
-            </div>
-            <div class="progress-panel time-comparison">
-              <h4>Actual vs. Planned Time</h4>
-              <div class="time-charts">
-                <canvas id="actualChart"></canvas>
+          <!-- Calendar View -->
+          <div id="view-calendar" class="card calendar hidden">
+            <div class="calendar-header">
+              <h3>Calendar View</h3>
+              <div id="calendar-mode-switch">
+                <button id="month-view-btn" class="active">Month</button>
+                <button id="year-view-btn">Year</button>
               </div>
             </div>
+            <div id="calendar"></div>
           </div>
-        </div>
-      </div>
-    </main>
-    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <script
-      type="module"
-      src="{{ url_for('static', filename='js/analysis.js') }}"
-    ></script>
-    {% if user_logged_in %}
-    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-    {% endif %}
 
-    <script>
-      lucide.createIcons();
-    </script>
-  </body>
+          <!-- Progress Overview -->
+          <div id="view-progress" class="card hidden">
+            <h3>Progress Overview</h3>
+            <div class="progress-container">
+
+              <div class="progress-panel project-completion">
+                <h4>Project Completion</h4>
+                <div id="project-completion-list"></div>
+              </div>
+
+              <div class="progress-panel time-comparison">
+                <h4>Actual vs. Planned Time</h4>
+                <div class="time-charts">
+                  <canvas id="actualChart"></canvas>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- Scripts -->
+      <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+      <script type="module" src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+      <script> lucide.createIcons();</script>
+      {% if user_logged_in %}
+        <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+      {% endif %}
+
+    </body>
 </html>

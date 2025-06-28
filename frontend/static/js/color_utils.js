@@ -1,4 +1,7 @@
-// Farbpalette für das Säulendiagramm
+/**
+ * Farbpalette für die Projektfarbenzuweisung im Säulendiagramm.
+ * @type {string[]}
+ */
 const colorPalette = [
   "#00ff7f",
   "#b700ff",
@@ -122,7 +125,7 @@ export function getTaskColor(project, task, indexInStack = 0, total = 1) {
 /**
  * Passt die Helligkeit einer Hexfarbe um einen Prozentwert an.
  * @param {string} color - Ausgangsfarbe in Hex.
- * @param {number} percent - Prozentuale Veränderung (-100 bis +100).
+ * @param {number} percent - Prozentuale Veränderung der Helligkeit: negativ = abdunkeln, positiv = aufhellen (-100 bis +100).
  * @returns {string} - Neue Hexfarbe.
  */
 export function shadeColor(color, percent) {

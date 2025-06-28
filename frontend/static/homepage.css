@@ -100,62 +100,6 @@ body.light-mode .navbar {
   background-color: #95a6b5;
 }
 
-/* === Toggle Switch === */
-/* Theme Toggle Switch */
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  margin-right: 20px;
-}
-
-.sun-moon-icon {
-  position: relative;
-  width: 24px;
-  height: 24px;
-}
-
-#sun-icon,
-#moon-icon {
-  width: 24px;
-  height: 24px;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* Toggle Button – DARK MODE */
-.toggle-button {
-  background-color: #102a43;
-  border-radius: 50px;
-  position: relative;
-  width: 50px;
-  height: 24px;
-  padding: 2px;
-  transition: background-color 0.3s ease;
-}
-
-.toggle-circle {
-  width: 20px;
-  height: 20px;
-  background-color: #ffffff;
-  border-radius: 50%;
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.3s;
-}
-
-/* Toggle Button - Light Mode */
-body.light-mode .toggle-button {
-  background-color: #657085;
-}
-
-/* moves circle of toggle button */
-body.light-mode .toggle-circle {
-  transform: translateX(26px);
-}
 
 /* === Headers === */
 .hero {
