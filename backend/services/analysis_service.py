@@ -309,6 +309,17 @@ def load_target_times():
 
 
 def tasks_in_month(tasks, year, month):
+    """
+    Filters a list of tasks to include only those that start in the specified month and year.
+
+    Args:
+        tasks (list): A list of task dictionaries. Each dictionary should contain a 'start_date' key with a datetime value.
+        year (int): The year to filter tasks by.
+        month (int): The month to filter tasks by (1–12).
+
+    Returns:
+        list: A list of task dictionaries that start in the specified year and month.
+    """
     filtered = []
     for t in tasks:
         if (
@@ -359,7 +370,15 @@ def calendar_due_dates():
 
 def calendar_worked_time():
     """
-    Returns one calendar event per task per day with total duration in h:min:s
+    Generates one calendar event per task per day with the total worked duration in hours, minutes, and seconds.
+
+    Returns:
+        list: A list of calendar event dictionaries. Each dictionary includes:
+            - 'title' (str): The task name and duration formatted as "Task: Xh Ymin Zs".
+            - 'start' (str): The date of the entry in ISO format (YYYY-MM-DD).
+            - 'allDay' (bool): Always True, indicating an all-day event.
+            - 'color' (str): A fixed color hex code for styling the event.
+            - 'extendedProps' (dict): Additional data, such as the project name.
     """
     time_entries = load_time_entries()
     if not time_entries:
@@ -400,7 +419,15 @@ def calendar_worked_time():
 
 def aggregate_time_by_day_project_task(entries, week_start):
     """
-    Gibt ein dict zurück: { (project, task): [Mo–So] }
+    Aggregates time entries by (project, task) and weekday within a given week.
+
+    Args:
+        entries (list): A list of time entry dictionaries. Each must include 'start', 'end', 'project', and 'task'.
+        week_start (datetime): The starting date (Monday) of the week to aggregate.
+
+    Returns:
+        dict: A dictionary with (project, task) tuples as keys, and a list of 7 float values as values.
+              Each value in the list represents the number of hours worked on that (project, task) per weekday (Monday=0, Sunday=6).
     """
     result = defaultdict(lambda: [0] * 7)
     for e in entries:
