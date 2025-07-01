@@ -44,7 +44,7 @@
 /* Positioning of the icon */
 .login-icon {
   position: absolute;
-  top: 20px;
+  top: -45px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
@@ -52,8 +52,9 @@
 
 /* Sizing of the icon */
 .login-icon img {
-  width: 120px;
-  height: 120px;
+  width: 95px;
+  height: 95px;
+  object-fit: contain;
 }
 
 /* === Inputs: .login-box input + .login-box input::placeholder + .login-box input:first-of-type === */

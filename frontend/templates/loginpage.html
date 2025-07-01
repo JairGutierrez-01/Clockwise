@@ -31,18 +31,14 @@
 
     <!-- Login Box -->
     <div class="login-container">
-      <div class="login-icon">
-        <img
-          src="{{ url_for('static', filename='images/ICON.png') }}"
-          alt="Login Icon"
-        />
-      </div>
-
       <form
         class="login-box"
         method="POST"
         action="{{ url_for('auth.login') }}"
       >
+      <div class="login-icon">
+        <img src="{{ url_for('static', filename='images/ICON.png') }}" alt="Login Icon" />
+      </div>
         <input type="text" name="username" placeholder="Username" required />
         <input
           type="password"
