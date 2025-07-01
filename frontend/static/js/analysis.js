@@ -289,6 +289,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // Fetch completion
       const resProg = await fetch("/api/analysis/project-progress");
       const projData = await resProg.json();
+      // Fetch overall progress
+      const resOverall = await fetch("/api/analysis/overall-progress");
+      const { overall_progress } = await resOverall.json();
+      const percentOverall = Math.round(overall_progress * 100);
+
+      // Fortschrittsbalken aktualisieren
+      const fill = document.querySelector(".overall-progress-fill");
+      if (fill) fill.style.width = `${percentOverall}%`;
+      const percentEl = document.querySelector(".overall-progress-percent");
+      if (percentEl) percentEl.textContent = `${percentOverall}%`;
+
+
       Object.entries(projData).forEach(([project, ratio]) => {
         const percent = Math.round(ratio * 100);
         const item = document.createElement("div");

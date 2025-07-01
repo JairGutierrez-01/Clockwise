@@ -171,3 +171,18 @@ def export_csv():
     response.headers["Content-Disposition"] = "attachment; filename=time_entries.csv"
     response.headers["Content-Type"] = "text/csv"
     return response
+
+
+@analysis_bp.route("/overall-progress")
+@login_required
+def api_overall_progress():
+    """
+    Get overall progress across all active projects based on completed tasks.
+
+    Returns:
+        float: A number between 0 and 1 representing the overall completion ratio.
+    """
+    tasks = load_tasks()
+    from backend.services.analysis_service import overall_progress
+    result = overall_progress(tasks)
+    return jsonify({"overall_progress": result})

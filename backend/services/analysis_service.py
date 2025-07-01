@@ -141,6 +141,7 @@ def load_tasks():
         result.append(
             {
                 "project": task.project.name if task.project else None,
+                "project_status": task.project.status.value if task.project and task.project.status else None,
                 "status": task.status.value,
                 "title": task.title,
                 "due_date": task.due_date if task.due_date else None,
@@ -442,3 +443,26 @@ def aggregate_time_by_day_project_task(entries, week_start):
         key = (e["project"] or "No Project", e["task"])
         result[key][day_index] += hours
     return result
+
+
+def overall_progress(tasks):
+    """
+    Calculates the overall progress across all active projects based on completed tasks.
+
+    Args:
+        tasks (list): A list of task dictionaries. Each must include at least 'project', 'status',
+                      and 'project_status' to determine if the associated project is active.
+
+    Returns:
+        float: A value between 0 and 1 representing the ratio of completed tasks
+               to total tasks in active projects. Returns 0 if no relevant tasks exist.
+    """
+    done = 0
+    total = 0
+    for t in tasks:
+        if not t.get("project") or t.get("project_status") != "active":
+            continue
+        total += 1
+        if t["status"] == "done":
+            done += 1
+    return done / total if total > 0 else 0
