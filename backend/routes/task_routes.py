@@ -176,33 +176,15 @@ def get_task_by_id_api(task_id):
 
 @task_bp.route("/tasks/unassigned", methods=["GET"])
 @login_required
-def get_unassigned_tasks():
+def get_unassigned_tasks_api():
     """
     Retrieve tasks not assigned to any project.
 
     Returns:
-        JSON list of unassigned tasks with readable duration field.
+        JSON list of unassigned tasks.
     """
     tasks = get_unassigned_tasks(current_user.user_id)
-    task_list = []
-
-    for task in tasks:
-        duration_seconds = sum(
-            (
-                entry.duration_seconds
-                if entry.duration_seconds is not None
-                else int((entry.duration_minutes or 0) * 60)
-            )
-            for entry in task.time_entries
-        )
-        task_dict = task.to_dict()
-        total_minutes = duration_seconds // 60
-        task_dict["duration_readable"] = (
-            f"{total_minutes // 60}h {total_minutes % 60}min"
-        )
-        task_list.append(task_dict)
-
-    return jsonify(task_list)
+    return jsonify([task.to_dict() for task in tasks])
 
 
 @task_bp.route("/users/<int:user_id>/tasks", methods=["GET"])

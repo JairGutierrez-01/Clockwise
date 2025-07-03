@@ -312,7 +312,7 @@ def get_unassigned_tasks(user_id):
     Returns:
         list[Task]: List of Task objects where project_id is None.
     """
-    return Task.query.filter(Task.project_id is None, Task.user_id == user_id).all()
+    return Task.query.filter(Task.project_id == None, Task.user_id == user_id).all()
 
 
 def get_tasks_assigned_to_user(user_id):
