@@ -442,19 +442,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const trackBtn = document.createElement("button");
     trackBtn.textContent = "Track";
     trackBtn.className = "track-btn";
+
+    if (timerInterval) {
+      trackBtn.disabled = true;
+    } else {
+      trackBtn.disabled = false;
+    }
+    // Click-Handler
     trackBtn.addEventListener("click", async () => {
-      // Beende ggf. vorherige Sessions (Timer stoppen und ID löschen)
+      // doppelte Absicherung
       if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
+        alert("Please stop the current timer before starting a new one.");
+        return;
       }
 
-      currentEntryId = null;
-      elapsedTime = 0;
-      display.textContent = "00:00:00";
-
       await startTrackingForTask(e.task_id, e.name);
+
+      // nach dem Start ALLE Track-Buttons sperren
+      document.querySelectorAll(".track-btn").forEach(btn => btn.disabled = true);
     });
+
     clone.querySelector(".entry").appendChild(trackBtn);
 
     list.appendChild(clone);
