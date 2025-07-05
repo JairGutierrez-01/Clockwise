@@ -310,12 +310,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const assignedProjects = allTeamProjects.filter(
           (p) => p.team_id === Number(teamId), //teamId is a string so it needs to be changed to a number
         );
-        // Projects that can be assigned (not yet linked to any team)
-        const availableProjects = allTeamProjects.filter((p) => !p.team_id);
 
         let html = `
                   <div class="modal-header">
-                      <h3 id="modalDynamicTitle">Assign Project to <strong>${teamName}</strong></h3>
+                      <h3 id="modalDynamicTitle">Assigned Projects for <strong>${teamName}</strong></h3>
                       <button class="modal-close-btn">X</button>
                   </div>
                   <div class="modal-content-area">
@@ -329,28 +327,13 @@ document.addEventListener("DOMContentLoaded", () => {
             html += `<li>${p.name}</li>`;
           });
           html += "</ul>";
-        }
-
-        // Render list of assignable projects with action buttons
-        if (availableProjects.length > 0) {
-          html +=
-            "<p><strong>Available to Assign:</strong></p><ul class='modal-assign-members-list'>";
-          availableProjects.forEach((p) => {
-            html += `
-                          <li>
-                              <span>${p.name}</span>
-                              <button class="assign-project-btn assign-button" data-project-id="${p.project_id}" data-team-id="${teamId}">Assign</button>
-                          </li>
-                      `;
-          });
-          html += "</ul>";
         } else {
-          html += "<p>No available projects to assign.</p>";
+          html += "<p>No projects are assigned to this team.</p>";
         }
 
         html += `</div>`; // Close modal-content-area div
 
-        // Inject final modal content with project options
+        // Inject final modal content with assigned projects only
         if (dynamicContentArea) {
           dynamicContentArea.innerHTML = html;
         }
@@ -360,16 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
           customModal.querySelector(".modal-close-btn");
         if (updatedModalCloseBtn) {
           updatedModalCloseBtn.addEventListener("click", hideCustomModal);
-        }
-
-        // Attach listeners to "Assign" buttons in modal
-        if (dynamicContentArea) {
-          // Check if dynamicContentArea exists before querying
-          dynamicContentArea
-            .querySelectorAll(".assign-project-btn")
-            .forEach((button) => {
-              button.addEventListener("click", handleAssignProject);
-            });
         }
       } catch (err) {
         console.error(err);
@@ -392,47 +365,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
-  }
-
-  // PROJECT ASSIGNMENT HANDLER
-  // Handles POST request to assign a project to a team, triggered from modal Assign buttons
-  async function handleAssignProject(e) {
-    const projectId = e.target.dataset.projectId;
-    const teamId = e.target.dataset.teamId;
-
-    try {
-      // Send project assignment request to the backend API
-      const response = await fetch(`/api/teams/${teamId}/assign_project`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ project_id: projectId }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        showCustomAlert(
-          "Success!",
-          "Project assigned successfully!",
-          "success",
-        );
-        hideCustomModal(); // Close the modal after successful assignment
-        // Refreshes the entire team list, carousel, and UI
-        fetchUserTeams(); // This will refresh everything
-      } else {
-        const errorMessage = result.error || "Failed to assign project.";
-        // Show specific error message from backend if available
-        showCustomAlert("Error", errorMessage, "error");
-      }
-    } catch (err) {
-      // Show generic network error if request fails entirely
-      console.error("Error assigning project:", err);
-      showCustomAlert(
-        "Error",
-        "Network error. Error assigning project.",
-        "error",
-      );
-    }
   }
 
   // createTeamBtn listener to use customContentHtml
