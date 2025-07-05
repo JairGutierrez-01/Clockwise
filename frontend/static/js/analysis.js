@@ -131,7 +131,17 @@ document.addEventListener("DOMContentLoaded", () => {
     monday.setHours(0, 0, 0, 0);
     return monday;
   }
+  async function triggerCheckProgress() {
+    const res = await fetch("/api/analysis/check_progress", {
+      method: "POST",
+    });
 
+    if (!res.ok) {
+      console.error("Fehler beim Prüfen des Fortschritts");
+    } else {
+      console.log("Fortschrittsprüfung durchgeführt");
+    }
+  }
   /**
    * Aktualisiert das Diagramm und die Wochenanzeige basierend auf dem aktuellen Offset.
    * Nutzt das aktuelle weekOffset, um Start- und Enddatum zu berechnen und das Diagramm zu laden.
@@ -278,6 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<void>}
    */
   async function renderProgress() {
+    await triggerCheckProgress();
     // Destroy existing charts if present
     if (chartActual) chartActual.destroy();
     // Clear and build project completion list
@@ -299,7 +310,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (fill) fill.style.width = `${percentOverall}%`;
       const percentEl = document.querySelector(".overall-progress-percent");
       if (percentEl) percentEl.textContent = `${percentOverall}%`;
-
 
       Object.entries(projData).forEach(([project, ratio]) => {
         const percent = Math.round(ratio * 100);

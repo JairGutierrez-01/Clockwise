@@ -9,6 +9,10 @@ from reportlab.pdfgen import canvas
 from sqlalchemy import or_
 
 from backend.models import TimeEntry, Task, Project
+from backend.services.notification_service import (
+    notify_weekly_goal_achieved,
+    notify_progress_deviation,
+)
 
 
 def export_time_entries_pdf(time_entries):
@@ -141,7 +145,11 @@ def load_tasks():
         result.append(
             {
                 "project": task.project.name if task.project else None,
-                "project_status": task.project.status.value if task.project and task.project.status else None,
+                "project_status": (
+                    task.project.status.value
+                    if task.project and task.project.status
+                    else None
+                ),
                 "status": task.status.value,
                 "title": task.title,
                 "due_date": task.due_date if task.due_date else None,
@@ -265,21 +273,21 @@ def progress_per_project(tasks):
     return result
 
 
-def actual_target_comparison(time_entries, target):
+def actual_target_comparison(time_entries, target, notify=False, user_id=None):
     """
-    Compare actual worked hours against target hours per project.
+    Compare actual worked hours against target hours per project and optionally notify when goal is reached.
 
     Args:
         time_entries (list of dict): List of time entry dictionaries with keys:
-            - 'start' (datetime): Start datetime of the time entry
-            - 'end' (datetime): End datetime of the time entry
-            - 'project' (str): Project name
-        target (dict): Dictionary mapping project names to target hours (float)
+            - 'start' (datetime)
+            - 'end' (datetime)
+            - 'project' (str)
+        target (dict): Project name → target hours
+        notify (bool): If True, trigger notification when target is reached
+        user_id (int or None): Required if notify=True
 
     Returns:
-        dict: Dictionary mapping project names to dict with:
-            - 'actual' (float): Total worked hours
-            - 'target' (float): Target hours
+        dict: Project name → { 'actual': float, 'target': float }
     """
     actual = defaultdict(float)
     for e in time_entries:
@@ -287,12 +295,17 @@ def actual_target_comparison(time_entries, target):
         actual[project] += (e["end"] - e["start"]).total_seconds() / 3600
 
     comparison = {}
-    for project in set(list(actual.keys()) + list(target.keys())):
-        key = project or "No project"
-        comparison[key] = {
-            "actual": actual.get(project, 0) or 0,
-            "target": target.get(project, 0) or 0,
+    for project in set(actual.keys()).union(target.keys()):
+        actual_hours = actual.get(project, 0)
+        target_hours = target.get(project, 0)
+        comparison[project] = {
+            "actual": actual_hours,
+            "target": target_hours,
         }
+
+        if notify and user_id and actual_hours >= target_hours > 0:
+            notify_weekly_goal_achieved(user_id, project)
+
     return comparison
 
 
@@ -466,3 +479,57 @@ def overall_progress(tasks):
         if t["status"] == "done":
             done += 1
     return done / total if total > 0 else 0
+
+
+def calculate_expected_progress(projects, current_date):
+    """
+    Calculates expected progress per project based on time elapsed between created_at and due_date.
+
+    Args:
+        projects (list): List of Project model instances. Each must have:
+            - name (str)
+            - created_at (datetime)
+            - due_date (datetime)
+            - time_limit_hours (float)
+
+        current_date (datetime): The current point in time (e.g. now)
+
+    Returns:
+        dict: Mapping project name → expected progress ratio (float from 0 to 1)
+    """
+    expected = {}
+    for p in projects:
+        if not (p.created_at and p.due_date and p.time_limit_hours):
+            continue  # unvollständige Daten
+
+        total_duration = (p.due_date - p.created_at).total_seconds()
+        elapsed = (current_date - p.created_at).total_seconds()
+
+        if total_duration <= 0:
+            continue
+
+        ratio = min(max(elapsed / total_duration, 0), 1)  # Clamp zwischen 0–1
+        expected[p.name] = round(ratio, 4)  # z.B. 0.42 für 42% Fortschritt
+
+    return expected
+
+
+def check_progress_deviation(tasks, expected_progress, threshold=0.2, user_id=None):
+    """
+    Checks progress per project against expected values and notifies if deviation exceeds threshold.
+
+    Args:
+        tasks (list of dict): Each task must include:
+            - 'project' (str)
+            - 'status' (str) –"todo", "in_progress", "done"
+        expected_progress (dict): Project name → expected completion ratio (float 0–1)
+        threshold (float): Maximum tolerated deviation (e.g. 0.2 for 20%)
+        user_id (int or None): Required for sending notifications
+    """
+    current = progress_per_project(tasks)
+    for project, expected in expected_progress.items():
+        actual = current.get(project, 0)
+        deviation = abs(actual - expected)
+        if deviation > threshold and user_id:
+            deviation_pct = round(deviation * 100)
+            notify_progress_deviation(user_id, project, deviation_pct)

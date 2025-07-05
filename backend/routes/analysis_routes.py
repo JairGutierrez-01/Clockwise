@@ -2,9 +2,13 @@ from datetime import datetime, timedelta
 from io import BytesIO
 
 from flask import Blueprint, request, jsonify, make_response, send_file
-from flask_login import login_required
+from flask_login import login_required, current_user
 
-from backend.services.analysis_service import aggregate_time_by_day_project_task
+from backend.services.analysis_service import (
+    aggregate_time_by_day_project_task,
+    calculate_expected_progress,
+    check_progress_deviation,
+)
 from backend.services.analysis_service import (
     export_time_entries_pdf,
     export_time_entries_csv,
@@ -50,7 +54,9 @@ def api_actual_vs_planned():
     """
     time_entries = load_time_entries()
     targets = load_target_times()
-    comparison = actual_target_comparison(time_entries, targets)
+    comparison = actual_target_comparison(
+        time_entries, targets, notify=True, user_id=current_user.user_id
+    )
     return jsonify(comparison)
 
 
@@ -184,5 +190,33 @@ def api_overall_progress():
     """
     tasks = load_tasks()
     from backend.services.analysis_service import overall_progress
+
     result = overall_progress(tasks)
     return jsonify({"overall_progress": result})
+
+
+@analysis_bp.route("/check_progress", methods=["POST"])
+@login_required
+def check_progress():
+    """
+    Checks the progress of the current user's tasks and detects deviations
+    from the expected progress.
+
+    Loads all tasks, optionally calculates the dynamically expected progress
+    for the logged-in user, and verifies whether the actual progress is within
+    an allowed deviation threshold.
+
+    Returns a JSON response with the status.
+
+    Returns:
+        Response: JSON with {"status": "ok"} upon successful check.
+    """
+    tasks = load_tasks()
+
+    # Dynamische Erwartung berechnen (optional)
+    expected = calculate_expected_progress(tasks, current_user.user_id)
+
+    check_progress_deviation(
+        tasks, expected_progress=expected, threshold=0.2, user_id=current_user.user_id
+    )
+    return jsonify({"status": "ok"})

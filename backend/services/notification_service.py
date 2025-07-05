@@ -100,3 +100,11 @@ def notify_weekly_goal_achieved(user_id, project_name):
     """
     message = f"You reached your weekly goal for project! '{project_name}'."
     create_notification(user_id, message, notif_type="progress")
+
+
+def notify_task_overdue(user_id, task_name, due_date):
+    """
+    Notify user that weekly task are overdue.
+    """
+    msg = f"The task '{task_name}' is overdue since {due_date.strftime('%Y-%m-%d')}."
+    create_notification(user_id, msg, notif_type="warning")
