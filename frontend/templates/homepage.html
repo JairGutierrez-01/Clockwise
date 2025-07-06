@@ -264,7 +264,7 @@
         function pauseTimer() {
           if (!running) return;
           paused = !paused;
-          pauseButton.textContent = paused ? "Weiter" : "Pause";
+          pauseButton.textContent = paused ? "Resume" : "Pause";
           timeDisplay.classList.toggle("blink", paused);
         }
 
