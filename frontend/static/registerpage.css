@@ -120,3 +120,25 @@
 .profile-upload input[type="file"] {
   color: white;
 }
+
+
+/* ========== LIGHT MODE STYLES FOR REGISTER PAGE ========== */
+
+/* Input-Felder hellgrau */
+body.light-mode .login-box input[type="text"],
+body.light-mode .login-box input[type="password"],
+body.light-mode .login-box input[type="email"] {
+  background-color: #e8e8e8;
+  color: #000;
+}
+
+/* Placeholder in hellgrau */
+body.light-mode .login-box input::placeholder {
+  color: #555;
+}
+
+/* Optional: Upload-Feld (file input) */
+body.light-mode .login-box input[type="file"] {
+  background-color: transparent;
+  color: #000;
+}

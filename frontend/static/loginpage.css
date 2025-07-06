@@ -115,3 +115,21 @@
   width: 100%;
   text-decoration: underline;
 }
+
+
+/* ========== LIGHT MODE STYLES FOR LOGIN PAGE ========== */
+
+/* 2. Kreis-Hintergrund (unter dem Icon) im Light Mode */
+body.light-mode .login-box::before {
+  background-color: #f3f6f9;
+}
+
+/* 3. Input-Felder im Light Mode: hellgrau */
+body.light-mode .login-box input {
+  background-color: #e8e8e8;
+}
+
+/* 4. Placeholder in hellgrau */
+body.light-mode .login-box input::placeholder {
+  color: #555;
+}
