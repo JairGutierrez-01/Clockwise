@@ -82,3 +82,23 @@
   background-color: #95a6b5;
   color: #173044;
 }
+
+
+/* LIGHT MODE */
+body.light-mode .notification-card {
+  background-color: #e8e8e8;
+  color: #000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode #filter-controls button {
+  background-color: #e8e8e8;
+  color: #000;
+  border-color: #ccc;
+}
+
+body.light-mode #filter-controls button:hover,
+body.light-mode #filter-controls button.active {
+  background-color: #ccc;
+  color: #000;
+}

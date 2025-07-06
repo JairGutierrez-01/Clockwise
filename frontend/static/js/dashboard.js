@@ -1,5 +1,10 @@
 import { getTaskColor } from "./color_utils.js";
 
+// Hilfsfunktion zur Theme-Erkennung (Light/Dark Mode)
+function isDarkThemeActive() {
+  return document.body.classList.contains("dark-mode");
+}
+
 /**
  * Initialisiert die Projektübersicht in der Dashboard-Tabelle.
  * Lädt alle Projekte des aktuellen Nutzers asynchron über die API (/api/projects)
@@ -371,6 +376,10 @@ function drawProgressCircle(containerId, percent) {
   const circumference = 2 * Math.PI * radius;
   const initialOffset = circumference;
 
+   // Dynamische Textfarbe je nach Modus
+  const isDarkMode = isDarkThemeActive();
+  const textColor = isDarkMode ? "#fff" : "#444";
+
   // Inject SVG structure: two circles and centered percentage text
   container.innerHTML = `
         <svg width="${size}" height="${size}">
@@ -378,7 +387,7 @@ function drawProgressCircle(containerId, percent) {
             <circle class="progress-circle-fill" cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#00bfa5" stroke-width="10"
                     fill="none" stroke-dasharray="${circumference}"
                     stroke-dashoffset="${initialOffset}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
-            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#fff">${percent}%</text>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20" fill="${textColor}">${percent}%</text>
         </svg>
     `;
 
@@ -467,6 +476,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }));
     });
 
+    // Dynamische Farben für Achsen & Gitter je nach Modus
+    const isDarkMode = isDarkThemeActive();
+    const axisColor = isDarkMode ? "#fff" : "#555";
+    const gridColor = isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)";
+
     new Chart(ctx, {
       type: "bar",
       data: {
@@ -494,14 +508,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         scales: {
           x: {
             stacked: true,
-            ticks: { color: "#fff" },
-            grid: { color: "rgba(255,255,255,0.1)" },
+            ticks: { color: axisColor },
+            grid: { color: gridColor },
           },
           y: {
             stacked: true,
             beginAtZero: true,
-            ticks: { color: "#fff" },
-            grid: { color: "rgba(255,255,255,0.1)" },
+            ticks: { color: axisColor },
+            grid: { color: gridColor },
           },
         },
       },
