@@ -127,6 +127,7 @@ body.light-mode .login-box::before {
 /* 3. Input-Felder im Light Mode: hellgrau */
 body.light-mode .login-box input {
   background-color: #e8e8e8;
+  color: #000;
 }
 
 /* 4. Placeholder in hellgrau */
