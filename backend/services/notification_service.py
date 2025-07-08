@@ -30,7 +30,22 @@ def notify_task_assigned(user_id, task_name, project_name):
         f"You were assigned the task '{task_name}' in the project '{project_name}'."
     )
     create_notification(user_id, message, notif_type="task")
+    
+def notify_target_time_exceeded(user_id, project_name, target_hours, actual_hours):
+    """
+    Notify user that target time for a project has been exceeded.
 
+    Args:
+        user_id (int): ID of the user to notify
+        project_name (str): Name of the project
+        target_hours (float): Originally planned time
+        actual_hours (float): Time that has already been tracked
+    """
+    message = (
+        f"The time spent on project '{project_name}' has exceeded the target: "
+        f"{actual_hours:.1f}h tracked vs {target_hours:.1f}h planned."
+    )
+    create_notification(user_id, message, notif_type="warning", project_id=None)
 
 # Used in: task_routes.py
 # Trigger: Task was edited and reassigned to a new user (F60)
