@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,8 +6,14 @@
     <title>Dashboard - ClockWise</title>
 
     <!-- Styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
@@ -23,12 +29,10 @@
     {% include 'navbar.html' %}
 
     <div class="dashboard-wrapper">
-
       <!-- Main Content -->
       <main class="dashboard-content">
         <div class="dashboard-columns">
           <div class="left-column">
-
             <!-- Projects Table -->
             <div class="card projects-table" id="dashboard-project-card">
               <h3>Projects</h3>
@@ -49,7 +53,6 @@
           </div>
 
           <div class="right-column">
-
             <!-- Calendar -->
             <div class="card calendar">
               <h3>Calendar</h3>
@@ -68,11 +71,35 @@
 
     <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='js/dashboard.js') }}"
+    ></script>
 
     {% if user_logged_in %}
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% endif %}
-
   </body>
 </html>
+<
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    fetch("/api/analysis/weekly_status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Check failed");
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Progress check:", data);
+      })
+      .catch((error) => {
+        console.error("Progress check failed:", error);
+      });
+  });
+</script>

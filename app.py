@@ -27,7 +27,10 @@ from backend.routes.task_routes import task_bp
 from backend.routes.team_routes import team_bp
 from backend.routes.time_entry_routes import time_entry_bp
 from backend.routes.user_routes import auth_bp
-from backend.services.analysis_service import calendar_due_dates, calendar_worked_time
+from backend.services.analysis_service import (
+    calendar_due_dates,
+    calendar_worked_time,
+)
 from backend.services.task_service import get_task_by_id
 from backend.services.team_service import get_teams
 from backend.services.time_entry_service import get_time_entries_by_task
@@ -196,10 +199,24 @@ def get_calendar_due_dates():
 def dashboard():
     """
     Render the main dashboard page.
-
-    Returns:
-        str: Rendered HTML template for the dashboard.
+    Also checks for overdue tasks and notifies the user.
     """
+    """tasks = load_tasks()  # ggf. user-spezifisch
+
+    # Benachrichtigung: Wochenziel erreicht
+    check_weekly_goal_achieved(tasks, user_id=current_user.user_id)
+
+    # Benachrichtigung: Fortschritt abweicht
+    expected = calculate_expected_progress(
+        projects=load_projects(), current_date=datetime.now()  # ggf. filtern
+    )
+    check_progress_deviation(
+        tasks,
+        expected_progress=expected,
+        threshold=0.2,
+        user_id=current_user.user_id,
+    )
+"""
     return render_template("dashboard.html")
 
 

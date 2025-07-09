@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from backend.database import db
 from backend.models.notification import Notification
 
@@ -80,6 +82,7 @@ def notify_progress_deviation(user_id, project_name, deviation_percentage):
     """
     message = f"Your progress in '{project_name}' deviates by {deviation_percentage}% from your weekly goal."
     create_notification(user_id, message, notif_type="progress")
+    print(f"Abweichung erkannt: {project_name} weicht um {deviation_percentage}% ab.")
 
 
 # Used in: project_routes.py
@@ -98,7 +101,7 @@ def notify_weekly_goal_achieved(user_id, project_name):
     """
     Notify user that weekly goal was reached.
     """
-    message = f"You reached your weekly goal for project! '{project_name}'."
+    message = f"You reached your weekly goal for project '{project_name}'."
     create_notification(user_id, message, notif_type="progress")
 
 
@@ -108,3 +111,17 @@ def notify_task_overdue(user_id, task_name, due_date):
     """
     msg = f"The task '{task_name}' is overdue since {due_date.strftime('%Y-%m-%d')}."
     create_notification(user_id, msg, notif_type="warning")
+
+
+def already_notified_this_week(user_id, project_name):
+    one_week_ago = datetime.now() - timedelta(days=7)
+
+    return (
+        Notification.query.filter(
+            Notification.user_id == user_id,
+            Notification.notif_type == "progress",
+            Notification.message.ilike(f"%{project_name}%"),
+            Notification.created_at >= one_week_ago,
+        ).first()
+        is not None
+    )

@@ -1,13 +1,16 @@
 from datetime import datetime, timedelta
 from io import BytesIO
 
-from flask import Blueprint, request, jsonify, make_response, send_file
+from flask import Blueprint, request, jsonify, make_response, send_file, current_app
 from flask_login import login_required, current_user
 
 from backend.services.analysis_service import (
     aggregate_time_by_day_project_task,
     calculate_expected_progress,
     check_progress_deviation,
+    check_weekly_goal_achieved,
+    load_projects,
+    notify_weekly_status,
 )
 from backend.services.analysis_service import (
     export_time_entries_pdf,
@@ -213,10 +216,29 @@ def check_progress():
     """
     tasks = load_tasks()
 
-    # Dynamische Erwartung berechnen (optional)
-    expected = calculate_expected_progress(tasks, current_user.user_id)
+    expected = calculate_expected_progress(
+        projects=load_projects(),  # Muss SQLAlchemy-Objekte liefern
+        current_date=datetime.now(),
+    )
 
     check_progress_deviation(
-        tasks, expected_progress=expected, threshold=0.2, user_id=current_user.user_id
+        tasks,
+        expected_progress=expected,
+        threshold=0.2,
+        user_id=current_user.user_id,
     )
+
+    check_weekly_goal_achieved(tasks, user_id=current_user.user_id)
+
     return jsonify({"status": "ok"})
+
+
+@analysis_bp.route("/weekly_status", methods=["POST"])
+@login_required
+def notify_weekly_status_route():
+    try:
+        notify_weekly_status(current_user.user_id)
+        return jsonify({"status": "success"})
+    except Exception as e:
+        current_app.logger.error(f"Fehler in weekly_status: {e}", exc_info=True)
+        return jsonify({"status": "error", "message": str(e)}), 500

@@ -8,10 +8,11 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from sqlalchemy import or_
 
-from backend.models import TimeEntry, Task, Project
+from backend.database import db
+from backend.models import TimeEntry, Task, Project, Notification
 from backend.services.notification_service import (
     notify_weekly_goal_achieved,
-    notify_progress_deviation,
+    already_notified_this_week,
 )
 
 
@@ -527,9 +528,161 @@ def check_progress_deviation(tasks, expected_progress, threshold=0.2, user_id=No
         user_id (int or None): Required for sending notifications
     """
     current = progress_per_project(tasks)
+
     for project, expected in expected_progress.items():
         actual = current.get(project, 0)
         deviation = abs(actual - expected)
+
         if deviation > threshold and user_id:
             deviation_pct = round(deviation * 100)
-            notify_progress_deviation(user_id, project, deviation_pct)
+            message = f"You reached your weekly goal for project '{project.name}'!"
+            message = f"Your progress in '{project.name}' deviates by {deviation_pct}% from your weekly goal."
+            notification = Notification(
+                user_id=user_id,
+                project_id=project.project_id,
+                message=message,
+                type="progress",
+                timestamp=datetime.now(),
+            )
+
+            db.session.add(notification)
+            db.session.commit()
+            print(
+                f"🚨 Abweichung erkannt: {project.name} weicht um {deviation_pct}% ab."
+            )
+            # notify_progress_deviation(user_id, project, deviation_pct)
+        print(f"Check project deviation")
+
+
+def check_weekly_goal_achieved(tasks, user_id):
+    """
+    Checks whether the weekly goal for each project is reached
+    and sends a notification if 100% or more progress is achieved.
+    Only sends once per project per week.
+    """
+    print("🟡 Starte Wochenziel-Prüfung")
+
+    current_progress = progress_per_project(tasks)
+    if not current_progress:
+        print("❗ Kein Fortschritt verfügbar (evtl. keine Tasks?)")
+
+    for project_name, progress in current_progress.items():
+        print(f"🔍 Projekt: {project_name}, Fortschritt: {progress}")
+
+        if progress >= 1.0:
+            print(f"✅ Projekt '{project_name}' hat >= 100% Fortschritt")
+
+            if not already_notified_this_week(user_id, project_name):
+                project = find_project_by_name(project_name)
+                print(f"📬 Benachrichtigung wird erstellt für '{project_name}'")
+
+                message = f"You reached your weekly goal for project '{project.name}'!"
+
+                notification = Notification(
+                    user_id=user_id,
+                    project_id=project.project_id,
+                    message=message,
+                    type="progress",
+                    timestamp=datetime.now(),
+                )
+
+                db.session.add(notification)
+                db.session.commit()
+
+                print(
+                    f"Weekly goal notification created for user {user_id} and project '{project.name}'"
+                )
+
+
+def find_project_by_name(name):
+    """
+    Find project through name.
+
+    Args:
+        name (str): Projectname
+
+    Returns:
+        Project or None
+    """
+    return Project.query.filter_by(name=name).first()
+
+
+def notify_weekly_status(user_id, current_date=None):
+    """
+    Send weekly notifications per project about worked hours vs planned hours.
+
+    Args:
+        user_id (int): Nutzer-ID
+        current_date (datetime, optional): Referenzdatum (Standard: heute)
+    """
+    if current_date is None:
+        current_date = datetime.now()
+
+    projects = load_projects()  # Projekt-Objekte laden
+    time_entries = load_time_entries()  # Alle Zeiteinträge laden (ggf. nur für user_id)
+
+    for project in projects:
+        if not (project.created_at and project.due_date and project.time_limit_hours):
+            continue  # Daten unvollständig
+
+        # Wochenanzahl zwischen Start und Ende
+        total_days = (project.due_date - project.created_at).days
+        total_weeks = max(total_days / 7, 1)  # mindestens 1 Woche
+
+        # Erwartete Stunden pro Woche
+        planned_hours_per_week = project.time_limit_hours / total_weeks
+
+        # Wie viele Wochen sind seit Projektstart bis jetzt vergangen?
+        weeks_passed = (current_date - project.created_at).days / 7
+        weeks_passed = min(max(weeks_passed, 0), total_weeks)
+
+        # Erwartete kumulierte Stunden bis jetzt
+        expected_cumulative_hours = planned_hours_per_week * weeks_passed
+
+        # Tatsächliche kumulierte Stunden bis jetzt (für dieses Projekt)
+        actual_cumulative_hours = 0
+        for entry in time_entries:
+            if entry["project"] == project.name and entry["end"] <= current_date:
+                duration = (entry["end"] - entry["start"]).total_seconds() / 3600
+                actual_cumulative_hours += duration
+
+        # Stunden in der aktuellen Woche ermitteln
+        # Annahme: Woche startet Montag
+        current_week_start = current_date - timedelta(days=current_date.weekday())
+        current_week_end = current_week_start + timedelta(days=7)
+        actual_this_week = 0
+        for entry in time_entries:
+            if (
+                entry["project"] == project.name
+                and current_week_start <= entry["start"] < current_week_end
+            ):
+                duration = (entry["end"] - entry["start"]).total_seconds() / 3600
+                actual_this_week += duration
+
+        # Status bestimmen
+        deviation = actual_cumulative_hours - expected_cumulative_hours
+        status = "im Soll"
+        if deviation < -planned_hours_per_week * 0.1:  # >10% weniger als geplant
+            status = "hinter dem Plan"
+        elif deviation > planned_hours_per_week * 0.1:
+            status = "voraus"
+
+        # Nachricht bauen
+        message = (
+            f"Projekt '{project.name}': Diese Woche hast du {actual_this_week:.1f}h gearbeitet.\n"
+            f"Erwartet waren bisher {expected_cumulative_hours:.1f}h.\n"
+            f"Du bist {status} (Abweichung {deviation:.1f}h)."
+        )
+
+        # Notification anlegen und abspeichern
+        notification = Notification(
+            user_id=user_id,
+            project_id=project.project_id,
+            message=message,
+            type="weekly_status",
+            created_at=current_date,
+        )
+        db.session.add(notification)
+        db.session.commit()
+
+        print(f"Weekly status notification for project '{project.name}' sent.")
