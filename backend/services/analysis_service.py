@@ -661,17 +661,17 @@ def notify_weekly_status(user_id, current_date=None):
 
         # Status bestimmen
         deviation = actual_cumulative_hours - expected_cumulative_hours
-        status = "im Soll"
+        status = "in the should"
         if deviation < -planned_hours_per_week * 0.1:  # >10% weniger als geplant
-            status = "hinter dem Plan"
+            status = "behind plan"
         elif deviation > planned_hours_per_week * 0.1:
-            status = "voraus"
+            status = "in advance"
 
         # Nachricht bauen
         message = (
-            f"Projekt '{project.name}': Diese Woche hast du {actual_this_week:.1f}h gearbeitet.\n"
-            f"Erwartet waren bisher {expected_cumulative_hours:.1f}h.\n"
-            f"Du bist {status} (Abweichung {deviation:.1f}h)."
+            f"Project '{project.name}': This week you worked {actual_this_week:.1f}h.\n"
+            f"Until now {expected_cumulative_hours:.1f}h were expected.\n"
+            f"You are {status} (Deviation {deviation:.1f}h)."
         )
 
         if not already_notified_this_week(user_id, project.project_id):
@@ -680,7 +680,7 @@ def notify_weekly_status(user_id, current_date=None):
                 user_id=user_id,
                 project_id=project.project_id,
                 message=message,
-                type="weekly_status",
+                type="progress",
                 created_at=current_date,
             )
             db.session.add(notification)

@@ -6,10 +6,6 @@ from flask_login import login_required, current_user
 
 from backend.services.analysis_service import (
     aggregate_time_by_day_project_task,
-    calculate_expected_progress,
-    check_progress_deviation,
-    check_weekly_goal_achieved,
-    load_projects,
     notify_weekly_status,
 )
 from backend.services.analysis_service import (
@@ -198,41 +194,6 @@ def api_overall_progress():
     return jsonify({"overall_progress": result})
 
 
-@analysis_bp.route("/check_progress", methods=["POST"])
-@login_required
-def check_progress():
-    """
-    Checks the progress of the current user's tasks and detects deviations
-    from the expected progress.
-
-    Loads all tasks, optionally calculates the dynamically expected progress
-    for the logged-in user, and verifies whether the actual progress is within
-    an allowed deviation threshold.
-
-    Returns a JSON response with the status.
-
-    Returns:
-        Response: JSON with {"status": "ok"} upon successful check.
-    """
-    tasks = load_tasks()
-
-    expected = calculate_expected_progress(
-        projects=load_projects(),  # Muss SQLAlchemy-Objekte liefern
-        current_date=datetime.now(),
-    )
-
-    check_progress_deviation(
-        tasks,
-        expected_progress=expected,
-        threshold=0.2,
-        user_id=current_user.user_id,
-    )
-
-    check_weekly_goal_achieved(tasks, user_id=current_user.user_id)
-
-    return jsonify({"status": "ok"})
-
-
 @analysis_bp.route("/weekly_status", methods=["POST"])
 @login_required
 def notify_weekly_status_route():
@@ -240,5 +201,5 @@ def notify_weekly_status_route():
         notify_weekly_status(current_user.user_id)
         return jsonify({"status": "success"})
     except Exception as e:
-        current_app.logger.error(f"Fehler in weekly_status: {e}", exc_info=True)
+        current_app.logger.error(f"Error in weekly_status: {e}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
