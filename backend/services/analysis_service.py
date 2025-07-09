@@ -674,15 +674,16 @@ def notify_weekly_status(user_id, current_date=None):
             f"Du bist {status} (Abweichung {deviation:.1f}h)."
         )
 
-        # Notification anlegen und abspeichern
-        notification = Notification(
-            user_id=user_id,
-            project_id=project.project_id,
-            message=message,
-            type="weekly_status",
-            created_at=current_date,
-        )
-        db.session.add(notification)
-        db.session.commit()
+        if not already_notified_this_week(user_id, project.project_id):
+            # Notification anlegen und abspeichern
+            notification = Notification(
+                user_id=user_id,
+                project_id=project.project_id,
+                message=message,
+                type="weekly_status",
+                created_at=current_date,
+            )
+            db.session.add(notification)
+            db.session.commit()
 
-        print(f"Weekly status notification for project '{project.name}' sent.")
+            print(f"Weekly status notification for project '{project.name}' sent.")

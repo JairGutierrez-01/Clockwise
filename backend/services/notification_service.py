@@ -119,9 +119,26 @@ def already_notified_this_week(user_id, project_name):
     return (
         Notification.query.filter(
             Notification.user_id == user_id,
-            Notification.notif_type == "progress",
+            Notification.type == "progress",
             Notification.message.ilike(f"%{project_name}%"),
             Notification.created_at >= one_week_ago,
         ).first()
         is not None
     )
+
+
+"""
+def already_notified_this_week(user_id, project_id, notif_type="progress"):
+    now = datetime.now()
+    start_of_week = now - timedelta(days=now.weekday())  # Montag 0 Uhr
+    end_of_week = start_of_week + timedelta(days=7)
+
+    exists = Notification.query.filter(
+        Notification.user_id == user_id,
+        Notification.project_id == project_id,
+        Notification.type == notif_type,
+        Notification.created_at >= start_of_week,
+        Notification.created_at < end_of_week,
+    ).first()
+    return exists is not None
+"""
