@@ -113,22 +113,6 @@ def notify_task_overdue(user_id, task_name, due_date):
     create_notification(user_id, msg, notif_type="warning")
 
 
-"""
-def already_notified_this_week(user_id, project_name):
-    one_week_ago = datetime.now() - timedelta(days=7)
-
-    return (
-        Notification.query.filter(
-            Notification.user_id == user_id,
-            Notification.type == "progress",
-            Notification.message.ilike(f"%{project_name}%"),
-            Notification.created_at >= one_week_ago,
-        ).first()
-        is not None
-    )
-"""
-
-
 def already_notified_this_week(user_id, project_id, notif_type="progress"):
     now = datetime.now()
     start_of_week = now - timedelta(days=now.weekday())  # Montag 0 Uhr

@@ -1,9 +1,11 @@
 import csv
 from collections import defaultdict
 from datetime import datetime, timedelta
+from unittest.mock import patch, MagicMock
 
 import pytest
 
+from app import app
 from backend.services.analysis_service import (
     export_time_entries_pdf,
     export_time_entries_csv,
@@ -14,7 +16,7 @@ from backend.services.analysis_service import (
     actual_target_comparison,
     tasks_in_month,
     aggregate_time_by_day_project_task,
-    check_progress_deviation,
+    notify_weekly_status,
 )
 
 
@@ -244,3 +246,84 @@ def test_aggregate_time_by_day_project_task(sample_time_entries):
         import numbers
 
         assert all(isinstance(h, numbers.Real) for h in hours_list)
+
+@pytest.fixture
+def sample_project():
+    """Creates a mock project with base attributes for testing."""
+    today = datetime(2025, 7, 11)
+    mock = MagicMock()
+    mock.name = "Hausaufgaben"
+    mock.created_at = today - timedelta(days=5)
+    mock.due_date = today + timedelta(days=2)
+    mock.time_limit_hours = 5
+    mock.project_id = 1
+    return mock
+
+
+@pytest.fixture
+def sample_time_entry():
+    """Creates two time entries for the mock project."""
+    today = datetime(2025, 7, 11)
+    return [
+        {
+            "project": "Hausaufgaben",
+            "start": today - timedelta(days=1, hours=1),
+            "end": today - timedelta(days=1),
+        },
+        {
+            "project": "Hausaufgaben",
+            "start": today - timedelta(days=3, hours=1),
+            "end": today - timedelta(days=3),
+        },
+    ]
+
+
+@patch("backend.services.analysis_service.db.session.add")  # 5
+@patch("backend.services.analysis_service.db.session.commit")  # 4
+@patch("backend.services.analysis_service.load_time_entries")  # 3
+@patch("backend.services.analysis_service.load_projects")  # 2
+@patch("backend.services.notification_service.already_notified_this_week")  # 1
+def test_notify_weekly_status_creates_notification(
+    mock_notified,
+    mock_load_projects,
+    mock_load_time_entries,
+    mock_commit,
+    mock_add,
+    sample_project,
+    sample_time_entry,
+):
+    """
+    Tests that notify_weekly_status creates and persists a notification
+    when the user has worked fewer hours than expected on a project.
+
+    This test mocks dependencies like project and time entry loading,
+    as well as database session methods and notification checks.
+
+    Args:
+        mock_notified (MagicMock): Mock for already_notified_this_week function.
+        mock_load_projects (MagicMock): Mock for load_projects function.
+        mock_load_time_entries (MagicMock): Mock for load_time_entries function.
+        mock_commit (MagicMock): Mock for db.session.commit method.
+        mock_add (MagicMock): Mock for db.session.add method.
+        sample_project (MagicMock): Fixture providing a sample project mock.
+        sample_time_entry (list): Fixture providing sample time entry data.
+    """
+    mock_load_projects.return_value = [sample_project]
+    mock_load_time_entries.return_value = sample_time_entry
+    current_date = datetime(2025, 7, 11)
+
+    with app.app_context():
+        notify_weekly_status(user_id=42, current_date=current_date)
+
+    # Verify that a Notification object was created and saved
+    assert mock_add.call_count == 1
+    notification_obj = mock_add.call_args[0][0]
+    assert notification_obj.user_id == 42
+    assert notification_obj.project_id == sample_project.project_id
+    assert "Project 'Hausaufgaben'" in notification_obj.message
+    assert "behind plan" in notification_obj.message
+    assert "3.6h were expected" in notification_obj.message
+    assert "worked" in notification_obj.message
+
+    # Verify that the database commit was called once
+    mock_commit.assert_called_once()
