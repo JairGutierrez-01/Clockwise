@@ -511,8 +511,12 @@ def notify_weekly_status(user_id, current_date=None):
         weeks_passed = (current_date - project.created_at).days / 7
         weeks_passed = min(max(weeks_passed, 0), total_weeks)
 
-        # Erwartete kumulierte Stunden bis jetzt
-        expected_cumulative_hours = planned_hours_per_week * weeks_passed
+        # Erwartete kumulierte Stunden bis jetzt (anteilig nach Zeitverlauf)
+        total_duration = (project.due_date - project.created_at).total_seconds()
+        elapsed_duration = (current_date - project.created_at).total_seconds()
+        elapsed_ratio = min(max(elapsed_duration / total_duration, 0), 1)
+
+        expected_cumulative_hours = project.time_limit_hours * elapsed_ratio
 
         # Tatsächliche kumulierte Stunden bis jetzt (für dieses Projekt)
         actual_cumulative_hours = 0
