@@ -6,8 +6,33 @@
   --project-details-bg: #fbedeb;
   --reports-bg: #0f2c44;
   --team-progress-bg: #0f2c44;
-  --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   --dashboard-max-width: 1200px;
+  --progress-color: #00bfa5;
+  --progress-track-color: #333;
+  --progress-text-color: #fff;
+  --progress-text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  --project-card-bg: #173044;
+  --project-card-text: #ffffff;
+  --project-time-color: #b0c4de;
+  --chart-text-color: #e0e0e0;
+  --chart-grid-color: rgba(255, 255, 255, 0.1);
+}
+
+body.light-mode {
+  --projects-table-bg: #eaf2fa;
+  --calendar-bg: #eaf2fa;
+  --reports-bg: #eaf2fa;
+  --team-progress-bg: #eaf2fa;
+  --progress-color: #a6bddc;
+  --progress-track-color: #d0d7de;
+  --progress-text-color: #212121;
+  --progress-text-shadow: none;
+  --project-card-bg: #a6bddc;
+  --project-card-text: #1e4f85;
+  --project-time-color: #486f99;
+  --chart-text-color: #1e4f85;
+  --chart-grid-color: rgba(30, 79, 133, 0.15);
 }
 
 body.dark-mode {
@@ -28,7 +53,7 @@ body.dark-mode {
   --project-details-bg: #242424;
   --team-progress-bg: #0f2c44;
   --reports-bg: #0f2c44;
-  --card-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 body {
@@ -225,15 +250,7 @@ body.dark-mode .project-details {
   letter-spacing: 0.3px;
   color: #ffffff;
 }
-.sp1 {
-  background-color: rgba(243, 215, 212, 0.6);
-}
-.sp2 {
-  background-color: rgba(217, 142, 123, 0.6);
-}
-.sp3 {
-  background-color: rgba(166, 92, 73, 0.6);
-}
+
 .progress-chart {
   width: 120px;
   height: 120px;
@@ -318,11 +335,11 @@ body.dark-mode .calendar {
 }
 
 .project-dashboard-card {
-  background-color: #173044;
-  color: #fff;
+  background-color: var(--project-card-bg);
+  color: var(--project-card-text);
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--card-shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -337,16 +354,22 @@ body.dark-mode .calendar {
 .project-time {
   font-family: monospace;
   font-size: 0.95rem;
-  color: #b0c4de;
+  color: var(--project-time-color);
 }
 
 .progress-chart .progress-circle-fill {
-  transition: stroke-dashoffset 1s ease-out;
+    stroke: var(--progress-color);
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.progress-chart .progress-circle-track {
+    stroke: var(--progress-track-color);
 }
 
 .progress-chart text {
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    fill: var(--progress-text-color);
+    font-weight: bold;
+    text-shadow: var(--progress-text-shadow);
 }
 
 #team-activity-box {

@@ -371,20 +371,23 @@ function drawProgressCircle(containerId, percent) {
   const circumference = 2 * Math.PI * radius;
   const initialOffset = circumference;
 
-  // Inject SVG structure: two circles and centered percentage text
   container.innerHTML = `
         <svg width="${size}" height="${size}">
-            <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#444" stroke-width="10" fill="none"/>
-            <circle class="progress-circle-fill" cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#00bfa5" stroke-width="10"
+            <circle class="progress-circle-track" cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke-width="10" fill="none"/>
+            <circle class="progress-circle-fill" cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke-width="10"
                     fill="none" stroke-dasharray="${circumference}"
                     stroke-dashoffset="${initialOffset}" transform="rotate(-90 ${size / 2} ${size / 2})"/>
-            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20" fill="#fff">${percent}%</text>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="20">${percent}%</text>
         </svg>
     `;
 
-  // Animate the stroke to reflect actual progress after short delay
+  const fillCircle = container.querySelector(".progress-circle-fill");
+  if (fillCircle) {
+    const progressColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-color').trim();
+    fillCircle.setAttribute("stroke", progressColor);
+  }
+
   setTimeout(() => {
-    const fillCircle = container.querySelector(".progress-circle-fill");
     if (fillCircle) {
       fillCircle.style.transition = "stroke-dashoffset 1s ease-out";
       const targetOffset = circumference * (1 - percent / 100);
@@ -445,6 +448,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const ctx = canvas.getContext("2d");
 
+  // Feste Farben für Chart-Text und Grid für gute Sichtbarkeit in allen Modi
+  const chartTextColor = "#1e4f85";
+  const chartGridColor = "rgba(30, 79, 133, 0.15)";
+
   try {
     const res = await fetch("/api/analysis/weekly-time-stacked");
     const { labels, datasets } = await res.json();
@@ -494,14 +501,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         scales: {
           x: {
             stacked: true,
-            ticks: { color: "#fff" },
-            grid: { color: "rgba(255,255,255,0.1)" },
+            ticks: { color: chartTextColor },
+            grid: { color: chartGridColor },
           },
           y: {
             stacked: true,
             beginAtZero: true,
-            ticks: { color: "#fff" },
-            grid: { color: "rgba(255,255,255,0.1)" },
+            ticks: { color: chartTextColor },
+            grid: { color: chartGridColor },
           },
         },
       },
