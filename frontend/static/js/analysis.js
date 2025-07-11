@@ -14,6 +14,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let chartCompletion = [];
   let currentWeekOffset = 0;
 
+  // Theme colors from CSS variables
+  const themeStyles = getComputedStyle(document.documentElement);
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  const gridColor = isDarkMode ? '#575757' : 'rgba(0,0,0,0.1)';
+
   /**
    * Rendert das Wochen-Diagramm mit gestapelten Balken pro Projekt/Task.
    * @param {string|null} [weekStart=null] - ISO-Datum (YYYY-MM-DD) des Wochenanfangs oder null für aktuelle Woche.
@@ -73,8 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
           scales: {
             x: {
               stacked: true,
-              ticks: { color: "#fff" },
-              grid: { color: "rgba(255,255,255,0.1)" },
+              ticks: { color: gridColor },
+              grid: { color: gridColor },
               categoryPercentage: 0.7,
               barPercentage: 1.0,
             },
@@ -84,15 +89,15 @@ document.addEventListener("DOMContentLoaded", () => {
               title: {
                 display: true,
                 text: "Hours",
-                color: "#fff",
+                color: gridColor,
               },
-              ticks: { color: "#fff" },
-              grid: { color: "rgba(255,255,255,0.1)" },
+              ticks: { color: gridColor },
+              grid: { color: gridColor },
             },
           },
           plugins: {
             legend: {
-              labels: { color: "#fff" },
+              labels: { color: gridColor },
             },
             tooltip: {
               // Tooltip zeigt Zeit in Stunden, Minuten und Sekunden an (Konvertierung von Dezimalstunden)
@@ -211,8 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 tooltip = document.createElement("div");
                 tooltip.innerText = `Projekt: ${project}`;
                 tooltip.style.position = "absolute";
-                tooltip.style.background = "#333";
-                tooltip.style.color = "#fff";
+                tooltip.style.background = isDarkMode ? '#333' : '#fff';
+                tooltip.style.color = gridColor;
                 tooltip.style.padding = "4px 8px";
                 tooltip.style.borderRadius = "4px";
                 tooltip.style.fontSize = "12px";
@@ -327,13 +332,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const radius = size / 2 - 8;
         const circumference = 2 * Math.PI * radius;
         const offset = circumference * (1 - percent / 100);
+        const textColor = isDarkMode ? '#fff' : '#000';
         const frag = document.createRange().createContextualFragment(`
           <svg width="${size}" height="${size}">
             <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#444" stroke-width="8" fill="none"/>
             <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#00bfa5" stroke-width="8" fill="none"
                     stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
                     transform="rotate(-90 ${size / 2} ${size / 2})" class="progress-circle-fill"/>
-            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="16" fill="#fff">${percent}%</text>
+            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="16" fill="${textColor}">${percent}%</text>
           </svg>
         `);
         item.appendChild(frag);
@@ -373,18 +379,18 @@ document.addEventListener("DOMContentLoaded", () => {
           scales: {
             x: {
               stacked: false,
-              ticks: { color: "#fff" },
-              grid: { color: "rgba(255,255,255,0.1)" },
+              ticks: { color: gridColor },
+              grid: { color: gridColor },
             },
             y: {
               beginAtZero: true,
-              ticks: { color: "#fff" },
-              grid: { color: "rgba(255,255,255,0.1)" },
+              ticks: { color: gridColor },
+              grid: { color: gridColor },
             },
           },
           plugins: {
             legend: {
-              labels: { color: "#fff" },
+              labels: { color: gridColor },
             },
           },
         },
