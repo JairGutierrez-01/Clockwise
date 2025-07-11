@@ -185,9 +185,8 @@ def get_latest_sessions():
     """
     Retrieve the user's most recent finished time entries.
     """
-    entries = get_latest_time_entries_for_user(current_user.user_id)
-    return jsonify([entry.to_dict() for entry in entries])
-
+    tasks = get_latest_time_entries_for_user(current_user.user_id)
+    return jsonify(tasks)
 
 @time_entry_bp.route("/latest_project_entry", methods=["GET"])
 @login_required

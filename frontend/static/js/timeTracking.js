@@ -323,15 +323,8 @@ document.addEventListener("DOMContentLoaded", () => {
         latestSessions.forEach((session) => {
           let formattedDuration = "00:00:00";
           //check if the session has a valid time
-          if (session.start_time && session.end_time) {
-            //convert the time
-            const startMs = new Date(session.start_time).getTime();
-            const endMs = new Date(session.end_time).getTime();
-            //set the duration in a readable way
-            formattedDuration = formatTime(endMs - startMs);
-            //not necessary but use duration_seconds if timestamps are missing
-          } else if (session.duration_seconds != null) {
-            formattedDuration = formatTime(session.duration_seconds * 1000);
+          if (session.total_duration_seconds != null) {
+            formattedDuration = formatTime(session.total_duration_seconds * 1000);
           }
           //call renderEntry with the needed attributes
           renderEntry({
@@ -409,34 +402,31 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {Object} e - The entry object with properties including time_entry_id, name, duration
    */
   function renderEntry(e) {
-    // remove any existing entry cards for this ID, to keep up with updates
-    const existingCards = list.querySelectorAll(
-      `.entry-wrapper[data-id="${e.time_entry_id}"]`,
-    );
+  // use time_entry_id if available, otherwise fallback to task_id
+  const id = e.time_entry_id ?? `task-${e.task_id}`;
 
-    existingCards.forEach((card) => card.remove());
-    // also remove from storage to prevent stale duplicates
-    removeEntryId(e.time_entry_id);
+  // remove existing entries with same ID to avoid duplicates
+  const existingCards = list.querySelectorAll(
+    `.entry-wrapper[data-id="${id}"]`
+  );
+  existingCards.forEach((card) => card.remove());
+  removeEntryId(e.time_entry_id);  // optional cleanup
 
-    // clone the template to fill up later with data
-    const clone = tpl.content.cloneNode(true);
-    // clone the wrpper to give it an ID
-    const w = clone.querySelector(".entry-wrapper");
-    w.dataset.id = e.time_entry_id;
+  // clone template
+  const clone = tpl.content.cloneNode(true);
+  const w = clone.querySelector(".entry-wrapper");
+  w.dataset.id = id;
     //give the html the task title and project
-    clone.querySelector(".entry-name").innerHTML = `
-      <span class="task-title">${e.name}</span>
-      <span class="entry-project"> – ${e.project_name || ""}</span>
-    `;
-    //give the clone a duration
-    clone.querySelector(".duration").textContent = e.duration;
+  clone.querySelector(".entry-name").innerHTML = `
+    <span class="task-title">${e.name}</span>
+    <span class="entry-project"> – ${e.project_name || ""}</span>
+  `;
+  clone.querySelector(".duration").textContent = e.duration;
 
-    // Setze Edit-Button
-    const editBtn = clone.querySelector(".edit-btn");
-    if (editBtn) {
-      //give the edit button the task id
-      editBtn.setAttribute("data-task-id", e.task_id);
-    }
+  const editBtn = clone.querySelector(".edit-btn");
+  if (editBtn) {
+    editBtn.setAttribute("data-task-id", e.task_id);
+  }
 
     // Füge neuen Track-Button hinzu
     const trackBtn = document.createElement("button");
@@ -580,17 +570,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       await stopEntryAPI(currentEntryId);
-      //fetch the entry object
-      const e = await fetchEntryAPI(currentEntryId);
-      //fetch the task and then give the object a name, start-. endtime and duration
-      const task = await fetch(`/api/tasks/${e.task_id}`).then((r) => r.json());
 
-      e.name = task.title;
-      e.start_time = startDisplay;
-      e.end_time = new Date(e.end_time).toLocaleTimeString();
-      e.duration = formatTime(elapsedTime);
-      //show the new entry in the latest session
-      renderEntry(e);
+      const latestSessions = await fetchLatestSessions();
+      list.innerHTML = ""; // alte Liste leeren
+
+      latestSessions.forEach((session) => {
+        const formatted = formatTime((session.total_duration_seconds || 0) * 1000);
+        renderEntry({
+          time_entry_id: session.time_entry_id,
+          task_id: session.task_id,
+          name: session.title,
+          project_name: session.project_name,
+          duration: formatted,
+        });
+      });
       //add entry id to the localstorage
       addEntryId(currentEntryId);
     } catch (err) {

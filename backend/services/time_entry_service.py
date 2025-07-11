@@ -1,8 +1,10 @@
 from datetime import datetime
+from sqlalchemy import func
 
 from backend.database import db
 from backend.models.task import Task
 from backend.models.time_entry import TimeEntry
+from backend.models.project import Project
 from backend.services.project_service import update_total_duration_for_project
 from backend.services.task_service import update_total_duration_for_task
 
@@ -158,23 +160,43 @@ def get_time_entries_by_task(task_id):
 
 def get_latest_time_entries_for_user(user_id, limit=10):
     """
-    Retrieve the latest completed time entries for a given user.
+    Retrieve latest tasks (based on recent time entries) with total duration per task
+    and all associated time entry IDs (needed for editing).
 
     Args:
         user_id (int): ID of the user.
-        limit (int): Maximum number of entries to return.
+        limit (int): Max number of distinct tasks to return.
 
     Returns:
-        list[TimeEntry]: Sorted list of finished time entries sorted by start time descending.
+        list[dict]: Each dict includes task info, total duration, and related time entry IDs.
     """
-    return (
-        TimeEntry.query.filter_by(user_id=user_id)
-        .filter(TimeEntry.end_time.isnot(None))
-        .order_by(TimeEntry.start_time.desc())
+    entries = (
+        db.session.query(
+            Task.task_id,
+            Task.title,
+            Project.name.label("project_name"),
+            func.sum(TimeEntry.duration_seconds).label("total_duration_seconds")
+        )
+        .join(TimeEntry, TimeEntry.task_id == Task.task_id)
+        .outerjoin(Project, Task.project_id == Project.project_id)  # <–– Projekt dazunehmen
+        .filter(TimeEntry.user_id == user_id, TimeEntry.end_time.isnot(None))
+        .group_by(Task.task_id, Task.title, Project.name)
+        .order_by(func.max(TimeEntry.end_time).desc())
         .limit(limit)
         .all()
     )
 
+    result = []
+    for task_id, title, project_name, duration_seconds in entries:
+        result.append({
+            "task_id": task_id,
+            "title": title,
+            "project_name": project_name or "",
+            "total_duration_seconds": duration_seconds,
+            "time_entry_id": None,  # optional, falls du später IDs einzeln brauchst
+        })
+
+    return result
 
 def get_latest_project_time_entry_for_user(user_id):
     """
