@@ -1,21 +1,22 @@
 :root {
+  --carousel-bg-gradient: linear-gradient(to right, #004c57, #0f1f36);
   --bg-gradient-start: #0e1629;
   --bg-gradient-end: #1b263b;
   --card-bg: #1e2532;
   --text-light: #e0e6ed;
   --text-muted: #94a3b8;
-  --purple: #b18aff;
+  --purple: #7c3aed;
   --border-color: #3f475a;
 
   /* Input background color for modals */
   --input-bg: #1e1e2d; /* A slightly darker shade for input fields */
   /* Delete/Cancel button color */
-  --delete-color: #f87171; /* Your existing red for delete actions */
-  --delete-color-dark: #dc2626; /* Darker red for hover on delete buttons */
+  --delete-color: #990000; /* Deep red for delete actions in dark mode */
+  --delete-color-dark: #b43c3c; /* Slightly darker red for hover on delete buttons */
 
   /* Specific colors for roles */
   --admin-color: var(--purple);
-  --member-color: #6ec5ff;
+  --member-color: #1e4f85; /* Deep blue for member buttons in dark mode */
 
   --subtle-gradient-1: linear-gradient(to right, #242b38, #1a202b);
   --subtle-gradient-1-hover: linear-gradient(to right, #2f3747, #202733);
@@ -25,7 +26,8 @@
 
   --accent-color-dark: #7c3aed; /* A darker shade of purple/accent for active button */
   --text-color-light: #e0e6ed; /* Explicitly defining this as it was used without -- in one place */
-  --accent-color-light: #a78bfa; /* Light purple accent for hover effects */
+  --accent-color-light: #7dc4fa; /* Lighter blue accent for hover effects in dark mode */
+  --active-row-bg: #3b4150; /* Default active row bg for dark mode */
   --background-color-dark: #1b263b;
 
   --accent-color: var(
@@ -44,6 +46,9 @@
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.15);
   --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+  /* Table row hover background for dark mode */
+  --row-hover-bg: #272f3d;
 }
 
 body {
@@ -57,6 +62,41 @@ body {
   color: var(--text-light);
   font-family: "Inter", sans-serif;
   font-size: 1.1rem;
+}
+
+body.light-mode {
+  --bg-gradient-start: #f5f5f5;
+  --bg-gradient-end: #ffffff;
+  --card-bg: #ffffff;
+  --text-light: #333333;
+  --text-muted: #555555;
+  --border-color: #cccccc;
+  --input-bg: #ffffff;
+  --delete-color: #fca5a5; /* Softer, lighter red for delete actions in light mode */
+  --delete-color-dark: #ee6666; /* Slightly darker red for hover in light mode */
+  --admin-color: #7c3aed;
+  --member-color: #4f99e8; /* Lighter, clearer blue for member in light mode */
+  --subtle-gradient-1: linear-gradient(to right, #ffffff, #f5f5f5);
+  --subtle-gradient-1-hover: linear-gradient(to right, #eeeeee, #e5e5e5);
+  --team-card-header-bg: #f0f0f0;
+  --text-muted-rgb: 85, 85, 85;
+  --accent-color: #4f99e8;
+  --accent-color-light: #b6dbff; /* Lighter blue accent for hover effects in light mode */
+  --accent-color-dark: #7c3aed;
+  --surface-bg: #ffffff;
+  --surface-hover: #f0f0f0;
+  --primary-color: #6a0dad;
+  --primary-color-dark: #5a0bac;
+  --surface-dark: #f5f5f5;
+  --card-bg-light: #f8f8f8;
+  --purple: #7c3aed;
+  --carousel-bg-gradient: linear-gradient(to right, #BCC7C0, #515F7A);
+  --active-row-bg: #e3f1ff; /* Light blue for active row in light mode */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.15);
+  /* Table row hover background for light mode */
+  --row-hover-bg: #e0e7ef;
 }
 
 .teams-container {
@@ -98,7 +138,7 @@ body {
 }
 
 .create-team-btn {
-  background-color: var(--purple);
+  background-color: var(--member-color);
   border: none;
   padding: 10px 20px;
   border-radius: 999px;
@@ -110,7 +150,7 @@ body {
 }
 
 .delete-team-btn {
-  background-color: #ff6b6b;
+  background-color: var(--delete-color-dark);
   border: none;
   padding: 10px 20px;
   border-radius: 999px;
@@ -122,11 +162,11 @@ body {
 }
 
 .create-team-btn:hover {
-  background-color: #c4b5fd;
+  background-color: var(--accent-color-light);
 }
 
-.delete-team-btn {
-  background-color: #ff7a7a;
+.delete-team-btn:hover {
+  background-color: var(--delete-color);
   color: white;
 }
 
@@ -187,7 +227,7 @@ body {
 }
 
 .team-table tbody tr:hover {
-  background-color: #272f3d;
+  background-color: var(--row-hover-bg);
   cursor: pointer;
   transform: scale(1.005);
 }
@@ -257,11 +297,11 @@ body {
 }
 
 .add-member-btn:hover {
-  background-color: #93c5fd;
+  background-color: var(--accent-color-light);
 }
 
 .delete-member-btn {
-  background-color: #f87171;
+  background-color: var(--delete-color-dark);
   border: none;
   padding: 10px 20px;
   border-radius: 999px;
@@ -273,7 +313,7 @@ body {
 }
 
 .delete-member-btn:hover {
-  background-color: #fca5a5;
+  background-color: var(--delete-color);
 }
 
 /* Carousel styles*/
@@ -372,7 +412,7 @@ body {
   min-width: 100%;
   flex-shrink: 0;
   height: 100%;
-  background: linear-gradient(to right, #004c57, #0f1f36);
+  background: var(--carousel-bg-gradient);
   border-radius: 24px;
   padding: 1.5rem;
   box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
@@ -1257,7 +1297,7 @@ body {
 }
 
 .team-table tr.active-team-row {
-  background-color: #3b4150 !important;
+  background-color: var(--active-row-bg) !important;
   transform: scale(1.01);
 }
 
