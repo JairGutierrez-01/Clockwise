@@ -336,7 +336,7 @@ body.light-mode #clock circle {
 }
 
 body.light-mode .button-row button {
-  background-color: #9c8fd4;
+  background-color: #7a6ebc;
   color: white;
 }
 
@@ -352,6 +352,11 @@ body.light-mode .hero p {
 body.light-mode .cta-btn {
   background-color: #95a6b5;
   color: #ffffff;
+}
+
+body.light-mode .cta-btn:hover {
+  background-color: #4b6ea3;
+  color: white;
 }
 
 /* Spiegelung für Analyze Box */
@@ -443,4 +448,23 @@ body.light-mode .reflection-analyze {
 /* Light mode buttons */
 body.light-mode .cta-btn {
   color: #ffffff;
+}
+
+/* Light Mode – Gelbe Plan-Card */
+body.light-mode #plan .diagram-box {
+  background-color: #f6e5a4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode #plan .reflection-analyze {
+  background: linear-gradient(
+    to bottom,
+    rgba(246, 229, 164, 1),
+    rgba(246, 229, 164, 0.8) 30%,
+    rgba(246, 229, 164, 0.6) 50%,
+    rgba(246, 229, 164, 0.3) 70%,
+    rgba(246, 229, 164, 0) 100%
+  );
+  filter: blur(6px);
+  opacity: 0.6;
 }

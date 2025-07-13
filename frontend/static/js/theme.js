@@ -54,4 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
     sunIcon.style.display = isDark ? "none" : "inline";
     moonIcon.style.display = isDark ? "inline" : "none";
   }
+
+  updateAnalyzeImage();
 });

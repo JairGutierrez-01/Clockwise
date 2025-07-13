@@ -337,13 +337,18 @@
          * Wechselt das Bild basierend auf dem aktiven Farbschema (Light/Dark Mode).
          */
         function updateAnalyzeImage() {
-          const img = document.getElementById("analyze-img");
+          const analyzeImg = document.getElementById("analyze-img");
+          const planImg = document.getElementById("plan-img");
+
           if (document.body.classList.contains("light-mode")) {
-            img.src = "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
+            analyzeImg.src = "{{ url_for('static', filename='images/AnalyzeDiagramLightMode.png') }}";
+            planImg.src = "{{ url_for('static', filename='images/PlanDiagramLightMode.png') }}";
           } else {
-            img.src = "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+            analyzeImg.src = "{{ url_for('static', filename='images/AnalyzeDiagram.png') }}";
+            planImg.src = "{{ url_for('static', filename='images/PlanDiagram.png') }}";
           }
         }
+
 
         // Beim Seitenstart prüfen und Bild anpassen
         updateAnalyzeImage();
