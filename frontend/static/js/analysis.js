@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Theme colors from CSS variables
   const themeStyles = getComputedStyle(document.documentElement);
   const isDarkMode = document.body.classList.contains('dark-mode');
-  const gridColor = isDarkMode ? '#575757' : 'rgba(0,0,0,0.1)';
 
   /**
    * Rendert das Wochen-Diagramm mit gestapelten Balken pro Projekt/Task.
@@ -25,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<void>}
    */
   async function renderChart(weekStart = null) {
+    const isDarkMode = document.body.classList.contains("dark-mode");
+    const gridColor = isDarkMode ? "#ffffff" : "#000000";
     const ctx = document.getElementById("timeChart").getContext("2d");
     if (chartInstance) chartInstance.destroy(); // Vorherige Chart-Instanz entfernen, um Speicherlecks und Überlagerungen zu vermeiden
 

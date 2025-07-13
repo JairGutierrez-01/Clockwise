@@ -9,14 +9,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='projects.css') }}">
   </head>
 
-  <body class="dark-mode">
+  <body class="dark-mode notification-page">
     {% include 'navbar.html' %}
 
     <main class="notification-container">
       <h1>Notifications</h1>
-      <div id="filter-controls">
+      <div class="notification-filter" id="filter-controls">
         <button data-filter="all" class="active">All</button>
         <button data-filter="info">Info</button>
         <button data-filter="task">Task</button>
