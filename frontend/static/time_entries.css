@@ -188,3 +188,7 @@ body:not(.dark-mode) table th {
   background-color: #95a6b5;
   color: #ffffff;
 }
+
+body:not(.dark-mode) .edit-form {
+  background-color: #95a6b5;
+}
