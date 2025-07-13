@@ -165,3 +165,26 @@ p {
 .form-actions button:hover {
   transform: scale(1.05);
 }
+
+/* Light-Mode */
+table td {
+  color: #000000;
+}
+
+body.dark-mode table td {
+  color: #ffffff;
+}
+
+table th {
+  background-color: #0b1c2c;
+  color: #ffffff;
+}
+
+body:not(.dark-mode) .edit-btn {
+  color: #000000;
+}
+
+body:not(.dark-mode) table th {
+  background-color: #95a6b5;
+  color: #ffffff;
+}
