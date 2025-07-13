@@ -418,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
           el.classList.remove("hidden");
 
           if (key === "weekly") {
-            renderChart();
+            updateChartForWeek();
           } else if (key === "calendar") {
             renderFullCalendar();
           } else if (key === "progress") {
