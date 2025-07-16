@@ -56,6 +56,7 @@ def api_actual_vs_planned():
     comparison = actual_target_comparison(
         time_entries, targets, notify=True, user_id=current_user.user_id
     )
+    print(comparison)
     return jsonify(comparison)
 
 

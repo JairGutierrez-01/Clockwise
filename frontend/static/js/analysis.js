@@ -16,7 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Theme colors from CSS variables
   const themeStyles = getComputedStyle(document.documentElement);
-  const isDarkMode = document.body.classList.contains('dark-mode');
+  const isDarkMode = document.body.classList.contains("dark-mode");
+  const gridColor = isDarkMode ? "#575757" : "rgba(0,0,0,0.1)";
 
   /**
    * Rendert das Wochen-Diagramm mit gestapelten Balken pro Projekt/Task.
@@ -24,8 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<void>}
    */
   async function renderChart(weekStart = null) {
-    const isDarkMode = document.body.classList.contains("dark-mode");
-    const gridColor = isDarkMode ? "#ffffff" : "#000000";
     const ctx = document.getElementById("timeChart").getContext("2d");
     if (chartInstance) chartInstance.destroy(); // Vorherige Chart-Instanz entfernen, um Speicherlecks und Überlagerungen zu vermeiden
 
@@ -137,17 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
     monday.setHours(0, 0, 0, 0);
     return monday;
   }
-  async function triggerCheckProgress() {
-    const res = await fetch("/api/analysis/check_progress", {
-      method: "POST",
-    });
 
-    if (!res.ok) {
-      console.error("Fehler beim Prüfen des Fortschritts");
-    } else {
-      console.log("Fortschrittsprüfung durchgeführt");
-    }
-  }
   /**
    * Aktualisiert das Diagramm und die Wochenanzeige basierend auf dem aktuellen Offset.
    * Nutzt das aktuelle weekOffset, um Start- und Enddatum zu berechnen und das Diagramm zu laden.
@@ -217,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 tooltip = document.createElement("div");
                 tooltip.innerText = `Projekt: ${project}`;
                 tooltip.style.position = "absolute";
-                tooltip.style.background = isDarkMode ? '#333' : '#fff';
+                tooltip.style.background = isDarkMode ? "#333" : "#fff";
                 tooltip.style.color = gridColor;
                 tooltip.style.padding = "4px 8px";
                 tooltip.style.borderRadius = "4px";
@@ -294,7 +283,6 @@ document.addEventListener("DOMContentLoaded", () => {
    * @returns {Promise<void>}
    */
   async function renderProgress() {
-    await triggerCheckProgress();
     // Destroy existing charts if present
     if (chartActual) chartActual.destroy();
     // Clear and build project completion list
@@ -333,14 +321,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const radius = size / 2 - 8;
         const circumference = 2 * Math.PI * radius;
         const offset = circumference * (1 - percent / 100);
-        const textColor = isDarkMode ? '#fff' : '#000';
+        const textColor = isDarkMode ? "#fff" : "#000";
         const frag = document.createRange().createContextualFragment(`
           <svg width="${size}" height="${size}">
             <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#444" stroke-width="8" fill="none"/>
             <circle cx="${size / 2}" cy="${size / 2}" r="${radius}" stroke="#00bfa5" stroke-width="8" fill="none"
                     stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
                     transform="rotate(-90 ${size / 2} ${size / 2})" class="progress-circle-fill"/>
-            <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="16" fill="${textColor}">${percent}%</text>
+                  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-size="16" fill="${textColor}">${percent}%</text>
           </svg>
         `);
         item.appendChild(frag);

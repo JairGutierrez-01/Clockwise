@@ -247,6 +247,7 @@ def test_aggregate_time_by_day_project_task(sample_time_entries):
 
         assert all(isinstance(h, numbers.Real) for h in hours_list)
 
+
 @pytest.fixture
 def sample_project():
     """Creates a mock project with base attributes for testing."""
