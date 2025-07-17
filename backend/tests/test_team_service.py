@@ -1,6 +1,7 @@
 # tests/test_team_service.py
 
 import pytest
+from datetime import datetime
 
 from backend.models import User, Team, UserTeam, Project, Task
 from backend.services.team_service import (
@@ -17,7 +18,16 @@ from backend.services.team_service import (
 
 @pytest.fixture
 def setup_user_team(db_session):
-    user = User(username="admin", email="admin@test.com", password_hash="123")
+    user = User(
+        username="notifyuser",
+        email="notify@example.com",
+        password_hash="hashed",
+        first_name="Test",
+        last_name="User",
+        created_at=datetime.utcnow(),
+        last_active=datetime.utcnow(),
+        profile_picture=None
+    )
     db_session.add(user)
     db_session.commit()
     return user
@@ -111,7 +121,7 @@ def test_delete_team_and_related(db_session, setup_user_team):
     db_session.commit()
 
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id))
-    project = Project(name="ZetaProject", user_id=user.user_id, team_id=team.team_id)
+    project = Project(name="ZetaProject", user_id=user.user_id, team_id=team.team_id, time_limit_hours=10)
     db_session.add(project)
     db_session.commit()
 
@@ -135,8 +145,8 @@ def test_get_teams_with_projects(db_session, setup_user_team):
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id, role="member"))
     db_session.commit()
 
-    project1 = Project(name="P1", team_id=team.team_id, user_id=user.user_id)
-    project2 = Project(name="P2", team_id=team.team_id, user_id=user.user_id)
+    project1 = Project(name="P1", team_id=team.team_id, user_id=user.user_id, time_limit_hours=10)
+    project2 = Project(name="P2", team_id=team.team_id, user_id=user.user_id, time_limit_hours=10)
     db_session.add_all([project1, project2])
     db_session.commit()
 

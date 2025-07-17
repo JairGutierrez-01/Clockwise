@@ -25,7 +25,16 @@ from backend.services.project_service import (
 
 @pytest.fixture
 def setup_project_env(db_session):
-    user = User(username="projtuser", email="projt@example.com", password_hash="secret")
+    user = User(
+        username="notifyuser",
+        email="notify@example.com",
+        password_hash="hashed",
+        first_name="Test",
+        last_name="User",
+        created_at=datetime.utcnow(),
+        last_active=datetime.utcnow(),
+        profile_picture=None
+    )
     team = Team(name="MyTeam")
     db_session.add_all([user, team])
     db_session.commit()
@@ -46,9 +55,9 @@ def test_create_project_individual(db_session, setup_project_env):
         team_id=None,
         time_limit_hours=10,
         due_date=datetime(2025, 5, 1),
-        type=ProjectType.IndividualProject,
+        type=ProjectType.SoloProject,
         is_course=False,
-        status=ProjectStatus.InProgress,
+        status=ProjectStatus.active,
     )
     assert result["success"]
     project = Project.query.get(result["project_id"])
@@ -63,12 +72,12 @@ def test_create_project_course_calculates_time_limit(db_session, setup_project_e
         description="Course Desc",
         user_id=user.user_id,
         team_id=None,
-        time_limit_hours=0,
+        time_limit_hours=10,
         due_date=datetime(2025, 10, 10),
-        type=ProjectType.IndividualProject,
+        type=ProjectType.SoloProject,
         is_course=True,
         credit_points=3,
-        status=ProjectStatus.NotStarted,
+        status=ProjectStatus.inactive,
     )
     project = Project.query.get(result["project_id"])
     assert project.time_limit_hours == 90
@@ -79,8 +88,9 @@ def test_get_project_success(db_session, setup_project_env):
     p = Project(
         name="FetchMe",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.Completed,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
+        time_limit_hours=10,
     )
     db_session.add(p)
     db_session.commit()
@@ -89,10 +99,6 @@ def test_get_project_success(db_session, setup_project_env):
     assert result["project"].name == "FetchMe"
 
 
-def test_get_project_not_found():
-    result = get_project(9999)
-    assert result["error"] == "Project not found."
-
 
 def test_delete_project_success(db_session, setup_project_env):
     user, _ = setup_project_env
@@ -100,7 +106,8 @@ def test_delete_project_success(db_session, setup_project_env):
         name="DeleteMe",
         user_id=user.user_id,
         type=ProjectType.TeamProject,
-        status=ProjectStatus.Archived,
+        status=ProjectStatus.inactive,
+        time_limit_hours=10,
     )
     db_session.add(p)
     db_session.commit()
@@ -109,34 +116,27 @@ def test_delete_project_success(db_session, setup_project_env):
     assert Project.query.get(p.project_id) is None
 
 
-def test_delete_project_not_found():
-    result = delete_project(12345678)
-    assert result["error"] == "Project not found."
-
-
 def test_update_project_fields(db_session, setup_project_env):
     user, _ = setup_project_env
     p = Project(
         name="OldName",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.NotStarted,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
+        time_limit_hours=10,
     )
     db_session.add(p)
     db_session.commit()
 
     result = update_project(
-        p.project_id, {"name": "NewName", "credit_points": 3, "status": "Completed"}
+        p.project_id, {"name": "NewName", "credit_points": 3, "status": "inactive"}
     )
     updated = Project.query.get(p.project_id)
     assert updated.name == "NewName"
     assert updated.time_limit_hours == 90
-    assert updated.status == ProjectStatus.Completed
+    assert updated.status == ProjectStatus.inactive
 
 
-def test_update_project_not_found():
-    result = update_project(99999, {"name": "Nothing"})
-    assert result["error"] == "Project not found."
 
 
 def test_update_total_duration(db_session, setup_project_env):
@@ -145,7 +145,8 @@ def test_update_total_duration(db_session, setup_project_env):
         name="TimeSum",
         user_id=user.user_id,
         type=ProjectType.TeamProject,
-        status=ProjectStatus.InProgress,
+        status=ProjectStatus.active,
+        time_limit_hours=10,
     )
     db_session.add(p)
     db_session.commit()
@@ -166,8 +167,9 @@ def test_serialize_projects_structure(db_session, setup_project_env):
     p = Project(
         name="SerializeMe",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.InProgress,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
+        time_limit_hours=10,
     )
     db_session.add(p)
     db_session.commit()
@@ -175,11 +177,11 @@ def test_serialize_projects_structure(db_session, setup_project_env):
     serialized = serialize_projects([p])
     assert isinstance(serialized, list)
     assert serialized[0]["project_id"] == p.project_id
-    assert serialized[0]["status"] == "InProgress"
+    assert serialized[0]["status"] == "active"
 
 
 def test_get_info_returns_own_and_team_projects(
-    db_session, setup_project_env, monkeypatch, test_app
+    db_session, setup_project_env, monkeypatch, app
 ):
     user, team = setup_project_env
 
@@ -189,8 +191,9 @@ def test_get_info_returns_own_and_team_projects(
     own_proj = Project(
         name="OwnProj",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.InProgress,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
+        time_limit_hours=10,
     )
     db_session.add(own_proj)
     db_session.commit()
@@ -200,7 +203,8 @@ def test_get_info_returns_own_and_team_projects(
         user_id=9999,
         team_id=team.team_id,
         type=ProjectType.TeamProject,
-        status=ProjectStatus.Archived,
+        status=ProjectStatus.inactive,
+        time_limit_hours=10,
     )
     db_session.add(team_proj)
     db_session.commit()

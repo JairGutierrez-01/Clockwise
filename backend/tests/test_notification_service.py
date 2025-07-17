@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 from backend.models import Notification, User
 from backend.services.notification_service import (
@@ -16,7 +17,16 @@ from backend.services.notification_service import (
 
 @pytest.fixture
 def setup_notify_user(db_session):
-    user = User(username="notifyme", email="notify@example.com", password_hash="123")
+    user = User(
+        username="notifyuser",
+        email="notify@example.com",
+        password_hash="hashed",
+        first_name="Test",
+        last_name="User",
+        created_at=datetime.utcnow(),
+        last_active=datetime.utcnow(),
+        profile_picture=None
+    )
     db_session.add(user)
     db_session.commit()
     return user
