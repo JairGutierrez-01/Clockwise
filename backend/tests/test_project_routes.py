@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 from backend.models import User, Team, Project, UserTeam
 from backend.models.project import ProjectType, ProjectStatus
@@ -7,7 +8,14 @@ from backend.models.project import ProjectType, ProjectStatus
 @pytest.fixture
 def setup_project_test_data(db_session):
     user = User(
-        username="projectuser", email="project@example.com", password_hash="123"
+        username="notifyuser",
+        email="notify@example.com",
+        password_hash="hashed",
+        first_name="Test",
+        last_name="User",
+        created_at=datetime.utcnow(),
+        last_active=datetime.utcnow(),
+        profile_picture=None
     )
     team = Team(name="Project Team")
     db_session.add_all([user, team])
@@ -19,13 +27,15 @@ def test_create_project_route(client, db_session, setup_project_test_data, login
     user, team = setup_project_test_data
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id, role="admin"))
     db_session.commit()
-    login_user(user)
+
+    with client.session_transaction() as sess:
+        sess["user_id"] = login_user.user_id
 
     form_data = {
         "name": "New Project",
         "description": "Description",
         "type": "TeamProject",
-        "status": "NotStarted",
+        "status": "active",
         "due_date": "2025-12-01",
         "time_limit_hours": "10",
         "is_course": "on",
@@ -35,21 +45,21 @@ def test_create_project_route(client, db_session, setup_project_test_data, login
 
     response = client.post("/project/create", data=form_data, follow_redirects=False)
 
-    assert response.status_code in (302, 200)
+    assert response.status_code in (302, 200), response.get_data(as_text=True)
     project = Project.query.filter_by(name="New Project").first()
     assert project is not None
     assert project.team_id == team.team_id
 
 
 def test_view_project(client, db_session, setup_project_test_data, login_user):
+    db_session.rollback()
     user, _ = setup_project_test_data
-    login_user(user)
 
     project = Project(
         name="ViewMe",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.NotStarted,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
     )
     db_session.add(project)
     db_session.commit()
@@ -59,14 +69,14 @@ def test_view_project(client, db_session, setup_project_test_data, login_user):
 
 
 def test_delete_project_route(client, db_session, setup_project_test_data, login_user):
+    db_session.rollback()
     user, _ = setup_project_test_data
-    login_user(user)
 
     project = Project(
         name="DeleteMe",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.NotStarted,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
     )
     db_session.add(project)
     db_session.commit()
@@ -80,14 +90,14 @@ def test_delete_project_route(client, db_session, setup_project_test_data, login
 
 
 def test_edit_project_route(client, db_session, setup_project_test_data, login_user):
+    db_session.rollback()
     user, _ = setup_project_test_data
-    login_user(user)
 
     project = Project(
         name="Editable",
         user_id=user.user_id,
-        type=ProjectType.IndividualProject,
-        status=ProjectStatus.NotStarted,
+        type=ProjectType.SoloProject,
+        status=ProjectStatus.active,
     )
     db_session.add(project)
     db_session.commit()
@@ -104,16 +114,16 @@ def test_edit_project_route(client, db_session, setup_project_test_data, login_u
 
 
 def test_api_projects(client, db_session, setup_project_test_data, login_user):
+    db_session.rollback()
     user, team = setup_project_test_data
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id, role="member"))
     db_session.commit()
-    login_user(user)
 
     data = {
         "name": "API Project",
         "description": "from API",
         "type": "TeamProject",
-        "status": "NotStarted",
+        "status": "active",
         "due_date": "01.12.2025",
         "time_limit_hours": 12,
         "team_id": team.team_id,
@@ -130,17 +140,17 @@ def test_api_projects(client, db_session, setup_project_test_data, login_user):
 
 
 def test_api_project_details(client, db_session, setup_project_test_data, login_user):
+    db_session.rollback()
     user, team = setup_project_test_data
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id))
     db_session.commit()
-    login_user(user)
 
     project = Project(
         name="PatchMe",
         user_id=user.user_id,
         team_id=team.team_id,
         type=ProjectType.TeamProject,
-        status=ProjectStatus.NotStarted,
+        status=ProjectStatus.active,
     )
     db_session.add(project)
     db_session.commit()
@@ -157,8 +167,8 @@ def test_api_project_details(client, db_session, setup_project_test_data, login_
 
 
 def test_export_csv_and_pdf(client, db_session, setup_project_test_data, login_user):
+    db_session.rollback()
     user, _ = setup_project_test_data
-    login_user(user)
 
     pdf = client.get("/api/projects/export/projects/pdf")
     assert pdf.status_code == 200

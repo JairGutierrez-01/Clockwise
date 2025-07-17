@@ -1,11 +1,21 @@
 import pytest
+from datetime import datetime
 
 from backend.models import Team, User, UserTeam
 
 
 @pytest.fixture
 def setup_team_test_data(db_session):
-    user = User(username="teamuser", email="user@team.com", password_hash="pass")
+    user = User(
+        username="notifyuser",
+        email="notify@example.com",
+        password_hash="hashed",
+        first_name="Test",
+        last_name="User",
+        created_at=datetime.utcnow(),
+        last_active=datetime.utcnow(),
+        profile_picture=None
+    )
     db_session.add(user)
     team = Team(name="Test Team")
     db_session.add(team)
