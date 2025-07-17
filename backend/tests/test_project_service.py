@@ -189,7 +189,7 @@ def test_get_info_returns_own_and_team_projects(
     monkeypatch.setattr("backend.services.project_service.current_user", user)
 
     own_proj = Project(
-        name="OwnProj",
+        name="OwnProject",
         user_id=user.user_id,
         type=ProjectType.SoloProject,
         status=ProjectStatus.active,
@@ -199,7 +199,7 @@ def test_get_info_returns_own_and_team_projects(
     db_session.commit()
 
     team_proj = Project(
-        name="TeamProj",
+        name="TeamProject",
         user_id=9999,
         team_id=team.team_id,
         type=ProjectType.TeamProject,
@@ -217,8 +217,8 @@ def test_get_info_returns_own_and_team_projects(
     result = get_info()
     assert "own_projects" in result
     assert "team_projects" in result
-    assert any(p["name"] == "OwnProj" for p in result["own_projects"])
-    assert any(p["name"] == "TeamProj" for p in result["team_projects"])
+    assert any(p["name"] == "OwnProject" for p in result["own_projects"])
+    assert any(p["name"] == "TeamProject" for p in result["team_projects"])
 
 
 def test_export_project_info_pdf_bytes(db_session, setup_project_env):
@@ -229,7 +229,7 @@ def test_export_project_info_pdf_bytes(db_session, setup_project_env):
                 "name": "Test PDF",
                 "description": "Desc",
                 "due_date": "2025-12-12",
-                "status": "InProgress",
+                "status": "active",
                 "tasks": [
                     {
                         "title": "PDF Task",
@@ -263,7 +263,7 @@ def test_export_project_info_csv_format():
                 "id": 1,
                 "name": "CSVProj",
                 "description": "Description",
-                "status": "InProgress",
+                "status": "active",
                 "tasks": [
                     {
                         "title": "Task1",

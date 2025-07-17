@@ -36,14 +36,14 @@ def setup_user_team(db_session):
 def test_create_new_team_success(db_session, setup_user_team):
     user = setup_user_team
 
-    result = create_new_team("Alpha Team", user.user_id)
+    result = create_new_team("ClockWise", user.user_id)
 
     assert "team_id" in result
     assert result["message"] == "Team created"
 
     team = Team.query.get(result["team_id"])
     assert team is not None
-    assert team.name == "Alpha Team"
+    assert team.name == "ClockWise"
 
     rel = UserTeam.query.filter_by(user_id=user.user_id, team_id=team.team_id).first()
     assert rel is not None
@@ -52,7 +52,7 @@ def test_create_new_team_success(db_session, setup_user_team):
 
 def test_check_admin_and_member(db_session, setup_user_team):
     user = setup_user_team
-    team = Team(name="Beta")
+    team = Team(name="ClockWise")
     db_session.add(team)
     db_session.commit()
 
@@ -65,7 +65,7 @@ def test_check_admin_and_member(db_session, setup_user_team):
 
 def test_get_user_teams_returns_correct_structure(db_session, setup_user_team):
     user = setup_user_team
-    team = Team(name="Gamma")
+    team = Team(name="ClockWise")
     db_session.add(team)
     db_session.commit()
 
@@ -81,7 +81,7 @@ def test_get_user_teams_returns_correct_structure(db_session, setup_user_team):
 
 def test_remove_member_from_team(db_session, setup_user_team):
     user = setup_user_team
-    team = Team(name="Delta")
+    team = Team(name="ClockWise")
     db_session.add(team)
     db_session.commit()
 
@@ -100,7 +100,7 @@ def test_remove_member_from_team(db_session, setup_user_team):
 
 def test_get_team_members_returns_list(db_session, setup_user_team):
     user = setup_user_team
-    team = Team(name="Epsilon")
+    team = Team(name="ClockWise")
     db_session.add(team)
     db_session.commit()
 
@@ -116,12 +116,12 @@ def test_get_team_members_returns_list(db_session, setup_user_team):
 
 def test_delete_team_and_related(db_session, setup_user_team):
     user = setup_user_team
-    team = Team(name="Zeta")
+    team = Team(name="ClockWise")
     db_session.add(team)
     db_session.commit()
 
     db_session.add(UserTeam(user_id=user.user_id, team_id=team.team_id))
-    project = Project(name="ZetaProject", user_id=user.user_id, team_id=team.team_id, time_limit_hours=10)
+    project = Project(name="ClockWiseTeamProject", user_id=user.user_id, team_id=team.team_id, time_limit_hours=10)
     db_session.add(project)
     db_session.commit()
 
